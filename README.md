@@ -34,7 +34,8 @@ skynode/
 ├── pico/       MicroPython servo firmware (runs on the Pico WH)
 ├── brain/      detection, tracking, control, logging (runs on laptop / Pi 4)
 ├── docs/       wiring diagrams, photos, demo GIFs
-└── hardware/   3D-print files for the pan-tilt bracket
+├── hardware/   3D-print files for the pan-tilt bracket
+└── tests/      laptop-side tests: python -m unittest discover tests
 ```
 
 ## Model
