@@ -224,3 +224,5 @@ __marimo__/
 # Training data and runtime output
 datasets/
 logs/
+# Wi-Fi password for the Pico (copy pico/wifi_secrets_example.py to create it)
+wifi_secrets.py

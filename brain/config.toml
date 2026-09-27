@@ -1,0 +1,35 @@
+# Skynode brain settings. Anything left out uses its default from brain/config.py.
+
+[camera]
+source = 0              # webcam number (0 = built-in), or a video file path
+width = 1280
+height = 720
+hfov_deg = 70.0         # your camera's HORIZONTAL field of view, in degrees. Spec sheets
+                        # usually give the diagonal; horizontal is about 0.9x that (16:9)
+
+[model]
+path = "models/yolov8n.onnx"            # relative to this file
+target_classes = ["airplane", "bird"]   # must match the model's class names
+min_confidence = 0.35                   # ignore detections below this (0..1)
+iou_threshold = 0.45                    # how much same-class boxes may overlap before merging
+
+[tracker]
+max_missed_frames = 15  # frames a target can vanish before the lock is dropped
+max_jump = 0.25         # max move between frames, as a fraction of frame width
+
+[control]
+gain = 0.35             # share of the aiming error corrected each frame (0.2-0.6)
+deadband_deg = 0.5      # ignore errors smaller than this, so the camera doesn't jitter
+max_step_deg = 8.0      # biggest correction in one frame
+pan_sign = -1           # if the camera pans AWAY from the target, flip this (1 <-> -1)
+tilt_sign = 1           # if the camera tilts AWAY from the target, flip this
+home_after_s = 10.0     # with no target for this long, return to the home position
+
+[link]
+type = "none"           # "wifi", "usb", or "none" (no Pico yet: detection only)
+serial_port = "auto"    # or e.g. "COM5" (Windows) / "/dev/ttyACM0" (Linux)
+wifi_host = "auto"      # "auto" finds the Pico by broadcast; or its IP, e.g. "192.168.1.42"
+wifi_port = 5005
+
+[display]
+show = true             # preview window; set false on a Pi with no screen

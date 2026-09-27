@@ -1,28 +1,29 @@
 # Skynode
 
-AI sky tracker: YOLOv8 detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
+AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
 
 Skynode is layer one of a larger project: sense and track, built toward drone and aerospace systems.
 
-> **Scope:** passive sensing and tracking only. No payloads, no effectors, no radio transmitting or jamming. It never interacts with or interferes with aircraft.
+> **Scope:** passive sensing and tracking only. No payloads, no effectors, and nothing that interacts with or interferes with aircraft.
+> No jamming, no spoofing, and no transmitting on aviation or drone-control frequencies. Ordinary Wi-Fi and USB networking between Skynode's own parts is fine.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    CAM[Webcam] -->|frames| DET[Detector<br/>YOLOv8 · ONNX]
+    CAM[Webcam] -->|frames| DET[Detector<br/>YOLO · ONNX]
     DET -->|boxes| TRK[Tracker<br/>pick target]
     TRK -->|pixel error| CTL[Controller<br/>proportional]
-    CTL -->|P92.5 T47.0 over USB serial| PICO[Pico WH<br/>servo firmware]
+    CTL -->|P92.5 T47.0 over Wi-Fi or USB| PICO[Pico WH<br/>servo firmware]
     PICO -->|PWM| SERVOS[Pan + tilt<br/>SG90 servos]
     SERVOS -.->|camera moves| CAM
     DET --> LOG[(Sighting log)]
 ```
 
-1. **Sense.** The brain (a laptop for now, a Raspberry Pi 4 later) grabs webcam frames and runs a YOLOv8 model through ONNX Runtime. The model was trained on ~48,500 aerial images and has three classes: `airplane`, `drone`, `helicopter`.
+1. **Sense.** The brain (a laptop for now, a Raspberry Pi 4 later) grabs webcam frames and runs a YOLO model through ONNX Runtime. For now that's the pretrained COCO YOLOv8n, tracking `airplane` and `bird`. A custom drone model can be swapped in through the config file.
 2. **Track.** It picks one target and measures how far the target sits from the center of the frame, in pixels.
 3. **Control.** A proportional controller turns that pixel error into a small pan/tilt correction ("the target is 40 px right, so pan +2°").
-4. **Actuate.** The brain sends a plain-text command like `P92.5 T47.0` over USB serial. The Pico moves both servos smoothly, keeps them inside safe angle limits, and the camera re-centers on the target.
+4. **Actuate.** The brain sends a plain-text command like `P92.5 T47.0` to the Pico over Wi-Fi (UDP) or USB serial. The Pico moves both servos smoothly, keeps them inside safe angle limits, and the camera re-centers on the target.
 5. **Log.** Every sighting is recorded with time, class, confidence, and pan/tilt angle.
 
 Detection, tracking, and control are separate modules, so each layer can be reused on future platforms.
@@ -40,13 +41,16 @@ skynode/
 
 ## Model
 
-The trained ONNX model is **not** in git (`*.onnx` and `*.pt` are gitignored). It will be attached to a [GitHub Release](https://github.com/bsalsa2/Skynode/releases); download it from there.
+Model files are **not** in git (`*.onnx` and `*.pt` are gitignored).
+
+- **Now:** the pretrained COCO **YOLOv8n**, exported to ONNX. It detects `airplane` and `bird` (small drones often show up as birds). See [Get a model](brain/README.md#get-a-model) for the one-time export.
+- **Later:** a custom model with `drone`, `airplane`, and `helicopter`. The model path and target classes are settings in `brain/config.toml`, so it drops in without code changes. Finished models go on [GitHub Releases](https://github.com/bsalsa2/Skynode/releases).
 
 ## Hardware
 
 | Part | Notes |
 |---|---|
-| Raspberry Pi Pico WH | servo controller, flashed with MicroPython |
+| Raspberry Pi Pico WH | servo controller, flashed with MicroPython. Talks to the brain over Wi-Fi or USB |
 | 2× SG90 micro servo | pan (GP0) and tilt (GP1) |
 | Breadboard + jumpers | |
 | 470–1000 µF electrolytic capacitor, ≥10 V | across the servo power rails, about $0.20 |
@@ -87,12 +91,13 @@ SG90 wire colors: **brown = GND**, **red = +5 V**, **orange = signal**.
 
 - Power the servos from **VBUS (5 V)**, never from the 3V3 pin. SG90s are 5 V parts, and a stalling servo on 3V3 can brown out the Pico's own regulator. The 3.3 V signal from GP0/GP1 is fine for SG90s.
 - **Budget:** a laptop USB 2.0 port supplies about 500 mA. One SG90 draws about 10 mA idle, 100–250 mA moving, and up to about 650 mA stalled. Two servos hitting their end stops at once can pull the 5 V line down and reset the Pico. The symptom is the USB connection dropping and coming back. The capacitor covers the short spikes, and the firmware's speed limit keeps them small.
+- **On Wi-Fi,** the Pico only needs power, so plug it into a 5 V ≥2 A phone charger instead of a laptop. VBUS then has plenty of current for both servos, which fixes the budget problem above.
 - **Upgrade path:** if resets persist, power the servos from a separate 5 V ≥2 A supply (an old phone charger plus a USB breakout works). Tie its GND to the Pico's GND.
 
 ## Getting started
 
 1. **Pico firmware:** flash, test, and calibrate the servos. See [`pico/README.md`](pico/README.md).
-2. **Brain:** coming next. See [`brain/README.md`](brain/README.md).
+2. **Brain:** install, export a model, and run detection with just the webcam. Then connect the Pico over Wi-Fi or USB. See [`brain/README.md`](brain/README.md).
 
 ## Roadmap
 
