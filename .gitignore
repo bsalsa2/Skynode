@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Skynode ---
+# Model weights live on GitHub Releases, not in git (too big, and binary)
+*.onnx
+*.pt
+# Training data and runtime output
+datasets/
+logs/
