@@ -4,7 +4,8 @@ AI sky tracker: YOLOv8 detects aircraft and drones, a Pico-driven pan-tilt camer
 
 Skynode is layer one of a larger project: sense and track, built toward drone and aerospace systems.
 
-> **Scope:** passive sensing and tracking only. No payloads, no effectors, no radio transmitting or jamming. It never interacts with or interferes with aircraft.
+> **Scope:** passive sensing and tracking only. No payloads, no effectors, and nothing that interacts with or interferes with aircraft.
+> No jamming, no spoofing, and no transmitting on aviation or drone-control frequencies. Ordinary Wi-Fi and USB networking between Skynode's own parts is fine.
 
 ## How it works
 
