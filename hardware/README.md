@@ -1,25 +1,29 @@
 # hardware/
 
-Parametric pan-tilt mount for two SG90 servos and a small USB webcam, in OpenSCAD.
+Parametric pan-tilt mount for two SG90 servos and a small USB webcam.
+
+**Source of truth: [`pantilt.py`](pantilt.py) (CadQuery).** It builds every printed part as an editable STEP file plus an STL. [`pantilt.scad`](pantilt.scad) is the original OpenSCAD version, kept for reference: same parameters and identical geometry, but edit the CadQuery script first, and copy any change to the SCAD file only if you still use it.
 
 | File | What it is |
 |---|---|
-| `pantilt.scad` | The design. All dimensions are parameters at the top |
-| `pantilt_base.stl` | Base: holds the pan servo (shaft up) and screws down with 4× M3 |
-| `pantilt_yoke.stl` | Yoke: sits on the pan horn, holds the tilt servo, carries the M3 pivot |
-| `pantilt_camera_arm.stl` | Camera arm: webcam cradle on the tilt horn and pivot. Strap the camera with two zip ties |
+| `pantilt.py` | The design (CadQuery). All dimensions are parameters at the top |
+| `pantilt.scad` | Original OpenSCAD version (reference only) |
+| `pantilt_base.step` / `.stl` | Base: holds the pan servo (shaft up) and screws down with 4× M3 |
+| `pantilt_yoke.step` / `.stl` | Yoke: sits on the pan horn, holds the tilt servo, carries the M3 pivot |
+| `pantilt_camera_arm.step` / `.stl` | Camera arm: webcam cradle on the tilt horn and pivot. Strap the camera with two zip ties |
 
 A two-axis mount needs three moving links (fixed, panning, tilting), so it prints as three parts.
 
 ## Before printing
 
-Measure your servo and camera with calipers and edit the parameters: `servo_l/w/h`, `tab_z`, `horn_seat_z`, the horn sizes, and `cam_w/h/d`. Then re-export:
+Measure your servo and camera with calipers and edit the parameters: `servo_l/w/h`, `tab_z`, `horn_seat_z`, the horn sizes, and `cam_w/h/d`. Then rebuild all STEP and STL files from the repo root:
 
 ```
-openscad -D 'part="base"'       -o pantilt_base.stl       pantilt.scad
-openscad -D 'part="yoke"'       -o pantilt_yoke.stl       pantilt.scad
-openscad -D 'part="camera_arm"' -o pantilt_camera_arm.stl pantilt.scad
+pip install cadquery
+python hardware/pantilt.py
 ```
+
+The STEP files open in FreeCAD, Fusion 360, Onshape, or SolidWorks for further editing.
 
 Print in PLA or PETG, 0.2 mm layers, 3 walls, 25–40 % infill, no supports. The parts are already oriented flat side down.
 
