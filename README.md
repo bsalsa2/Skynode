@@ -105,13 +105,17 @@ SG90 wire colors: **brown = GND**, **red = +5 V**, **orange = signal**.
 
 ![Pan-tilt mount render](docs/pantilt_render.png)
 
-[`hardware/pantilt.scad`](hardware/pantilt.scad) is a parametric OpenSCAD design: servo size, horn, webcam size, and wall thickness are parameters at the top of the file. It prints as three parts without supports:
+[`hardware/pantilt.py`](hardware/pantilt.py) is a parametric CadQuery design: servo size, horn, webcam size, and wall thickness are parameters at the top of the file. Each part has an editable STEP file and a print-ready STL. It prints as three parts without supports:
+
+![The three printed parts](docs/pantilt_parts.png)
 
 | File | Part |
 |---|---|
-| [`pantilt_base.stl`](hardware/pantilt_base.stl) | Holds the pan servo; screws down with 4× M3 |
-| [`pantilt_yoke.stl`](hardware/pantilt_yoke.stl) | Sits on the pan horn; holds the tilt servo and the M3 pivot |
-| [`pantilt_camera_arm.stl`](hardware/pantilt_camera_arm.stl) | Webcam cradle on the tilt horn; camera held with two zip ties |
+| [`pantilt_base.step`](hardware/pantilt_base.step) · [`.stl`](hardware/pantilt_base.stl) | Holds the pan servo; screws down with 4× M3 |
+| [`pantilt_yoke.step`](hardware/pantilt_yoke.step) · [`.stl`](hardware/pantilt_yoke.stl) | Sits on the pan horn; holds the tilt servo and the M3 pivot |
+| [`pantilt_camera_arm.step`](hardware/pantilt_camera_arm.step) · [`.stl`](hardware/pantilt_camera_arm.stl) | Webcam cradle on the tilt horn; camera held with two zip ties |
+
+No custom PCB: the prototype is breadboard-wired (see wiring diagram). Build photos will be added when parts arrive.
 
 Measure your servo and camera and adjust the parameters before printing. See [`hardware/README.md`](hardware/README.md).
 
