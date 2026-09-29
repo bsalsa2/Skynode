@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="Liberation Sans, Arial, Helvetica, sans-serif">
+  <title>Skynode wiring: Pico WH, two SG90 servos, 5 V supply, capacitor, common ground</title>
+  <rect width="960" height="560" fill="#ffffff"/>
+  <text x="30" y="38" font-size="22" font-weight="bold" fill="#1a1a1a">Skynode wiring</text>
+  <text x="30" y="60" font-size="13" fill="#555">Servos run on their own 5 V supply. The Pico's GND ties to the servo GND (common ground).</text>
+
+  <!-- 5V supply + USB breakout -->
+  <rect x="40" y="100" width="130" height="70" rx="8" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+  <text x="105" y="130" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">5 V 2 A</text>
+  <text x="105" y="150" font-size="13" text-anchor="middle" fill="#263238">USB supply</text>
+  <line x1="170" y1="135" x2="230" y2="135" stroke="#455a64" stroke-width="5"/>
+  <text x="200" y="125" font-size="11" text-anchor="middle" fill="#555">USB cable</text>
+  <rect x="230" y="105" width="90" height="60" rx="5" fill="#6a1b9a" stroke="#4a148c" stroke-width="2"/>
+  <text x="275" y="130" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">USB</text>
+  <text x="275" y="146" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">breakout</text>
+  <text x="316" y="186" font-size="11" fill="#333">VBUS</text>
+  <text x="248" y="186" font-size="11" fill="#333">GND</text>
+
+  <!-- rails -->
+  <rect x="220" y="215" width="700" height="14" rx="4" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="930" y="227" font-size="14" font-weight="bold" fill="#d32f2f" text-anchor="end" dx="-6" dy="-18">+5 V servo rail</text>
+  <rect x="220" y="255" width="700" height="14" rx="4" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <text x="930" y="298" font-size="14" font-weight="bold" fill="#1565c0" text-anchor="end" dx="-6">GND rail</text>
+  <polyline points="310,165 310,222" fill="none" stroke="#d32f2f" stroke-width="4"/>
+  <polyline points="258,165 258,190 240,190 240,262" fill="none" stroke="#212121" stroke-width="4"/>
+
+  <!-- capacitor across rails -->
+  <line x1="430" y1="222" x2="430" y2="236" stroke="#d32f2f" stroke-width="3"/>
+  <rect x="418" y="232" width="24" height="6" fill="#37474f"/>
+  <path d="M418 244 Q430 238 442 244" fill="none" stroke="#37474f" stroke-width="4"/>
+  <line x1="430" y1="244" x2="430" y2="262" stroke="#212121" stroke-width="3"/>
+  <text x="450" y="241" font-size="12" fill="#333">470–1000 µF, 16 V+  (stripe / − to GND)</text>
+
+  <!-- servos -->
+  <g>
+    <rect x="600" y="370" width="110" height="80" rx="6" fill="#1e88e5" stroke="#0d47a1" stroke-width="2"/>
+    <text x="655" y="405" font-size="15" font-weight="bold" text-anchor="middle" fill="#fff">SG90</text>
+    <text x="655" y="425" font-size="13" text-anchor="middle" fill="#fff">PAN</text>
+    <polyline points="620,370 620,262" fill="none" stroke="#6d4c41" stroke-width="4"/>
+    <polyline points="640,370 640,222" fill="none" stroke="#d32f2f" stroke-width="4"/>
+    <polyline points="660,370 660,330" fill="none" stroke="#fb8c00" stroke-width="4"/>
+  </g>
+  <g>
+    <rect x="770" y="370" width="110" height="80" rx="6" fill="#1e88e5" stroke="#0d47a1" stroke-width="2"/>
+    <text x="825" y="405" font-size="15" font-weight="bold" text-anchor="middle" fill="#fff">SG90</text>
+    <text x="825" y="425" font-size="13" text-anchor="middle" fill="#fff">TILT</text>
+    <polyline points="790,370 790,262" fill="none" stroke="#6d4c41" stroke-width="4"/>
+    <polyline points="810,370 810,222" fill="none" stroke="#d32f2f" stroke-width="4"/>
+    <polyline points="830,370 830,345" fill="none" stroke="#fb8c00" stroke-width="4"/>
+  </g>
+
+  <!-- Pico WH -->
+  <rect x="60" y="320" width="200" height="200" rx="8" fill="#2e7d32" stroke="#1b5e20" stroke-width="2"/>
+  <rect x="140" y="306" width="40" height="18" rx="3" fill="#b0bec5" stroke="#546e7a"/>
+  <text x="160" y="300" font-size="11" text-anchor="middle" fill="#333">micro-USB: laptop (USB link) or charger (Wi-Fi)</text>
+  <text x="160" y="470" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">Raspberry Pi</text>
+  <text x="160" y="490" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">Pico WH</text>
+  <g font-size="12" fill="#fff">
+    <circle cx="250" cy="340" r="4" fill="#ffd54f"/><text x="240" y="344" text-anchor="end">GP0 · pin 1</text>
+    <circle cx="250" cy="365" r="4" fill="#ffd54f"/><text x="240" y="369" text-anchor="end">GP1 · pin 2</text>
+    <circle cx="250" cy="390" r="4" fill="#ffd54f"/><text x="240" y="394" text-anchor="end">GND · pin 3</text>
+  </g>
+
+  <!-- signals + common ground -->
+  <polyline points="254,340 540,340 540,330 660,330" fill="none" stroke="#fb8c00" stroke-width="4"/>
+  <polyline points="254,365 560,365 560,345 830,345" fill="none" stroke="#fb8c00" stroke-width="4"/>
+  <polyline points="254,390 400,390 400,262" fill="none" stroke="#212121" stroke-width="4"/>
+  <text x="408" y="318" font-size="12" font-weight="bold" fill="#212121">common ground</text>
+  <text x="300" y="356" font-size="12" fill="#e65100">pan signal</text>
+  <text x="300" y="381" font-size="12" fill="#e65100">tilt signal</text>
+
+  <!-- legend -->
+  <g font-size="12" fill="#333">
+    <line x1="560" y1="495" x2="590" y2="495" stroke="#d32f2f" stroke-width="4"/><text x="596" y="499">red: +5 V</text>
+    <line x1="680" y1="495" x2="710" y2="495" stroke="#6d4c41" stroke-width="4"/><text x="716" y="499">brown / black: GND</text>
+    <line x1="560" y1="520" x2="590" y2="520" stroke="#fb8c00" stroke-width="4"/><text x="596" y="524">orange: signal</text>
+    <text x="680" y="524">Don't also wire Pico VBUS to the + rail.</text>
+  </g>
+</svg>

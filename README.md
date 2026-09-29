@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/skynode_banner.jpg" alt="Skynode banner"></p>
+
 # Skynode
 
 AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
@@ -44,55 +46,74 @@ skynode/
 Model files are **not** in git (`*.onnx` and `*.pt` are gitignored).
 
 - **Now:** the pretrained COCO **YOLOv8n**, exported to ONNX. It detects `airplane` and `bird` (small drones often show up as birds). See [Get a model](brain/README.md#get-a-model) for the one-time export.
-- **Later:** a custom model with `drone`, `airplane`, and `helicopter`. The model path and target classes are settings in `brain/config.toml`, so it drops in without code changes. Finished models go on [GitHub Releases](https://github.com/bsalsa2/Skynode/releases).
+- **Custom:** the five-class aircraft and drone model described in [Model training](#model-training). The model path and target classes are settings in `brain/config.toml`, so it drops in without code changes. Finished models go on [GitHub Releases](https://github.com/bsalsa2/Skynode/releases).
 
-## Hardware
+## Model training
 
-| Part | Notes |
-|---|---|
-| Raspberry Pi Pico WH | servo controller, flashed with MicroPython. Talks to the brain over Wi-Fi or USB |
-| 2× SG90 micro servo | pan (GP0) and tilt (GP1) |
-| Breadboard + jumpers | |
-| 470–1000 µF electrolytic capacitor, ≥10 V | across the servo power rails, about $0.20 |
-| Webcam | laptop built-in or USB |
+![YOLOv8n training results](docs/results.png)
+
+Training results for **YOLOv8n** on a **28,526-image** aircraft and drone dataset with five classes: `civilian aircraft`, `fixed wing uav`, `military aircraft`, `military helicopter`, `multi-rotor`. The plot is Ultralytics' standard `results.png`: training and validation losses, precision, recall, mAP50, and mAP50-95 per epoch.
+
+To track these classes, point `[model] path` in `brain/config.toml` at the exported `.onnx` and set `target_classes` to the names above.
+
+## Bill of materials
+
+Also in [`bom.csv`](bom.csv). Costs are rough USD estimates for the whole line (both servos in the servo row), before shipping.
+
+| Part | Qty | Purpose | Est. cost | Link |
+|---|---|---|---|---|
+| Raspberry Pi Pico WH | 1 | Servo controller + Wi-Fi link (already owned) | owned | [link](https://www.raspberrypi.com/products/raspberry-pi-pico/) |
+| Breadboard | 1 | Power rails and signal wiring (already owned) | owned |  |
+| SG90 micro servo (or SG92R) | 2 | Pan and tilt axes | $11.90 | [link](https://www.adafruit.com/product/169) |
+| SG90 pan-tilt bracket (or print hardware/pantilt.scad) | 1 | Holds both servos and the camera | $8.95 | [link](https://www.adafruit.com/product/1968) |
+| 1080p USB webcam | 1 | The camera that watches the sky | $70.00 | [link](https://www.logitech.com/en-us/shop/p/c920s-pro-hd-webcam) |
+| 5V 2A USB power supply | 1 | Dedicated servo power | $7.95 | [link](https://www.adafruit.com/product/1994) |
+| USB breakout board | 1 | Brings the supply's 5V and GND onto the breadboard rails | $1.50 | [link](https://www.adafruit.com/product/1833) |
+| 470-1000uF 16V+ electrolytic capacitor | 1 | Absorbs servo current spikes across the servo power rails | $0.95 | [link](https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html) |
+| Jumper wires (male/male) | 1 | Breadboard and servo connections | $3.95 | [link](https://www.adafruit.com/product/758) |
+| M2/M3 screw assortment | 1 | Servo tabs and horns (M2) and tilt pivot + base mounting (M3) | $8.00 |  |
+| **Total to buy** | | | **$113.20** | |
+
+The servo link is Adafruit's SG92R, a drop-in SG90 equivalent. The webcam link is a full-size C920s; for the printed mount, a smaller 1080p webcam or camera board is lighter on the servos. Set its size in `hardware/pantilt.scad`.
 
 ## Wiring
 
+![Skynode wiring diagram](docs/wiring.svg)
+
 SG90 wire colors: **brown = GND**, **red = +5 V**, **orange = signal**.
-
-```
-                    ┌──── USB to laptop ────┐
-  pan signal  ── 1  │ GP0              VBUS │ 40 ──► + rail (5 V)
-  tilt signal ── 2  │ GP1              VSYS │ 39
-  − rail      ── 3  │ GND              GND  │ 38
-                    │  Raspberry Pi Pico WH │
-                    └───────────────────────┘
-
-  + rail (5 V) ──┬── red   (pan servo)
-                 ├── red   (tilt servo)
-                 └── capacitor + leg
-  − rail (GND) ──┬── brown (pan servo)
-                 ├── brown (tilt servo)
-                 ├── capacitor − leg (the striped side)
-                 └── Pico pin 3 (GND)
-```
 
 | From | To |
 |---|---|
-| Pico pin 40 (VBUS, 5 V from USB) | breadboard + rail |
-| Pico pin 3 (GND) | breadboard − rail |
-| Pan servo orange | Pico pin 1 (GP0) |
-| Tilt servo orange | Pico pin 2 (GP1) |
+| 5 V 2 A supply → USB breakout VBUS | breadboard + rail |
+| USB breakout GND | breadboard − rail |
 | Both servo reds | + rail |
 | Both servo browns | − rail |
-| Capacitor | across + and − rails, stripe to − |
+| Pan servo orange | Pico pin 1 (GP0) |
+| Tilt servo orange | Pico pin 2 (GP1) |
+| Pico pin 3 (GND) | − rail (common ground) |
+| 470–1000 µF capacitor | across + and − rails, stripe to − |
+| Pico micro-USB | laptop (USB link) or any phone charger (Wi-Fi link) |
 
 **Power notes**
 
-- Power the servos from **VBUS (5 V)**, never from the 3V3 pin. SG90s are 5 V parts, and a stalling servo on 3V3 can brown out the Pico's own regulator. The 3.3 V signal from GP0/GP1 is fine for SG90s.
-- **Budget:** a laptop USB 2.0 port supplies about 500 mA. One SG90 draws about 10 mA idle, 100–250 mA moving, and up to about 650 mA stalled. Two servos hitting their end stops at once can pull the 5 V line down and reset the Pico. The symptom is the USB connection dropping and coming back. The capacitor covers the short spikes, and the firmware's speed limit keeps them small.
-- **On Wi-Fi,** the Pico only needs power, so plug it into a 5 V ≥2 A phone charger instead of a laptop. VBUS then has plenty of current for both servos, which fixes the budget problem above.
-- **Upgrade path:** if resets persist, power the servos from a separate 5 V ≥2 A supply (an old phone charger plus a USB breakout works). Tie its GND to the Pico's GND.
+- The servos get their own 5 V 2 A supply, so a stalling servo can't brown out the Pico. Don't also connect Pico VBUS (pin 40) to the + rail, or two supplies will fight.
+- The common ground wire is required: servo signals are measured against GND, so the Pico and the servo supply must share it.
+- Bench shortcut with no separate supply: wire Pico VBUS (pin 40) to the + rail instead of the breakout. A laptop port gives only about 500 mA, and two servos at their end stops can reset the Pico.
+- One plug for Wi-Fi mode: the Pico W datasheet's *Powering* section shows how to feed VSYS (pin 39) from the same 5 V through a Schottky diode.
+
+## Pan-tilt mount
+
+![Pan-tilt mount render](docs/pantilt_render.png)
+
+[`hardware/pantilt.scad`](hardware/pantilt.scad) is a parametric OpenSCAD design: servo size, horn, webcam size, and wall thickness are parameters at the top of the file. It prints as three parts without supports:
+
+| File | Part |
+|---|---|
+| [`pantilt_base.stl`](hardware/pantilt_base.stl) | Holds the pan servo; screws down with 4× M3 |
+| [`pantilt_yoke.stl`](hardware/pantilt_yoke.stl) | Sits on the pan horn; holds the tilt servo and the M3 pivot |
+| [`pantilt_camera_arm.stl`](hardware/pantilt_camera_arm.stl) | Webcam cradle on the tilt horn; camera held with two zip ties |
+
+Measure your servo and camera and adjust the parameters before printing. See [`hardware/README.md`](hardware/README.md).
 
 ## Getting started
 

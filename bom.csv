@@ -1,0 +1,11 @@
+part,quantity,purpose,est_cost_usd,link
+Raspberry Pi Pico WH,1,Servo controller + Wi-Fi link (already owned),0.00,https://www.raspberrypi.com/products/raspberry-pi-pico/
+Breadboard,1,Power rails and signal wiring (already owned),0.00,
+SG90 micro servo (or SG92R),2,Pan and tilt axes,11.90,https://www.adafruit.com/product/169
+SG90 pan-tilt bracket (or print hardware/pantilt.scad),1,Holds both servos and the camera,8.95,https://www.adafruit.com/product/1968
+1080p USB webcam,1,The camera that watches the sky,70.00,https://www.logitech.com/en-us/shop/p/c920s-pro-hd-webcam
+5V 2A USB power supply,1,Dedicated servo power,7.95,https://www.adafruit.com/product/1994
+USB breakout board,1,Brings the supply's 5V and GND onto the breadboard rails,1.50,https://www.adafruit.com/product/1833
+470-1000uF 16V+ electrolytic capacitor,1,Absorbs servo current spikes across the servo power rails,0.95,https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html
+Jumper wires (male/male),1,Breadboard and servo connections,3.95,https://www.adafruit.com/product/758
+M2/M3 screw assortment,1,Servo tabs and horns (M2) and tilt pivot + base mounting (M3),8.00,
