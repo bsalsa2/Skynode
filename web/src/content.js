@@ -125,6 +125,9 @@ export const content = {
   build: {
     heading: 'About me',
     body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Skynode was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Skynode is where I'm starting.`,
+    // Personal quote, shown under the text and signed with your first name.
+    quote: 'You only live once so go out there and make the most of every moment by chasing your dreams and living without regret',
+    signature: 'Braden',
   },
 
   roadmap: {
@@ -169,8 +172,41 @@ export const content = {
     links: [
       { label: 'Skynode on GitHub', href: 'https://github.com/bsalsa2/skynode' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
+      { label: 'Privacy', href: './privacy.html' },
     ],
     contactLabel: 'Contact',
     email: 'bradensalcetti@icloud.com',
+  },
+
+  // ---- Privacy policy page (privacy.html) ---------------------------------
+  // Update the date whenever you change this page.
+  privacy: {
+    title: 'Privacy policy',
+    updated: 'October 4, 2026',
+    intro: `This site doesn't collect personal information. There are no accounts, forms, cookies, analytics, ads, or trackers.`,
+    sections: [
+      {
+        heading: 'What the site loads',
+        text: 'Everything on this site, including the fonts, scripts, and 3D models, is served from the site itself. Your browser makes no requests to other companies while you read it.',
+      },
+      {
+        heading: 'Hosting',
+        text: `The site is hosted by Netlify. Like any web host, Netlify's servers handle each visit and may keep standard technical logs, such as IP addresses and browser type, to run and protect the service. This site adds no tracking on top of that.`,
+        link: { label: `Netlify's privacy policy`, href: 'https://www.netlify.com/privacy/' },
+      },
+      {
+        heading: 'Links to other sites',
+        text: 'Links to GitHub take you to GitHub, which has its own privacy policy.',
+      },
+      {
+        heading: 'How this site is made',
+        text: 'I design the system, train the model, and am building the hardware. Most of the code, including this website, is written with Claude Code, an AI coding tool, working from my designs. I say so everywhere I share this project.',
+      },
+      {
+        heading: 'Changes',
+        text: 'If anything here changes, this page will be updated, along with the date at the top.',
+      },
+    ],
+    contactText: 'Questions about this page? Email',
   },
 };
