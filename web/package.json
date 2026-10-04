@@ -7,10 +7,16 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "check": "node scripts/check-content.mjs",
+    "models": "node scripts/build-models.mjs",
+    "prebuild": "npm run check && npm run models",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/dm-mono": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/jura": "^5.3.0",
     "gsap": "^3.15.0",
     "three": "^0.186.1"
   },

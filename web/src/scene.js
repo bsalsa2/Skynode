@@ -8,8 +8,6 @@
 import {
   ACESFilmicToneMapping,
   AdditiveBlending,
-  BackSide,
-  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   Color,
@@ -28,7 +26,6 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   Object3D,
-  PMREMGenerator,
   PerspectiveCamera,
   PlaneGeometry,
   Points,
@@ -42,46 +39,11 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
+import { makeEnvironment } from './three-env.js';
 
 const AMBER = 0xf0be5a;
 const CAMERA_Z = 7;
 const FOV = 35;
-
-// ---------------------------------------------------------------------------
-// Environment: a dark "studio" with a few soft light panels, baked into a
-// prefiltered environment map. This is what the glass reflects and refracts.
-// ---------------------------------------------------------------------------
-function makeEnvironment(renderer) {
-  const env = new Scene();
-  const disposables = [];
-  const add = (geo, mat, setup) => {
-    const m = new Mesh(geo, mat);
-    setup?.(m);
-    env.add(m);
-    disposables.push(geo, mat);
-  };
-  add(new BoxGeometry(12, 12, 12), new MeshBasicMaterial({ color: 0x03050c, side: BackSide }));
-  const panel = (w, h, hex, intensity, pos) =>
-    add(
-      new PlaneGeometry(w, h),
-      new MeshBasicMaterial({ color: new Color(hex).multiplyScalar(intensity), side: DoubleSide }),
-      (m) => {
-        m.position.set(...pos);
-        m.lookAt(0, 0, 0);
-      }
-    );
-  panel(7, 2.2, 0xbcd0ff, 2.4, [0, 5.5, 1.5]); // cool overhead softbox
-  panel(2.4, 6, 0x5a78e8, 1.1, [-5.5, 0.5, -1]); // blue fill, left
-  panel(1.6, 3.6, AMBER, 1.6, [5.5, -0.8, 2]); // warm rim, right
-  panel(3.2, 1.2, 0xffffff, 1.8, [2.2, 1.4, 5.5]); // small key, front
-  panel(10, 1.5, 0x1a2a5a, 1.0, [0, -5.5, 0]); // faint floor bounce
-
-  const pmrem = new PMREMGenerator(renderer);
-  const texture = pmrem.fromScene(env, 0.035).texture;
-  pmrem.dispose();
-  disposables.forEach((d) => d.dispose());
-  return texture;
-}
 
 // ---------------------------------------------------------------------------
 // Geometry

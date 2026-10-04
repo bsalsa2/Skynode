@@ -1,0 +1,23 @@
+# Netlify: the website lives in web/. Setting the base directory here means
+# the project builds correctly even if its dashboard settings leave the base
+# directory empty. (web/netlify.toml repeats these settings for projects
+# whose base directory is set to web in the dashboard.)
+[build]
+  base = "web"
+  command = "npm run build"
+  publish = "dist" # relative to the base directory
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Hashed build files never change, so browsers can keep them for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

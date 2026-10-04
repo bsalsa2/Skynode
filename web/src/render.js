@@ -68,6 +68,79 @@ const heroFallback = () => `
   <path d="M340 270 L440 172" stroke="rgba(240,190,90,.35)" stroke-dasharray="3 6" />
 </svg>`;
 
+// Real footage, once it exists (see hero.footage in content.js). main.js
+// starts playback only for visitors who haven't turned off motion.
+const heroVideo = (f) => `
+<video class="hero-video" muted loop playsinline preload="metadata"${f.poster ? ` poster="${esc(f.poster)}"` : ''} aria-label="${esc(f.caption)}">
+  <source src="${esc(f.video)}" />
+</video>`;
+
+// Pan-tilt mount: a still image first, replaced by a live 3D view (mount.js).
+const mountBlock = (m) => `
+      <figure class="mount glass" id="mount" data-reveal>
+        <div class="mount-stage" id="mount-stage">
+          <img class="mount-still" src="./models/pantilt-still.webp" width="900" height="760" loading="lazy" decoding="async"
+            alt="3D render of the Skynode pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
+        </div>
+        <figcaption class="mount-info">
+          <p class="mono mount-label"><span class="mount-dot" aria-hidden="true"></span>${esc(m.label)}</p>
+          <ul class="mount-parts">
+            ${m.parts
+              .map(
+                (p, i) => `<li data-part="${i}"><span class="mono mount-part-name">${esc(p.name)}</span><p>${esc(p.text)}</p></li>`
+              )
+              .join('')}
+          </ul>
+          <p class="mount-caption">${esc(m.caption)}</p>
+        </figcaption>
+      </figure>`;
+
+// Accuracy results: rendered only once there are measured numbers.
+const resultsSection = (r) => {
+  if (!r || !Array.isArray(r.items) || r.items.length === 0) return '';
+  return `
+  <section class="results section" id="results" aria-labelledby="results-title">
+    <div class="wrap wrap--narrow">
+      <h2 class="section-title display" id="results-title" data-reveal>${esc(r.heading)}</h2>
+      ${r.intro ? `<p class="results-intro" data-reveal>${esc(r.intro)}</p>` : ''}
+      <dl class="results-grid">
+        ${r.items
+          .map(
+            (it) => `
+        <div class="result glass" data-reveal>
+          <dt class="mono">${esc(it.label)}</dt>
+          <dd class="result-value display">${esc(it.value)}</dd>
+          ${it.note ? `<dd class="result-note">${esc(it.note)}</dd>` : ''}
+        </div>`
+          )
+          .join('')}
+      </dl>
+      <p class="results-source mono">${esc(r.source)}</p>
+    </div>
+  </section>`;
+};
+
+const sisterCard = (s) => `
+  <section class="sister" aria-label="${esc(s.label)}: ${esc(s.name)}">
+    <div class="wrap">
+      <a class="sister-card glass glass--refract tilt"${linkAttrs(s.href)} data-reveal>
+        <span class="card-sheen" aria-hidden="true"></span>
+        <span class="sister-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="9" /><path d="M24 4v6M24 38v6M4 24h6M38 24h6M9.9 9.9l4.2 4.2M33.9 33.9l4.2 4.2M9.9 38.1l4.2-4.2M33.9 14.1l4.2-4.2" /></svg>
+        </span>
+        <span class="sister-text">
+          <span class="mono sister-label">${esc(s.label)}</span>
+          <span class="sister-name display">${esc(s.name)}</span>
+          ${s.description ? `<span class="sister-desc">${esc(s.description)}</span>` : ''}
+        </span>
+        <span class="sister-cta">
+          <span class="mono">${esc(s.linkLabel)}</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5" /></svg>
+        </span>
+      </a>
+    </div>
+  </section>`;
+
 export function renderHead(c) {
   const { title, description, url } = c.meta;
   const image = new URL('og-image.png', url).href;
@@ -91,7 +164,8 @@ export function renderHead(c) {
 }
 
 export function renderBody(c) {
-  const { nav, hero, math, how, status, build, roadmap, footer } = c;
+  const { nav, hero, math, how, status, results, build, roadmap, sister, footer } = c;
+  const footage = hero.footage && hero.footage.video ? hero.footage : null;
 
   const navLinks = nav.links
     .map((l) => `<li><a class="nav-link" href="${esc(l.href)}">${esc(l.label)}</a></li>`)
@@ -188,8 +262,8 @@ export function renderBody(c) {
 
 <main id="main" tabindex="-1">
   <section class="hero" id="top" aria-labelledby="hero-title">
-    <div class="hero-visual" id="hero-visual">
-      ${heroFallback()}
+    <div class="hero-visual${footage ? ' hero-visual--footage' : ''}" id="hero-visual"${footage ? ' data-footage' : ''}>
+      ${footage ? heroVideo(footage) : heroFallback()}
     </div>
     <div class="hero-inner wrap">
       <p class="eyebrow mono" data-hero>${esc(hero.eyebrow)}</p>
@@ -207,7 +281,7 @@ export function renderBody(c) {
       </div>
       <ul class="hero-facts mono" data-hero>${facts}</ul>
     </div>
-    <p class="hero-caption mono" id="hero-caption">${esc(hero.caption)}</p>
+    <p class="hero-caption mono" id="hero-caption">${esc(footage ? footage.caption : hero.caption)}</p>
   </section>
 
   <section class="math" id="math" aria-labelledby="math-title">
@@ -221,6 +295,7 @@ export function renderBody(c) {
     <div class="wrap">
       <h2 class="section-title display" id="how-title" data-reveal><span class="mono section-num" aria-hidden="true">03</span>${esc(how.heading)}</h2>
       <ol class="cards">${steps}</ol>
+      ${how.mount ? mountBlock(how.mount) : ''}
       <p class="how-note glass" data-reveal>
         <span class="mono how-note-tag" aria-hidden="true">ADS-B</span>
         ${esc(how.note)}
@@ -235,6 +310,7 @@ export function renderBody(c) {
     </div>
   </section>
 
+  ${resultsSection(results)}
   <section class="build section" id="build" aria-labelledby="build-title">
     <div class="wrap wrap--narrow">
       <figure class="build-card glass glass--refract" data-reveal>
@@ -254,6 +330,7 @@ export function renderBody(c) {
       <p class="closing display" data-reveal>${esc(roadmap.closing)}</p>
     </div>
   </section>
+  ${sister ? sisterCard(sister) : ''}
 </main>
 
 <footer class="site-footer">

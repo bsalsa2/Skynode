@@ -147,15 +147,20 @@ if (!reduceMotion) {
     .to({}, { duration: 1.2 });
 
   // Generic float-up reveals (below the fold, so they can start fully hidden).
-  gsap.utils.toArray('.section-title, .how-note, .build-card, .closing').forEach((el) => {
-    gsap.from(el, {
-      y: 48,
-      opacity: 0,
-      duration: 1.6,
-      ease,
-      scrollTrigger: { trigger: el, start: 'top 88%' },
+  gsap.utils
+    .toArray(
+      '.section-title, .mount, .how-note, .results-intro, .result, .build-card, .closing, .sister-card'
+    )
+    .forEach((el) => {
+      gsap.from(el, {
+        y: 48,
+        opacity: 0,
+        duration: 1.6,
+        ease,
+        clearProps: 'transform', // hand transforms back to CSS (card tilt)
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+      });
     });
-  });
 
   // How it works: three glass cards float in.
   gsap.from('.card', {
@@ -232,16 +237,21 @@ if (!reduceMotion) {
 
 // ---------------------------------------------------------------------------
 // Scroll story for the 3D scene: p goes 0 -> 3 as the viewport centre moves
-// hero -> math -> how -> status, and fade takes the scene out before Status.
+// hero -> math -> the cards -> the mount viewer (or Status), and fade takes
+// the orb out before the mount viewer arrives.
 // ---------------------------------------------------------------------------
-const stops = ['top', 'math', 'how', 'status'].map((id) => document.getElementById(id));
+const stops = [
+  document.getElementById('top'),
+  document.getElementById('math'),
+  document.querySelector('.cards'),
+  document.getElementById('mount') || document.getElementById('status'),
+];
 function getStory() {
   const vh = window.innerHeight;
   const ys = stops.map((el, i) => {
     const r = el.getBoundingClientRect();
-    // Hero and math are measured at their centres, how at its centre,
-    // status a little after its top edge.
-    return i === 3 ? r.top + vh * 0.15 : r.top + r.height / 2;
+    // Centres for the first three; the last stop a little after its top edge.
+    return i === 3 ? r.top + vh * 0.2 : r.top + r.height / 2;
   });
   const y = vh / 2;
   let p = 0;
@@ -254,7 +264,7 @@ function getStory() {
       }
     }
   }
-  const fade = 1 - clamp01((p - 2.35) / 0.6);
+  const fade = 1 - clamp01((p - 2.2) / 0.55);
   return { p, fade };
 }
 
@@ -263,7 +273,15 @@ function getStory() {
 // ---------------------------------------------------------------------------
 // Only hardware-accelerated WebGL 2. Software renderers (SwiftShader,
 // llvmpipe) would grind the main thread, so they get the static hero.
+// Add ?gl=any to the URL to force 3D anyway (handy for testing).
+const forceGL = new URLSearchParams(location.search).get('gl') === 'any';
+let fastGL;
 function hasFastWebGL2() {
+  if (fastGL !== undefined) return fastGL;
+  fastGL = detectFastWebGL2();
+  return fastGL;
+}
+function detectFastWebGL2() {
   try {
     const gl = document.createElement('canvas').getContext('webgl2');
     if (!gl) return false;
@@ -272,6 +290,7 @@ function hasFastWebGL2() {
       gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || ''
     );
     gl.getExtension('WEBGL_lose_context')?.loseContext();
+    if (forceGL) return true;
     return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer);
   } catch {
     return false;
@@ -304,6 +323,7 @@ function loadScene() {
     .then(() => {
       container.classList.add('is-ready');
       if (!reduceMotion) root.classList.add('has-scene');
+      setTimeout(() => container.classList.add('is-settled'), 1700);
     })
     .catch((err) => {
       // Anything goes wrong: the static SVG hero simply stays.
@@ -312,6 +332,61 @@ function loadScene() {
     });
 }
 
+// ---------------------------------------------------------------------------
+// Real footage (when content.js has it) replaces the concept scene.
+// ---------------------------------------------------------------------------
+const heroVisual = document.getElementById('hero-visual');
+const footage = heroVisual.querySelector('.hero-video');
+if (footage) {
+  if (reduceMotion) footage.controls = true;
+  else footage.play().catch(() => (footage.controls = true));
+}
+
+// ---------------------------------------------------------------------------
+// Pan-tilt mount viewer: loads when it's about to scroll into view.
+// ---------------------------------------------------------------------------
+function watchMount() {
+  const stage = document.getElementById('mount-stage');
+  if (!stage || !hasFastWebGL2()) return;
+  const parts = [...document.querySelectorAll('.mount-parts li')];
+  const io = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      import('./mount.js')
+        .then(({ createMount }) =>
+          createMount({
+            container: stage,
+            url: new URL('models/pantilt.bin', document.baseURI).href,
+            reduceMotion,
+            finePointer,
+            onTooSlow: () => stage.classList.remove('is-ready'),
+          })
+        )
+        .then((mount) => {
+          stage.classList.add('is-ready');
+          parts.forEach((li, i) => {
+            li.addEventListener('pointerenter', () => {
+              li.classList.add('is-active');
+              mount.setActive(i);
+            });
+            li.addEventListener('pointerleave', () => {
+              li.classList.remove('is-active');
+              mount.setActive(-1);
+            });
+          });
+        })
+        .catch((err) => console.warn('[skynode] mount viewer unavailable, keeping the still.', err));
+    },
+    { rootMargin: '600px 0px' }
+  );
+  io.observe(stage);
+}
+
 const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
-if (document.readyState === 'complete') idle(loadScene, { timeout: 1500 });
-else window.addEventListener('load', () => idle(loadScene, { timeout: 1500 }), { once: true });
+const afterLoad = (fn) => {
+  if (document.readyState === 'complete') idle(fn, { timeout: 1500 });
+  else window.addEventListener('load', () => idle(fn, { timeout: 1500 }), { once: true });
+};
+if (!footage) afterLoad(loadScene);
+afterLoad(watchMount);

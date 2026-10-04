@@ -2,7 +2,10 @@
    SKYNODE — night-sky instrument panel
    ========================================================================== */
 
+@import './fonts.css';
+
 :root {
+  color-scheme: dark; /* a deliberately dark design: native controls follow */
   --bg-0: #03050b;
   --bg-1: #060912;
   --bg-2: #0a1122;
@@ -211,6 +214,10 @@ svg {
 .scene.is-ready canvas,
 .hero-visual.is-ready canvas {
   opacity: 1;
+}
+/* After the first fade-in, scroll drives the opacity directly (no lag). */
+.scene.is-settled canvas {
+  transition: none;
 }
 
 main,
@@ -834,6 +841,117 @@ main,
   }
 }
 
+/* ---- Pan-tilt mount (CAD viewer) -------------------------------------- */
+.mount {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  margin: clamp(28px, 4vw, 48px) 0 0;
+  padding: clamp(16px, 2.5vw, 28px);
+  overflow: hidden;
+}
+.mount-stage {
+  position: relative;
+  aspect-ratio: 900 / 760;
+  border-radius: calc(var(--radius) - 8px);
+  background:
+    radial-gradient(60% 55% at 50% 58%, rgba(70, 100, 190, 0.22), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.18));
+  overflow: hidden;
+}
+.mount-stage::after {
+  /* faint blueprint grid */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(214, 226, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(214, 226, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 60%, #000 10%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 60%, #000 10%, transparent 75%);
+}
+.mount-still,
+.mount-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 1.2s var(--ease);
+}
+.mount-stage canvas {
+  opacity: 0;
+}
+.mount-stage.is-ready canvas {
+  opacity: 1;
+}
+.mount-stage.is-ready .mount-still {
+  opacity: 0;
+}
+.mount-info {
+  padding: clamp(4px, 1vw, 12px) clamp(4px, 1.5vw, 16px) clamp(8px, 1.5vw, 16px) 0;
+}
+.mount-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--amber);
+  margin-bottom: 28px;
+}
+.mount-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 14px var(--amber-glow);
+}
+.mount-parts {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 28px;
+}
+.mount-parts li {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-s);
+  border: 1px solid transparent;
+  transition:
+    background-color 0.4s var(--ease),
+    border-color 0.4s var(--ease);
+}
+.mount-parts li:hover,
+.mount-parts li.is-active {
+  background: rgba(190, 210, 255, 0.05);
+  border-color: var(--line);
+}
+.mount-part-name {
+  color: var(--ink);
+  font-size: 0.6875rem;
+}
+.mount-parts p {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.mount-caption {
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+@media (max-width: 860px) {
+  .mount {
+    grid-template-columns: 1fr;
+  }
+  .mount-info {
+    padding: 0 4px 8px;
+  }
+}
+
 /* ---- Status timeline --------------------------------------------------- */
 .timeline {
   --fill: 1;
@@ -962,6 +1080,49 @@ main,
   .pill {
     min-width: 0;
   }
+}
+
+/* ---- Results (hidden until real numbers exist) ------------------------- */
+.results-intro {
+  max-width: 40rem;
+  margin: -24px 0 40px;
+  color: var(--ink-2);
+}
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px 24px;
+  border-radius: var(--radius-s);
+}
+.result dt {
+  color: var(--ink-3);
+  font-size: 0.6875rem;
+}
+.result dd {
+  margin: 0;
+}
+.result-value {
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  line-height: 1;
+  color: var(--amber);
+}
+.result-note {
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+}
+.results-source {
+  margin-top: 24px;
+  color: var(--ink-3);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
 }
 
 /* ---- How I build ------------------------------------------------------ */
@@ -1111,6 +1272,126 @@ main,
   font-size: clamp(1.5rem, 3vw, 2.5rem);
   line-height: 1.35;
   letter-spacing: 0.01em;
+}
+
+/* ---- Sister project ---------------------------------------------------- */
+.sister {
+  position: relative;
+  padding-bottom: var(--section-y);
+}
+.sister-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 3vw, 36px);
+  padding: clamp(22px, 3vw, 36px) clamp(22px, 3.5vw, 44px);
+  overflow: hidden;
+  transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition:
+    transform 0.9s var(--ease-expo),
+    border-color 0.4s var(--ease);
+}
+.sister-card.is-tilting {
+  transition:
+    transform 0.15s linear,
+    border-color 0.4s var(--ease);
+}
+.sister-card:hover {
+  border-color: rgba(214, 226, 255, 0.2);
+}
+.sister-card:hover .card-sheen {
+  opacity: 1;
+}
+.sister-card:focus-visible {
+  border-radius: var(--radius);
+}
+.sister-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 190, 90, 0.35);
+  background: radial-gradient(circle, rgba(240, 190, 90, 0.12), transparent 70%);
+}
+.sister-mark svg {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.sister-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+.sister-label {
+  color: var(--ink-3);
+  font-size: 0.6875rem;
+}
+.sister-name {
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.06em;
+}
+.sister-desc {
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+}
+.sister-cta {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+}
+.sister-cta svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.5s var(--ease-expo);
+}
+.sister-card:hover .sister-cta {
+  color: var(--amber);
+}
+.sister-card:hover .sister-cta svg {
+  transform: translate(2px, -2px);
+}
+@media (max-width: 600px) {
+  .sister-card {
+    flex-wrap: wrap;
+  }
+  .sister-cta {
+    width: 100%;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* ---- Real footage in the hero (once it exists) ------------------------- */
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-2);
+  background: var(--bg-2);
+}
+.hero-visual--footage {
+  aspect-ratio: 16 / 10;
+  pointer-events: auto;
 }
 
 /* ==========================================================================

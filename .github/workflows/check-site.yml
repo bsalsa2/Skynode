@@ -1,0 +1,36 @@
+# Checks the website on every pull request that touches web/: validates
+# web/src/content.js (problems show up as annotations on the PR) and makes
+# sure the site still builds. Nothing is published from here.
+name: Check site
+
+on:
+  pull_request:
+    paths:
+      - 'web/**'
+      - 'hardware/*.stl'
+      - '.github/workflows/check-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+      - name: Check content.js
+        run: npm run check
+      - name: Build
+        run: npm run build
