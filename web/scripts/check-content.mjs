@@ -134,6 +134,10 @@ function publicFile(path, value = get(path)) {
     err(`${path} is "${value}", but there's no file at web/public/${value}. Upload it there first.`, lineOf(value));
 }
 
+const gc = get('analytics.goatcounter');
+if (gc && !/^[a-z0-9-]+$/.test(gc))
+  err(`analytics.goatcounter should be just your GoatCounter code, like 'skynode' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
+
 text('meta.title');
 text('meta.description');
 link('meta.url');

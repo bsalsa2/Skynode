@@ -141,10 +141,19 @@ const sisterCard = (s) => `
     </div>
   </section>`;
 
+// GoatCounter visit counter, only when content.js has a code.
+const counter = (c) => {
+  const code = c.analytics && c.analytics.goatcounter;
+  return code
+    ? `
+    <script data-goatcounter="https://${esc(code)}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>`
+    : '';
+};
+
 export function renderHead(c) {
   const { title, description, url } = c.meta;
   const image = new URL('og-image.png', url).href;
-  return `
+  return `${counter(c)}
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${esc(url)}" />
@@ -366,7 +375,7 @@ function siteFooter(footer, { from = 'home' } = {}) {
 // ---- Privacy page (privacy.html) -------------------------------------------
 export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;
-  return `
+  return `${counter(c)}
     <title>${esc(c.privacy.title)} | Skynode</title>
     <meta name="description" content="${esc(c.privacy.intro)}" />
     <link rel="canonical" href="${esc(url)}" />`;
@@ -374,7 +383,10 @@ export function renderPrivacyHead(c) {
 
 export function renderPrivacyBody(c) {
   const p = c.privacy;
+  const on = !!(c.analytics && c.analytics.goatcounter);
   const sections = p.sections
+    .filter((s) => on || !s.onlyWithAnalytics)
+    .map((s) => (on && s.textWithAnalytics ? { ...s, text: s.textWithAnalytics } : s))
     .map(
       (s) => `
         <section class="legal-section">
@@ -410,7 +422,7 @@ export function renderPrivacyBody(c) {
     <article class="legal-card glass">
       <p class="mono legal-updated">Updated ${esc(p.updated)}</p>
       <h1 class="display legal-title">${esc(p.title)}</h1>
-      <p class="legal-intro">${esc(p.intro)}</p>
+      <p class="legal-intro">${esc(on && p.introWithAnalytics ? p.introWithAnalytics : p.intro)}</p>
       ${sections}
       <section class="legal-section">
         <h2 class="mono">${esc(c.footer.contactLabel)}</h2>

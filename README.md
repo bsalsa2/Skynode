@@ -2,6 +2,10 @@
 
 # Skynode
 
+[![Live site](https://img.shields.io/badge/live%20site-skynode--si.netlify.app-f0be5a?style=flat)](https://skynode-si.netlify.app) [![Netlify Status](https://api.netlify.com/api/v1/badges/da2218d8-c877-4824-b41d-af5c4ffb2dc2/deploy-status)](https://app.netlify.com/projects/skynode-si/deploys)
+
+**Website: [skynode-si.netlify.app](https://skynode-si.netlify.app)** (source in [`web/`](web/))
+
 AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
 
 Skynode is layer one of a larger project: sense and track, built toward drone and aerospace systems.

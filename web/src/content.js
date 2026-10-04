@@ -23,6 +23,13 @@ export const content = {
     url: 'https://skynode-si.netlify.app/',
   },
 
+  // VISIT COUNTER (GoatCounter: free, no cookies, nothing personal stored).
+  // Off while empty. Sign up at goatcounter.com, pick a code (for example
+  // 'skynode'), and put that code here. The privacy page updates itself.
+  analytics: {
+    goatcounter: '',
+  },
+
   nav: {
     brand: 'SKYNODE',
     links: [
@@ -184,10 +191,20 @@ export const content = {
     title: 'Privacy policy',
     updated: 'October 4, 2026',
     intro: `This site doesn't collect personal information. There are no accounts, forms, cookies, analytics, ads, or trackers.`,
+    // Used instead of intro when the visit counter is on.
+    introWithAnalytics: `This site doesn't collect personal information. There are no accounts, forms, cookies, ads, or trackers. It counts visits anonymously, as explained below.`,
     sections: [
       {
         heading: 'What the site loads',
         text: 'Everything on this site, including the fonts, scripts, and 3D models, is served from the site itself. Your browser makes no requests to other companies while you read it.',
+        textWithAnalytics: 'Everything on this site, including the fonts, scripts, and 3D models, is served from the site itself. The one exception is the visit counter described below.',
+      },
+      {
+        // Only shown when the visit counter is on.
+        onlyWithAnalytics: true,
+        heading: 'Visit counts',
+        text: `To see how many people visit, this site uses GoatCounter, a privacy-friendly counter. It records which page was viewed, the site you came from, your browser, screen size, and country. It uses no cookies and doesn't store your IP address or anything that identifies you.`,
+        link: { label: `GoatCounter's privacy policy`, href: 'https://www.goatcounter.com/help/privacy' },
       },
       {
         heading: 'Hosting',
