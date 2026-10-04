@@ -147,6 +147,7 @@ link('hero.primary.href');
 text('hero.secondary.label');
 link('hero.secondary.href');
 list('hero.facts').forEach((f, i) => text(`hero.facts.${i}`, f));
+if (get('hero.goal') !== undefined) text('hero.goal');
 
 const footage = get('hero.footage');
 if (footage && footage.video) {

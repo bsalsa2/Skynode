@@ -580,6 +580,19 @@ main,
   gap: 14px;
   margin-top: 40px;
 }
+.hero-goal {
+  max-width: 34rem;
+  margin-top: 32px;
+  padding-left: 16px;
+  border-left: 1px solid var(--amber);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.hero-goal + .hero-facts {
+  margin-top: 28px;
+}
 .hero-facts {
   display: flex;
   flex-wrap: wrap;
