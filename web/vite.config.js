@@ -59,8 +59,8 @@ const preloadFonts = () => ({
   },
 });
 
-// Relative base so the build works at https://bsalsa2.github.io/Skynode/
-// regardless of how the repo name is capitalised, and on Netlify/Vercel too.
+// Relative base so the build works on any host, at the domain root or under
+// a sub-path.
 export default defineConfig({
   base: './',
   plugins: [skynodeContent(), preloadFonts(), inlineCss()],

@@ -7,7 +7,6 @@ browser.
 | Where | Address | How it updates |
 | --- | --- | --- |
 | Netlify | **https://skynode-si.netlify.app** | Every push to `main` (project `skynode-si`) |
-| GitHub Pages | https://bsalsa2.github.io/Skynode/ | Every merge to `main` that touches `web/` or `hardware/*.stl` |
 
 ---
 
@@ -29,13 +28,6 @@ build`, publish `web/dist`), so nothing in the dashboard needs filling in.
   `bsalsa2/Skynode`, branch `main`. Leave the other fields empty.
 - **A deploy failed?** Open **Deploys**, click the red deploy, and read the
   log. A problem in `content.js` is explained there, with the line number.
-
-## Put it on GitHub Pages (browser, one time)
-
-1. On github.com, open the repo and go to **Settings → Pages**.
-2. Under **Build and deployment → Source**, choose **GitHub Actions**.
-3. Merge into `main`. The **Deploy site to GitHub Pages** run in the
-   **Actions** tab takes about a minute; its `deploy` box shows the link.
 
 ## Vercel instead (optional)
 
@@ -68,9 +60,10 @@ ERROR  web/src/content.js:103
        'single quotes' (wrap that text in backticks instead).
 ```
 
-You'll see it in the red step of the Actions run (or the Netlify deploy
-log). On a pull request, the problems also show up as annotations in the
-**Check site** results.
+You'll see it in Netlify under **Deploys**: click the failed deploy and
+read the log. On a pull request, the problems also show up as annotations
+in the **Check site** results.
+
 The check catches typos, empty fields, wrong status labels, links to
 sections that don't exist, video files that weren't uploaded, results with
 no source, and leftover placeholder text.
@@ -143,7 +136,6 @@ web/
   src/scene.js            the Three.js hero
   src/mount.js            the Three.js pan-tilt mount viewer
   src/three-env.js        shared studio lighting for both 3D views
-.github/workflows/deploy-site.yml   builds web/ and publishes to GitHub Pages
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
 ```
 
