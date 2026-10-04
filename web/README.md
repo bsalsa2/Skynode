@@ -6,35 +6,29 @@ browser.
 
 | Where | Address | How it updates |
 | --- | --- | --- |
-| Netlify | **https://skynode-tracker.netlify.app** | Every push to the branch you link (one-time setup below) |
+| Netlify | **https://skynode-ai.netlify.app** | Every push to `main` (project `skynode-ai`) |
 | GitHub Pages | https://bsalsa2.github.io/Skynode/ | Every merge to `main` that touches `web/` or `hardware/*.stl` |
-
-The Netlify project `skynode-tracker` already exists. It only needs to be
-linked to this repo once.
 
 ---
 
-## Put it on Netlify (browser, about 2 minutes, one time)
+## Netlify
 
-1. Go to **app.netlify.com → Projects → skynode-tracker**.
-2. Open **Project configuration → Build & deploy → Continuous deployment**
-   and click **Link repository**.
-3. Choose **GitHub**, then **bsalsa2/Skynode**. If it isn't listed, click
-   "Configure the Netlify app on GitHub" and give it access to this repo.
-4. Fill in:
-   - **Branch to deploy:** `main` (after this work is merged). To see it
-     before merging, pick `claude/skynode-landing-page-3jsami`, then switch
-     it to `main` later in the same screen.
-   - **Base directory:** `web`
-   - Leave the build command and publish directory empty. `web/netlify.toml`
-     already says `npm run build` and `dist`.
-5. Click **Deploy**. About a minute later the site is live at
-   https://skynode-tracker.netlify.app. After that, every push to that
-   branch redeploys it.
+The Netlify project **skynode-ai** builds this repo on Netlify's servers.
+The `netlify.toml` at the repo root tells it to build `web/` (`npm run
+build`, publish `web/dist`), so nothing in the dashboard needs filling in.
 
-To rename the address, go to **Project configuration → General → Project
-details → Change project name**. Then update `meta.url` in
-`web/src/content.js` so share previews use the new address.
+- **Production** (https://skynode-ai.netlify.app) is built from `main` and is
+  public.
+- **Pull requests** get a preview deploy (link in the PR checks). Previews
+  need a Netlify login to view.
+- **Rename the address:** Project configuration → General → **Change
+  project name**. Then update `meta.url` in `web/src/content.js` so share
+  previews use the new address.
+- **Not linked to this repo yet?** Project configuration → Build & deploy
+  → Continuous deployment → **Link repository** → GitHub →
+  `bsalsa2/Skynode`, branch `main`. Leave the other fields empty.
+- **A deploy failed?** Open **Deploys**, click the red deploy, and read the
+  log. A problem in `content.js` is explained there, with the line number.
 
 ## Put it on GitHub Pages (browser, one time)
 

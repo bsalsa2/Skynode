@@ -21,7 +21,7 @@ export const content = {
       'Skynode is a camera that detects and tracks aircraft and drones, built to cost hundreds of dollars instead of tens of thousands.',
     // Public URL of the live site (used for social share previews).
     // GitHub Pages also serves it at https://bsalsa2.github.io/Skynode/
-    url: 'https://skynode-tracker.netlify.app/',
+    url: 'https://skynode-ai.netlify.app/',
   },
 
   nav: {
