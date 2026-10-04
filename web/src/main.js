@@ -146,11 +146,11 @@ if (!reduceMotion) {
     .to(words, { color: '#f1f4fb', stagger: 0.12, ease: 'none', duration: 0.5 })
     .to({}, { duration: 1.2 });
 
-  // Generic float-up reveals.
+  // Generic float-up reveals (below the fold, so they can start fully hidden).
   gsap.utils.toArray('.section-title, .how-note, .build-card, .closing').forEach((el) => {
     gsap.from(el, {
       y: 48,
-      opacity: 0.01,
+      opacity: 0,
       duration: 1.6,
       ease,
       scrollTrigger: { trigger: el, start: 'top 88%' },
@@ -161,7 +161,7 @@ if (!reduceMotion) {
   gsap.from('.card', {
     y: 90,
     rotationX: 12,
-    opacity: 0.01,
+    opacity: 0,
     duration: 1.8,
     ease,
     stagger: 0.14,
@@ -174,7 +174,7 @@ if (!reduceMotion) {
     gsap.from(row.children, {
       x: (i) => (i === 0 ? 0 : -24),
       scale: (i) => (i === 0 ? 0.4 : 1),
-      opacity: 0.01,
+      opacity: 0,
       duration: 1.2,
       ease,
       stagger: 0.08,
@@ -217,7 +217,7 @@ if (!reduceMotion) {
   );
   gsap.from('.phase-card', {
     y: 60,
-    opacity: 0.01,
+    opacity: 0,
     duration: 1.6,
     ease,
     stagger: 0.12,
@@ -261,17 +261,25 @@ function getStory() {
 // ---------------------------------------------------------------------------
 // 3D hero: lazy-loaded after the page has painted, never on the critical path.
 // ---------------------------------------------------------------------------
-function hasWebGL2() {
+// Only hardware-accelerated WebGL 2. Software renderers (SwiftShader,
+// llvmpipe) would grind the main thread, so they get the static hero.
+function hasFastWebGL2() {
   try {
-    const c = document.createElement('canvas');
-    return !!c.getContext('webgl2');
+    const gl = document.createElement('canvas').getContext('webgl2');
+    if (!gl) return false;
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = String(
+      gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || ''
+    );
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer);
   } catch {
     return false;
   }
 }
 
 function loadScene() {
-  if (!hasWebGL2()) {
+  if (!hasFastWebGL2()) {
     root.classList.add('no-webgl');
     return;
   }
@@ -280,7 +288,18 @@ function loadScene() {
     : document.getElementById('scene');
   import('./scene.js')
     .then(({ createScene }) =>
-      createScene({ container, reduceMotion, finePointer, getStory })
+      createScene({
+        container,
+        reduceMotion,
+        finePointer,
+        getStory,
+        // Device can't keep up even at low resolution: back to the static hero.
+        onTooSlow: () => {
+          container.classList.remove('is-ready');
+          root.classList.remove('has-scene');
+          root.classList.add('no-webgl');
+        },
+      })
     )
     .then(() => {
       container.classList.add('is-ready');

@@ -196,7 +196,7 @@ function makeReticle() {
 // ---------------------------------------------------------------------------
 // Scene
 // ---------------------------------------------------------------------------
-export async function createScene({ container, reduceMotion, finePointer, getStory }) {
+export async function createScene({ container, reduceMotion, finePointer, getStory, onTooSlow }) {
   const staticMode = reduceMotion; // one still frame inside the hero box
   const coarse = !finePointer;
 
@@ -540,6 +540,7 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
 
   // ---- Loop with pausing ---------------------------------------------------
   let running = false;
+  let stopped = false;
   let last = 0;
   let frames = 0;
   let frameTimeSum = 0;
@@ -564,10 +565,18 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
     frames++;
     frameTimeSum += dt;
     if (frames === 90) {
-      if (frameTimeSum / frames > 1 / 40 && dpr > 1) {
+      const avg = frameTimeSum / frames;
+      if (avg > 1 / 40 && dpr > 1) {
         dpr = Math.max(1, dpr - 0.5);
         renderer.setPixelRatio(dpr);
         layout();
+      } else if (avg > 1 / 22 && dpr <= 1) {
+        // Still slow at 1x: stop for good and hand back to the static hero.
+        stopped = true;
+        running = false;
+        canvas.style.opacity = '0';
+        onTooSlow?.();
+        return;
       }
       frames = 0;
       frameTimeSum = 0;
@@ -578,7 +587,7 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
   }
 
   function wake() {
-    if (running) return;
+    if (running || stopped) return;
     const story = getStory();
     applyFade(story);
     if (!shouldRun(story)) return;
