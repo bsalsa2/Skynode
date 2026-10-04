@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'web/**'
+      - 'hardware/*.stl'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 

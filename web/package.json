@@ -9,7 +9,7 @@
     "dev": "vite",
     "check": "node scripts/check-content.mjs",
     "models": "node scripts/build-models.mjs",
-    "prebuild": "npm run models",
+    "prebuild": "npm run check && npm run models",
     "build": "vite build",
     "preview": "vite preview"
   },
