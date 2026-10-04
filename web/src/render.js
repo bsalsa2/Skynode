@@ -279,6 +279,7 @@ export function renderBody(c) {
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" /></svg>
         </a>
       </div>
+      ${hero.goal ? `<p class="hero-goal" data-hero>${esc(hero.goal)}</p>` : ''}
       <ul class="hero-facts mono" data-hero>${facts}</ul>
     </div>
     <p class="hero-caption mono" id="hero-caption">${esc(footage ? footage.caption : hero.caption)}</p>

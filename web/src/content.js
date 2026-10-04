@@ -33,11 +33,13 @@ export const content = {
   },
 
   hero: {
-    eyebrow: 'AI SKY TRACKER, STEP ONE',
+    eyebrow: 'PHASE 1: AI SKY TRACKER',
     headline: `Drones are cheap. Detecting them isn't.`,
     sub: 'Skynode is a camera that detects and tracks aircraft and drones, built to cost hundreds of dollars instead of tens of thousands. It turns to follow what it sees and logs every sighting.',
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/skynode' },
     secondary: { label: 'See where it stands', href: '#status' },
+    // Shown under the buttons.
+    goal: 'This is Phase 1. The long-term goal is autonomy for missile and drone defense and attack systems.',
     facts: ['Passive sensing only', 'Designed for solar power', 'MIT licensed'],
     caption:
       'Concept visualization. Live footage will replace this once the hardware is built.',
@@ -121,15 +123,15 @@ export const content = {
   },
 
   build: {
-    heading: 'How I build',
-    body: `I'm Braden, and I'm 14. I design the system, train the model, and am building the hardware. Most of the code is written with Claude Code, an AI coding tool, working from my designs. I say so everywhere I share this project.`,
+    heading: 'About me',
+    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Skynode was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Skynode is where I'm starting.`,
   },
 
   roadmap: {
     heading: 'Roadmap',
     phases: [
       {
-        phase: 'PHASE 1',
+        phase: 'PHASE 1 · NOW',
         title: 'One working node',
         body: 'A camera that detects, tracks, and logs aircraft and drones, with real accuracy numbers.',
       },
@@ -141,16 +143,16 @@ export const content = {
       {
         phase: 'PHASE 3',
         title: 'Autonomous drones',
-        body: 'For inspection and search and rescue, built on the same sensing and tracking brain.',
+        body: 'For inspection, search and rescue, and drone defense and attack systems, built on the same sensing and tracking brain.',
       },
       {
         phase: 'PHASE 4',
         title: 'A company',
-        body: `An aerospace and defense technology company built on sensing and autonomy, once I'm old enough to start one.`,
+        body: `An aerospace and defense company building autonomy for missile and drone defense and attack systems, once I'm old enough to start one.`,
       },
     ],
     closing:
-      'Skynode is passive by design. It carries no payloads, never jams, and never transmits on aircraft or drone frequencies. It only watches.',
+      'Phase 1 is passive by design. It carries no payloads, never jams, and never transmits on aircraft or drone frequencies. It only watches.',
   },
 
   // Card linking to the sister project, shown above the footer.
