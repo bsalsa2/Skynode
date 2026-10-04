@@ -13,11 +13,30 @@ const skynodeContent = () => ({
   },
 });
 
+// Inlines the (small) stylesheet into index.html so the first paint doesn't
+// wait on a second request.
+const inlineCss = () => ({
+  name: 'skynode-inline-css',
+  apply: 'build',
+  enforce: 'post',
+  generateBundle(_, bundle) {
+    const html = Object.values(bundle).find((f) => f.fileName === 'index.html');
+    if (!html) return;
+    for (const [name, file] of Object.entries(bundle)) {
+      if (!name.endsWith('.css')) continue;
+      const tag = new RegExp(`<link[^>]*href="[^"]*${file.fileName.split('/').pop()}"[^>]*>`);
+      if (!tag.test(html.source)) continue;
+      html.source = html.source.replace(tag, () => `<style>${file.source}</style>`);
+      delete bundle[name];
+    }
+  },
+});
+
 // Relative base so the build works at https://bsalsa2.github.io/Skynode/
 // regardless of how the repo name is capitalised, and on Netlify/Vercel too.
 export default defineConfig({
   base: './',
-  plugins: [skynodeContent()],
+  plugins: [skynodeContent(), inlineCss()],
   build: {
     outDir: 'dist',
     target: 'es2020',
