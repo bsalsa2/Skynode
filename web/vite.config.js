@@ -26,9 +26,36 @@ const inlineCss = () => ({
       if (!name.endsWith('.css')) continue;
       const tag = new RegExp(`<link[^>]*href="[^"]*${file.fileName.split('/').pop()}"[^>]*>`);
       if (!tag.test(html.source)) continue;
-      html.source = html.source.replace(tag, () => `<style>${file.source}</style>`);
+      // URLs inside the CSS are relative to its own folder (assets/); rebase
+      // them so they still resolve once the CSS lives in index.html.
+      const dir = file.fileName.includes('/') ? file.fileName.replace(/[^/]+$/, '') : '';
+      const css = String(file.source).replace(
+        /url\((['"]?)\.\/(?!\/)/g,
+        (_, q) => `url(${q}./${dir}`
+      );
+      html.source = html.source.replace(tag, () => `<style>${css}</style>`);
       delete bundle[name];
     }
+  },
+});
+
+// Preloads the two fonts the first screen needs (headline + body text).
+const preloadFonts = () => ({
+  name: 'skynode-preload-fonts',
+  apply: 'build',
+  transformIndexHtml: {
+    order: 'post',
+    handler(html, ctx) {
+      const wanted = ['jura-latin-300-normal', 'dm-sans-latin-400-normal'];
+      const files = Object.keys(ctx.bundle || {}).filter(
+        (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
+      );
+      return files.map((f) => ({
+        tag: 'link',
+        attrs: { rel: 'preload', href: `./${f}`, as: 'font', type: 'font/woff2', crossorigin: '' },
+        injectTo: 'head',
+      }));
+    },
   },
 });
 
@@ -36,7 +63,7 @@ const inlineCss = () => ({
 // regardless of how the repo name is capitalised, and on Netlify/Vercel too.
 export default defineConfig({
   base: './',
-  plugins: [skynodeContent(), inlineCss()],
+  plugins: [skynodeContent(), preloadFonts(), inlineCss()],
   build: {
     outDir: 'dist',
     target: 'es2020',
