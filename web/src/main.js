@@ -323,6 +323,7 @@ function loadScene() {
     .then(() => {
       container.classList.add('is-ready');
       if (!reduceMotion) root.classList.add('has-scene');
+      setTimeout(() => container.classList.add('is-settled'), 1700);
     })
     .catch((err) => {
       // Anything goes wrong: the static SVG hero simply stays.

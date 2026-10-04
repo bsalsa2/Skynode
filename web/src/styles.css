@@ -214,6 +214,10 @@ svg {
 .hero-visual.is-ready canvas {
   opacity: 1;
 }
+/* After the first fade-in, scroll drives the opacity directly (no lag). */
+.scene.is-settled canvas {
+  transition: none;
+}
 
 main,
 .site-footer {

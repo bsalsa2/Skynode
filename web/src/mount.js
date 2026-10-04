@@ -243,7 +243,7 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     // Pull back on narrow stages so the whole swing stays in frame.
-    const dist = 5.6 / Math.min(1, camera.aspect / 1.05);
+    const dist = 5.3 / Math.min(1, camera.aspect / 1.05);
     const elev = 0.32;
     const azim = -0.62;
     camera.position.set(
