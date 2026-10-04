@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { content } from './src/content.js';
-import { renderHead, renderBody } from './src/render.js';
+import { fileURLToPath } from 'node:url';
+import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody } from './src/render.js';
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
@@ -9,7 +10,9 @@ const skynodeContent = () => ({
   transformIndexHtml(html) {
     return html
       .replace('<!--skynode:head-->', renderHead(content))
-      .replace('<!--skynode:body-->', renderBody(content));
+      .replace('<!--skynode:body-->', renderBody(content))
+      .replace('<!--skynode:privacy-head-->', renderPrivacyHead(content))
+      .replace('<!--skynode:privacy-body-->', renderPrivacyBody(content));
   },
 });
 
@@ -20,12 +23,12 @@ const inlineCss = () => ({
   apply: 'build',
   enforce: 'post',
   generateBundle(_, bundle) {
-    const html = Object.values(bundle).find((f) => f.fileName === 'index.html');
-    if (!html) return;
+    const pages = Object.values(bundle).filter((f) => f.fileName.endsWith('.html'));
     for (const [name, file] of Object.entries(bundle)) {
       if (!name.endsWith('.css')) continue;
       const tag = new RegExp(`<link[^>]*href="[^"]*${file.fileName.split('/').pop()}"[^>]*>`);
-      if (!tag.test(html.source)) continue;
+      const users = pages.filter((p) => tag.test(p.source));
+      if (!users.length) continue;
       // URLs inside the CSS are relative to its own folder (assets/); rebase
       // them so they still resolve once the CSS lives in index.html.
       const dir = file.fileName.includes('/') ? file.fileName.replace(/[^/]+$/, '') : '';
@@ -33,7 +36,7 @@ const inlineCss = () => ({
         /url\((['"]?)\.\/(?!\/)/g,
         (_, q) => `url(${q}./${dir}`
       );
-      html.source = html.source.replace(tag, () => `<style>${css}</style>`);
+      for (const page of users) page.source = page.source.replace(tag, () => `<style>${css}</style>`);
       delete bundle[name];
     }
   },
@@ -67,6 +70,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     target: 'es2020',
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        privacy: fileURLToPath(new URL('./privacy.html', import.meta.url)),
+      },
+    },
     // three.js lives in its own lazy-loaded chunk; it is big by nature.
     chunkSizeWarningLimit: 700,
   },

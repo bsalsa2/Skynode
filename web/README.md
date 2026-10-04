@@ -111,6 +111,20 @@ If you move the assembly offsets in `pantilt.py` (for example
 The still image shown before the 3D loads is
 `web/public/models/pantilt-still.webp`.
 
+## Visit counter (GoatCounter)
+
+The site can count visits with GoatCounter: free for personal sites, no
+cookies, and nothing that identifies a visitor.
+
+1. Sign up at **goatcounter.com** and pick a code, for example `skynode`.
+   Your dashboard will be at `https://skynode.goatcounter.com`.
+2. In `web/src/content.js`, set `analytics.goatcounter` to that code and
+   commit.
+
+The counter loads on both pages, and the privacy page automatically
+switches to wording that explains the counter. To turn it off, set the code
+back to `''`.
+
 ## The Sunnode card
 
 The card above the footer links to Sunnode. To add a one-sentence

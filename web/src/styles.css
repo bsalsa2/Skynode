@@ -1183,6 +1183,27 @@ main,
   text-wrap: pretty; /* no lone last words on narrow screens */
   overflow-wrap: break-word;
 }
+.build-motto {
+  display: grid;
+  gap: 12px;
+  margin-top: clamp(28px, 4vw, 40px);
+  padding-top: clamp(20px, 3vw, 28px);
+  border-top: 1px solid var(--line-2);
+}
+.build-motto p {
+  color: var(--amber);
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+.build-motto .mono {
+  color: var(--ink-3);
+  font-size: 0.6875rem;
+}
+.build-motto .mono::before {
+  content: '\2014\00a0';
+}
 
 /* ---- Roadmap ---------------------------------------------------------- */
 .roadmap-track {
@@ -1407,6 +1428,44 @@ main,
 .hero-visual--footage {
   aspect-ratio: 16 / 10;
   pointer-events: auto;
+}
+
+/* ---- Privacy page ---------------------------------------------------- */
+.legal {
+  padding-block: calc(var(--nav-h) + 72px) var(--section-y);
+}
+.legal-card {
+  padding: clamp(28px, 5vw, 64px);
+}
+.legal-updated {
+  color: var(--amber);
+  margin-bottom: 20px;
+}
+.legal-title {
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  margin-bottom: 24px;
+}
+.legal-intro {
+  max-width: 40rem;
+  color: var(--ink);
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  margin-bottom: clamp(16px, 3vw, 24px);
+}
+.legal-section {
+  max-width: 40rem;
+  padding-top: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.legal-section h2 {
+  color: var(--ink);
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+.legal-section p {
+  overflow-wrap: break-word;
 }
 
 /* ==========================================================================

@@ -120,8 +120,11 @@ function link(path, value = get(path)) {
       err(`${path} points to "${value}", which isn't a section on the page. Use one of: ${[...sectionIds].map((s) => '#' + s).join(', ')}.`, lineOf(value));
   } else if (value.startsWith('http://')) {
     warn(`${path} uses http://. Prefer https:// so browsers don't warn visitors.`, lineOf(value));
+  } else if (/^\.\/[\w-]+\.html$/.test(value)) {
+    if (!existsSync(join(webRoot, value.slice(2))))
+      err(`${path} points to "${value}", but there's no such page in web/.`, lineOf(value));
   } else if (!/^(https:\/\/|mailto:)/.test(value)) {
-    err(`${path} should start with https://, mailto:, or # (got "${value}").`, lineOf(value));
+    err(`${path} should start with https://, mailto:, #, or ./page.html (got "${value}").`, lineOf(value));
   }
 }
 
@@ -130,6 +133,10 @@ function publicFile(path, value = get(path)) {
   if (!existsSync(join(webRoot, 'public', value)))
     err(`${path} is "${value}", but there's no file at web/public/${value}. Upload it there first.`, lineOf(value));
 }
+
+const gc = get('analytics.goatcounter');
+if (gc && !/^[a-z0-9-]+$/.test(gc))
+  err(`analytics.goatcounter should be just your GoatCounter code, like 'skynode' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
 
 text('meta.title');
 text('meta.description');
@@ -200,6 +207,16 @@ if (results && Array.isArray(results.items) && results.items.length) {
 
 text('build.heading');
 text('build.body');
+if (get('build.quote') !== undefined) text('build.quote');
+
+if (get('privacy')) {
+  ['title', 'updated', 'intro', 'contactText'].forEach((k) => text(`privacy.${k}`));
+  list('privacy.sections').forEach((sec, i) => {
+    text(`privacy.sections.${i}.heading`, sec?.heading);
+    text(`privacy.sections.${i}.text`, sec?.text);
+    if (sec?.link) link(`privacy.sections.${i}.link.href`, sec.link.href);
+  });
+}
 
 text('roadmap.heading');
 list('roadmap.phases').forEach((p, i) => {

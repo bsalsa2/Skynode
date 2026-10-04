@@ -141,10 +141,19 @@ const sisterCard = (s) => `
     </div>
   </section>`;
 
+// GoatCounter visit counter, only when content.js has a code.
+const counter = (c) => {
+  const code = c.analytics && c.analytics.goatcounter;
+  return code
+    ? `
+    <script data-goatcounter="https://${esc(code)}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>`
+    : '';
+};
+
 export function renderHead(c) {
   const { title, description, url } = c.meta;
   const image = new URL('og-image.png', url).href;
-  return `
+  return `${counter(c)}
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${esc(url)}" />
@@ -226,10 +235,6 @@ export function renderBody(c) {
     .join(' ');
 
   const facts = hero.facts.map((f) => `<li>${esc(f)}</li>`).join('');
-
-  const footerLinks = footer.links
-    .map((l) => `<li><a class="u-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`)
-    .join('');
 
   return `
 <a class="skip-link" href="#main">Skip to content</a>
@@ -317,6 +322,13 @@ export function renderBody(c) {
       <figure class="build-card glass glass--refract" data-reveal>
         <h2 class="mono build-label" id="build-title">${esc(build.heading)}</h2>
         <blockquote class="build-quote"><p>${esc(build.body)}</p></blockquote>
+        ${
+          build.quote
+            ? `<figcaption class="build-motto"><p>&ldquo;${esc(build.quote)}&rdquo;</p>${
+                build.signature ? `<span class="mono">${esc(build.signature)}</span>` : ''
+              }</figcaption>`
+            : ''
+        }
       </figure>
     </div>
   </section>
@@ -334,16 +346,90 @@ export function renderBody(c) {
   ${sister ? sisterCard(sister) : ''}
 </main>
 
+${siteFooter(footer)}`;
+}
+
+const BRAND_MARK =
+  '<svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 1v5M12 18v5M1 12h5M18 12h5" /><circle cx="12" cy="12" r="2" class="dot" /></svg>';
+
+function siteFooter(footer, { from = 'home' } = {}) {
+  const links = footer.links
+    .filter((l) => !(from === 'privacy' && l.href.includes('privacy.html')))
+    .map((l) => `<li><a class="u-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`)
+    .join('');
+  return `
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <p class="brand brand--footer">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 1v5M12 18v5M1 12h5M18 12h5" /><circle cx="12" cy="12" r="2" class="dot" /></svg>
+      ${BRAND_MARK}
       <span>${esc(footer.brand)}</span>
     </p>
     <ul class="footer-links">
-      ${footerLinks}
+      ${links}
       <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link" href="mailto:${esc(footer.email)}">${esc(footer.email)}</a></li>
     </ul>
   </div>
 </footer>`;
+}
+
+// ---- Privacy page (privacy.html) -------------------------------------------
+export function renderPrivacyHead(c) {
+  const url = new URL('privacy.html', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(c.privacy.title)} | Skynode</title>
+    <meta name="description" content="${esc(c.privacy.intro)}" />
+    <link rel="canonical" href="${esc(url)}" />`;
+}
+
+export function renderPrivacyBody(c) {
+  const p = c.privacy;
+  const on = !!(c.analytics && c.analytics.goatcounter);
+  const sections = p.sections
+    .filter((s) => on || !s.onlyWithAnalytics)
+    .map((s) => (on && s.textWithAnalytics ? { ...s, text: s.textWithAnalytics } : s))
+    .map(
+      (s) => `
+        <section class="legal-section">
+          <h2 class="mono">${esc(s.heading)}</h2>
+          <p>${esc(s.text)}${
+            s.link ? ` <a class="u-link"${linkAttrs(s.link.href)}>${esc(s.link.label)}</a>.` : ''
+          }</p>
+        </section>`
+    )
+    .join('');
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="sky" aria-hidden="true">
+  <div class="sky-glow sky-glow--a"></div>
+  <div class="sky-glow sky-glow--b"></div>
+  <div class="sky-grid"></div>
+</div>
+
+<header class="site-header is-pinned">
+  <nav class="nav glass" aria-label="Primary">
+    <a class="brand" href="./">
+      ${BRAND_MARK}
+      <span>${esc(c.nav.brand)}</span>
+    </a>
+    <ul class="nav-links">${c.nav.links
+      .map((l) => `<li><a class="nav-link" href="./${esc(l.href)}">${esc(l.label)}</a></li>`)
+      .join('')}</ul>
+  </nav>
+</header>
+
+<main id="main" class="legal" tabindex="-1">
+  <div class="wrap wrap--narrow">
+    <article class="legal-card glass">
+      <p class="mono legal-updated">Updated ${esc(p.updated)}</p>
+      <h1 class="display legal-title">${esc(p.title)}</h1>
+      <p class="legal-intro">${esc(on && p.introWithAnalytics ? p.introWithAnalytics : p.intro)}</p>
+      ${sections}
+      <section class="legal-section">
+        <h2 class="mono">${esc(c.footer.contactLabel)}</h2>
+        <p>${esc(p.contactText)} <a class="u-link" href="mailto:${esc(c.footer.email)}">${esc(c.footer.email)}</a>.</p>
+      </section>
+    </article>
+  </div>
+</main>
+${siteFooter(c.footer, { from: 'privacy' })}`;
 }
