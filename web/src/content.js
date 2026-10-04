@@ -9,6 +9,9 @@
 //
 //  Tip: if your text needs an apostrophe, keep the outer quotes as
 //  backticks (`like this`) so you don't have to escape anything.
+//
+//  Every build checks this file first (scripts/check-content.mjs). If you
+//  make a typo, the check names the line and what's wrong.
 // ---------------------------------------------------------------------------
 
 export const content = {
@@ -38,6 +41,19 @@ export const content = {
     facts: ['Passive sensing only', 'Designed for solar power', 'MIT licensed'],
     caption:
       'Concept visualization. Live footage will replace this once the hardware is built.',
+
+    // REAL FOOTAGE: leave video empty until real footage exists.
+    // When it does: put a short video file in web/public/media/ and set
+    // video to its path, for example 'media/first-track.mp4'. It replaces the
+    // concept visualization at the top of the page (muted, looping; paused
+    // for visitors who turn off motion).
+    // Before publishing a clip, check it doesn't show your house, street, or
+    // anything that reveals where you live.
+    footage: {
+      video: '',
+      poster: '', // optional still image, for example 'media/first-track.jpg'
+      caption: '', // required once video is set: say what the clip shows
+    },
   },
 
   math: {
@@ -64,6 +80,17 @@ export const content = {
         body: 'Every sighting is saved with the time, what it was, how confident the model was, and which way the camera was pointing.',
       },
     ],
+    // 3D viewer of the pan-tilt mount, built from the STL files in /hardware.
+    mount: {
+      label: 'PAN-TILT MOUNT',
+      caption:
+        'Rendered live from the CAD files in this repo, with the two servos drawn as outlines, and moved through its pan and tilt axes. The physical build is next.',
+      parts: [
+        { name: 'BASE', text: 'Holds the pan servo, shaft up, and screws down with four M3 screws.' },
+        { name: 'YOKE', text: 'Sits on the pan horn, holds the tilt servo, and carries the M3 pivot.' },
+        { name: 'CAMERA ARM', text: 'Webcam cradle on the tilt horn and pivot.' },
+      ],
+    },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
 
@@ -79,6 +106,18 @@ export const content = {
       { label: 'NEXT', text: 'Test against real flight data (ADS-B) and publish accuracy results' },
       { label: 'NEXT', text: 'Run it outdoors on solar power' },
     ],
+  },
+
+  // ACCURACY RESULTS: this section stays hidden until items has entries.
+  // Only add numbers you have actually measured, and fill in source with how
+  // and when they were measured. The build refuses numbers without a source.
+  results: {
+    heading: 'Results',
+    intro: '',
+    items: [
+      // { value: '00%', label: 'What was measured', note: 'Optional detail' },
+    ],
+    source: '',
   },
 
   build: {
@@ -112,6 +151,15 @@ export const content = {
     ],
     closing:
       'Skynode is passive by design. It carries no payloads, never jams, and never transmits on aircraft or drone frequencies. It only watches.',
+  },
+
+  // Card linking to the sister project, shown above the footer.
+  sister: {
+    label: 'Sister project',
+    name: 'Sunnode',
+    description: '', // optional: one sentence about what Sunnode is
+    href: 'https://github.com/bsalsa2/sunnode',
+    linkLabel: 'View on GitHub',
   },
 
   footer: {
