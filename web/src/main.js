@@ -36,7 +36,7 @@ const navLinks = [...document.querySelectorAll('.nav-link')];
 const sectionFor = new Map(
   navLinks.map((link) => [document.querySelector(link.getAttribute('href')), link])
 );
-// "How I build" sits under the Status link.
+// The "About me" callout sits under the Status link.
 sectionFor.set(document.getElementById('build'), sectionFor.get(document.getElementById('status')));
 const visible = new Set();
 {

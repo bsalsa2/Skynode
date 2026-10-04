@@ -1125,7 +1125,7 @@ main,
   text-transform: none;
 }
 
-/* ---- How I build ------------------------------------------------------ */
+/* ---- About me (glass callout) ----------------------------------------- */
 .build {
   padding-top: 0;
 }
@@ -1167,6 +1167,8 @@ main,
   line-height: 1.4;
   letter-spacing: 0.01em;
   color: var(--ink);
+  text-wrap: pretty; /* no lone last words on narrow screens */
+  overflow-wrap: break-word;
 }
 
 /* ---- Roadmap ---------------------------------------------------------- */

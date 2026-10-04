@@ -121,8 +121,8 @@ export const content = {
   },
 
   build: {
-    heading: 'How I build',
-    body: `I'm Braden, and I'm 14. I design the system, train the model, and am building the hardware. Most of the code is written with Claude Code, an AI coding tool, working from my designs. I say so everywhere I share this project.`,
+    heading: 'About me',
+    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Skynode was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Skynode is where I'm starting.`,
   },
 
   roadmap: {
