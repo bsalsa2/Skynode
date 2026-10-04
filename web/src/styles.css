@@ -557,6 +557,9 @@ main,
   background: linear-gradient(100deg, #ffffff 10%, #aebfe6 90%);
   -webkit-background-clip: text;
   background-clip: text;
+  /* background-clip: text cuts off descenders without a little room */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
 }
 .hero-sub {
   max-width: 34rem;
