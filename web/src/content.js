@@ -27,7 +27,7 @@ export const content = {
   // Off while empty. Sign up at goatcounter.com, pick a code (for example
   // 'skynode'), and put that code here. The privacy page updates itself.
   analytics: {
-    goatcounter: '',
+    goatcounter: 'bsalsa2',
   },
 
   nav: {
