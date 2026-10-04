@@ -5,6 +5,7 @@
 @import './fonts.css';
 
 :root {
+  color-scheme: dark; /* a deliberately dark design: native controls follow */
   --bg-0: #03050b;
   --bg-1: #060912;
   --bg-2: #0a1122;
