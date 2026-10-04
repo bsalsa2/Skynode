@@ -233,12 +233,14 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
     new MeshPhysicalMaterial({
       color: 0xd4defc,
       metalness: 0,
-      roughness: 0.06,
+      roughness: 0.12,
       transmission: 1,
-      thickness: 1.3,
-      ior: 1.48,
-      attenuationColor: new Color(0x7088d8),
-      attenuationDistance: 2.4,
+      thickness: 0.9,
+      ior: 1.42,
+      attenuationColor: new Color(0x8ea2e6),
+      attenuationDistance: 3.2,
+      emissive: new Color(0x0c1633),
+      emissiveIntensity: 0.7,
       clearcoat: 1,
       clearcoatRoughness: 0.05,
       iridescence: 0.4,
@@ -255,6 +257,37 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
   );
   edges.scale.setScalar(1.003);
   orb.add(edges);
+
+  // Inner glow: drawn after the glass, so the orb reads as lit from within
+  // even though it sits on a dark, transparent background.
+  const glow = new Mesh(
+    new PlaneGeometry(2.6, 2.6),
+    new ShaderMaterial({
+      uniforms: { uColor: { value: new Color(0x6f8fff) }, uAmber: { value: new Color(AMBER) } },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uColor;
+        uniform vec3 uAmber;
+        varying vec2 vUv;
+        void main() {
+          float d = length(vUv - 0.5) * 2.0;
+          float halo = smoothstep(1.0, 0.0, d);
+          float core = smoothstep(0.32, 0.0, d);
+          float a = pow(halo, 2.2) * 0.3 + core * 0.06;
+          vec3 col = mix(uColor, uAmber, core / max(a * 4.0, 0.001) * 0.2);
+          gl_FragColor = vec4(col, a);
+        }`,
+      transparent: true,
+      depthWrite: false,
+    })
+  );
+  glow.renderOrder = 2;
+  rig.add(glow);
 
   // Lens core: the "camera" inside the sensor. It turns to follow the target.
   const core = new Group();
@@ -318,7 +351,7 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
     })
   );
   rig.add(aircraft);
-  const ORBIT = { rx: 2.25, rz: 1.45, y: 0.5, incline: 0.3, speed: 0.24 };
+  const ORBIT = { rx: 1.85, rz: 1.3, y: 0.5, incline: 0.3, speed: 0.24 };
   const orbitPoint = (t, out) =>
     out.set(
       Math.cos(t) * ORBIT.rx,
@@ -355,13 +388,11 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
   // ---- Layout: match the static SVG hero so the swap is seamless --------
   const halfH = Math.tan(MathUtils.degToRad(FOV / 2)) * CAMERA_Z;
   let poses = [];
-  let size = { w: 1, h: 1 };
   const heroBox = document.getElementById('hero-visual');
 
   function layout() {
     const w = container.clientWidth || window.innerWidth;
     const h = container.clientHeight || window.innerHeight;
-    size = { w, h };
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -385,7 +416,7 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
 
     const p0 = { x: toWorldX(boxCx), y: toWorldY(boxCy), z: 0, s: s0 };
     const p1 = wide
-      ? { x: halfW * 0.56, y: -0.25, z: -2.6, s: s0 * 1.05 }
+      ? { x: halfW * 0.86, y: -0.25, z: -2.6, s: s0 * 1.05 }
       : { x: 0, y: halfH * 0.42, z: -3.5, s: s0 };
     const p2 = wide
       ? { x: 0, y: -0.2, z: -1.6, s: s0 * 1.15 }
@@ -483,6 +514,7 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
     else reticlePos.lerp(aircraftWorld, k(4.5));
     reticle.group.position.copy(reticlePos);
     reticle.group.quaternion.copy(camera.quaternion);
+    glow.quaternion.copy(camera.quaternion);
     const retScale = Math.max(0.55, Math.sqrt(pose.s));
     lockClock += dt;
     if (lockClock > 5.5) lockClock = 0;
@@ -513,8 +545,11 @@ export async function createScene({ container, reduceMotion, finePointer, getSto
   let frameTimeSum = 0;
   const shouldRun = (story) => !document.hidden && story.fade > 0.001;
 
+  // Ease the scene back while it sits behind the How-it-works cards.
   function applyFade(story) {
-    canvas.style.opacity = story.fade < 0.999 ? story.fade.toFixed(3) : '';
+    const behindCards = 1 - 0.35 * Math.max(0, 1 - Math.abs(story.p - 2) / 0.6);
+    const o = story.fade * behindCards;
+    canvas.style.opacity = o < 0.999 ? o.toFixed(3) : '';
   }
 
   function frame(now) {

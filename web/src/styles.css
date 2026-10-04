@@ -606,24 +606,25 @@ main,
 
 @media (max-width: 900px) {
   .hero {
+    --vis: min(96vw, 46vh, 520px);
     justify-content: flex-start;
-    padding-top: calc(var(--nav-h) + min(48vh, 108vw));
+    padding-top: calc(var(--nav-h) + var(--vis) + 56px);
     padding-bottom: 72px;
   }
   .hero-visual {
     top: calc(var(--nav-h) + 4px);
     right: auto;
     left: 50%;
-    width: min(96vw, 46vh, 520px);
+    width: var(--vis);
     transform: translateX(-50%);
   }
   .hero-caption {
-    position: absolute;
-    top: calc(var(--nav-h) + min(46vh, 104vw) - 8px);
+    top: calc(var(--nav-h) + var(--vis) - 6px);
     bottom: auto;
     left: var(--gutter);
     right: var(--gutter);
-    max-width: none;
+    max-width: 44ch;
+    margin-inline: auto;
     text-align: center;
   }
 }
