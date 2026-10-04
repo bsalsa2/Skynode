@@ -6,18 +6,18 @@ browser.
 
 | Where | Address | How it updates |
 | --- | --- | --- |
-| Netlify | **https://skynode-ai.netlify.app** | Every push to `main` (project `skynode-ai`) |
+| Netlify | **https://skynode-si.netlify.app** | Every push to `main` (project `skynode-si`) |
 | GitHub Pages | https://bsalsa2.github.io/Skynode/ | Every merge to `main` that touches `web/` or `hardware/*.stl` |
 
 ---
 
 ## Netlify
 
-The Netlify project **skynode-ai** builds this repo on Netlify's servers.
+The Netlify project **skynode-si** builds this repo on Netlify's servers.
 The `netlify.toml` at the repo root tells it to build `web/` (`npm run
 build`, publish `web/dist`), so nothing in the dashboard needs filling in.
 
-- **Production** (https://skynode-ai.netlify.app) is built from `main` and is
+- **Production** (https://skynode-si.netlify.app) is built from `main` and is
   public.
 - **Pull requests** get a preview deploy (link in the PR checks). Previews
   need a Netlify login to view.
