@@ -144,7 +144,9 @@ web/
   scripts/build-models.mjs    packs hardware/*.stl for the 3D mount viewer
   src/content.js          ALL page copy and status items  <- edit this
   src/render.js           HTML templates for each section
-  src/styles.css          Liquid Graphite tokens, liquid glass, layout
+  src/styles.css          liquid glass and layout (brand tokens come from graphite.css)
+  ../brain/dashboard/graphite.css   the shared brand tokens: colours, glass, type stacks.
+                          The live dashboard loads the same file, so a colour changes in both
   src/fonts.css           self-hosted Saira, IBM Plex Sans, IBM Plex Mono
   src/main.js             scroll story, nav, buttons, glass tilt, lazy loading
   src/hero.js             hero sky: stars, the aircraft pass, live readout card

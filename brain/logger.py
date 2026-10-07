@@ -8,12 +8,14 @@ the camera was pointing) plus a small JPEG of that best moment.
 
 Where it all goes ([logger] folder in brain/config.toml, normally logs/):
 
-    logs/sightings-2026-10-07.jsonl          one file per local day, one record per line
+    logs/skynode.db                          every sighting and sky check (SQLite)
     logs/snapshots/20261007-140217-001.jpg   the best frame of that sighting
 
-JSON Lines = one JSON object per line. Each record is appended and flushed the
-moment it is finished, so a crash loses nothing that was already logged, and a
-line cut short by a power cut only spoils that one line.
+SQLite is one ordinary file that any tool can open (the `sqlite3` command, Python,
+DB Browser). Each record is committed the moment it is finished, so a crash or a
+power cut loses nothing that was already logged. Older versions wrote one
+sightings-YYYY-MM-DD.jsonl file per day; those are imported into the database
+the first time the new version starts, then renamed to .jsonl.imported.
 
 While nothing is being tracked, a "sky check" is logged every `heartbeat_min`
 minutes of the local clock (13:00, 14:00, ...). It proves the node was watching
@@ -32,10 +34,11 @@ import json
 import math
 import os
 import re
+import sqlite3
 import threading
 import time
 from dataclasses import asdict, dataclass, fields
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 DRONE, AIRCRAFT, OTHER, CLEAR = "drone", "aircraft", "other", "clear"
@@ -44,7 +47,8 @@ KINDS = ("sighting", "check")
 SNAPSHOT_WIDTH = 640                                 # snapshots are shrunk to at most this wide
 SAFE_ID = re.compile(r"[0-9A-Za-z_-]+")              # ids end up in file names and URLs
 SNAPSHOT_NAME = re.compile(r"[0-9A-Za-z_-]+\.jpg")   # the only names snapshot_path() accepts
-MAX_LINE_BYTES = 16 * 1024      # a real record is a few hundred bytes; longer lines are skipped
+MAX_LINE_BYTES = 16 * 1024      # old .jsonl files only: a real record is a few hundred bytes
+DB_NAME = "skynode.db"
 
 
 @dataclass
@@ -102,6 +106,156 @@ FIELD_NAMES = [f.name for f in fields(Sighting)]
 NUMBER_FIELDS = ("start", "end", "duration_s", "confidence", "pan", "tilt")
 
 
+# One column per Sighting field. "end" is a reserved word in SQL, so the time
+# columns are called started and ended.
+COLUMNS = ("id", "kind", "category", "class_name", "started", "ended", "duration_s",
+           "confidence", "pan", "tilt", "box", "frames", "snapshot")
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS sightings (
+    id          TEXT PRIMARY KEY,
+    kind        TEXT NOT NULL CHECK (kind IN ('sighting', 'check')),
+    category    TEXT NOT NULL CHECK (category IN ('drone', 'aircraft', 'other', 'clear')),
+    class_name  TEXT NOT NULL,
+    started     REAL NOT NULL,      -- unix time, seconds
+    ended       REAL NOT NULL,
+    duration_s  REAL NOT NULL,
+    confidence  REAL NOT NULL,
+    pan         REAL NOT NULL,
+    tilt        REAL NOT NULL,
+    box         TEXT,               -- JSON [x1, y1, x2, y2] as fractions of the frame, or NULL
+    frames      INTEGER NOT NULL,
+    snapshot    TEXT                -- JPEG file name in snapshots/, or NULL
+);
+CREATE INDEX IF NOT EXISTS sightings_started ON sightings (started);
+"""
+
+
+def row_to_dict(row):
+    """One database row as the dict Sighting.from_dict() expects (raises ValueError if damaged)."""
+    data = dict(zip(COLUMNS, row))
+    data["start"], data["end"] = data.pop("started"), data.pop("ended")
+    if data["box"] is not None:
+        data["box"] = json.loads(data["box"])
+    return data
+
+
+class SightingDB:
+    """The sightings table in <folder>/skynode.db.
+
+    Only the main loop writes to it, and only the main loop reads it (once, at
+    start-up): the dashboard's threads read the logger's in-memory copy, so the
+    connection never crosses threads. The file and its folder are created on
+    the first write, so a node that never sees anything leaves no trace.
+    """
+
+    def __init__(self, folder):
+        self.path = Path(folder) / DB_NAME
+        self._conn = None
+
+    def _connect(self, create):
+        """The open connection, opening it first if needed. None if the file doesn't exist
+        yet and create is False."""
+        if self._conn is None:
+            if not self.path.is_file():
+                if not create:
+                    return None
+                self.path.parent.mkdir(parents=True, exist_ok=True)
+            conn = sqlite3.connect(self.path, timeout=10)
+            try:
+                conn.executescript(SCHEMA)
+                conn.execute("SELECT count(*) FROM sightings").fetchone()  # is it really ours?
+            except sqlite3.DatabaseError:
+                conn.close()
+                raise
+            self._conn = conn
+        return self._conn
+
+    def move_damaged_aside(self):
+        """Rename a file that isn't a usable database, so a fresh one can take its place."""
+        self.close()
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        target = self.path.with_name(f"{self.path.name}.damaged-{stamp}")
+        os.replace(self.path, target)
+        return target
+
+    def insert(self, record, ignore_duplicates=False):
+        conn = self._connect(create=True)
+        values = record.to_dict()
+        row = [values["start" if c == "started" else "end" if c == "ended" else c] for c in COLUMNS]
+        row[COLUMNS.index("box")] = None if record.box is None else json.dumps(record.box)
+        verb = "INSERT OR IGNORE" if ignore_duplicates else "INSERT"
+        with conn:      # commits (or rolls back) right now
+            cursor = conn.execute(
+                f"{verb} INTO sightings ({', '.join(COLUMNS)}) "
+                f"VALUES ({', '.join('?' * len(COLUMNS))})", row)
+        return cursor.rowcount == 1
+
+    def ids(self):
+        """Every id in the table, so a new id never repeats an old one."""
+        conn = self._connect(create=False)
+        if conn is None:
+            return set()
+        return {row[0] for row in conn.execute("SELECT id FROM sightings")}
+
+    def load(self, cutoff):
+        """(records that started at or after `cutoff`, oldest first; how many rows were damaged)."""
+        conn = self._connect(create=False)
+        if conn is None:
+            return [], 0
+        records, skipped = [], 0
+        query = f"SELECT {', '.join(COLUMNS)} FROM sightings WHERE started >= ? ORDER BY started, rowid"
+        for row in conn.execute(query, (cutoff,)):
+            try:
+                records.append(Sighting.from_dict(row_to_dict(row)))
+            except (ValueError, TypeError, OverflowError, RecursionError):
+                skipped += 1        # edited by hand, or from a broken version: skip, don't crash
+        return records, skipped
+
+    def close(self):
+        if self._conn is not None:
+            self._conn.close()
+            self._conn = None
+
+
+def import_jsonl(folder, db):
+    """Move records from the old per-day .jsonl files into the database, once.
+
+    Returns (imported, damaged). Each file is renamed to .jsonl.imported when
+    it's done, so it isn't read again. Damaged lines (cut short by a crash,
+    edited by hand, not ours) are skipped and counted.
+    """
+    imported = damaged = 0
+    seen = set()
+    for path in sorted(Path(folder).glob("sightings-*.jsonl")):
+        try:
+            datetime.strptime(path.stem.removeprefix("sightings-"), "%Y-%m-%d")
+            lines = path.read_bytes().splitlines()
+        except (ValueError, OSError):
+            continue                    # not one of our daily files, or unreadable: leave it
+        for line in lines:
+            if not line.strip():
+                continue
+            if len(line) > MAX_LINE_BYTES:              # far too long to be one of ours
+                damaged += 1
+                continue
+            try:
+                record = Sighting.from_dict(json.loads(line))
+            except (ValueError, OverflowError, RecursionError):
+                damaged += 1
+                continue
+            if record.id in seen:                       # the same id twice: keep the first
+                damaged += 1
+                continue
+            seen.add(record.id)
+            if db.insert(record, ignore_duplicates=True):
+                imported += 1
+        try:
+            os.replace(path, path.with_name(path.name + ".imported"))
+        except OSError:
+            pass                        # it stays, and importing it again adds nothing new
+    return imported, damaged
+
+
 @dataclass
 class _OpenSighting:
     """A lock still in progress. It becomes a Sighting when the lock ends."""
@@ -142,6 +296,7 @@ class SightingLogger:
 
         self._lock = threading.Lock()   # guards _open, _records and history_start
         self._open = None               # the lock in progress (an _OpenSighting), or None
+        self._db = SightingDB(self.folder)
         self._ids = set()               # every id seen, so a new one never repeats an old one
         self._seq = 0                   # the counter at the end of each new id
         self._last_slot = None          # heartbeat slot of the previous frame (None = no frame yet)
@@ -149,12 +304,13 @@ class SightingLogger:
         self.skipped_lines = 0          # damaged lines found while loading old logs
 
         self.started_at = clock()
+        self._open_database()
         self._records = self._load(self.started_at - keep_hours * 3600)    # oldest first
         earliest = self._records[0].start if self._records else self.started_at
         # The earliest moment the logs vouch for: before this, "no sightings" means "don't know"
         self.history_start = min(self.started_at, earliest)
         if self.skipped_lines:
-            print(f"WARN skipped {self.skipped_lines} damaged line(s) in the logs in {self.folder}")
+            print(f"WARN skipped {self.skipped_lines} damaged record(s) in the logs in {self.folder}")
 
     def categorize(self, class_name):
         """Which category a model class belongs to: "drone", "aircraft" or "other"."""
@@ -193,9 +349,9 @@ class SightingLogger:
     def close(self, now=None):
         """Shutting down: log the lock in progress, if any (same rules as a normal end)."""
         now = self.clock() if now is None else now
-        if self._open is None:
-            return None
-        return self._finish(now)
+        logged = None if self._open is None else self._finish(now)
+        self._db.close()        # reopened by the next write, if there is one
+        return logged
 
     def _see(self, target, frame, pan, tilt, now):
         """The tracker returned a target: start a sighting, or add this frame to the open one."""
@@ -263,7 +419,7 @@ class SightingLogger:
         record.id = self._new_id(record.start)
         if image is not None:
             record.snapshot = self._save_snapshot(record.id, image)
-        self._append_line(record)
+        self._store(record)
         with self._lock:
             bisect.insort(self._records, record, key=start_time)    # stays sorted by start
             self._prune(now)
@@ -307,19 +463,12 @@ class SightingLogger:
                                    "Sightings are still logged.")
             return None
 
-    def _append_line(self, record):
-        """Add the record to its day's .jsonl file (named by the local date of its start)."""
-        path = self.folder / f"sightings-{datetime.fromtimestamp(record.start):%Y-%m-%d}.jsonl"
-        line = json.dumps(record.to_dict(), allow_nan=False) + "\n"
+    def _store(self, record):
+        """Save the record in the database right now (committed, so a crash can't lose it)."""
         try:
-            self.folder.mkdir(parents=True, exist_ok=True)
-            if not ends_cleanly(path):
-                line = "\n" + line      # a crash cut the last line short: don't glue onto it
-            with open(path, "a", encoding="utf-8") as f:
-                f.write(line)
-                f.flush()               # hand it to the OS now, so a crash can't lose it
-        except OSError as error:        # keep tracking even if the disk is full
-            self._warn("write", f"WARN can't write the sighting log {path}: {error}")
+            self._db.insert(record)
+        except (sqlite3.Error, OSError) as error:   # keep tracking even if the disk is full
+            self._warn("write", f"WARN can't write the sighting log {self._db.path}: {error}")
 
     def _prune(self, now):
         """Forget records older than keep_hours (the files on disk keep them). Hold the lock."""
@@ -330,43 +479,34 @@ class SightingLogger:
             # Memory no longer vouches for the time before the cutoff
             self.history_start = max(self.history_start, cutoff)
 
+    def _open_database(self):
+        """Open skynode.db (if there is one), bring in old .jsonl files, and note every id."""
+        try:
+            self._ids = self._db.ids()
+        except sqlite3.DatabaseError as error:
+            # Not a database (or broken beyond use): keep the file, start a fresh one
+            try:
+                moved = self._db.move_damaged_aside()
+                print(f"WARN {self._db.path} is damaged ({error}). Moved it to {moved.name} "
+                      "and started a new log.")
+            except OSError as problem:
+                print(f"WARN {self._db.path} is damaged ({error}) and can't be moved: {problem}")
+            self._ids = set()
+        try:
+            _, damaged = import_jsonl(self.folder, self._db)
+            self.skipped_lines += damaged
+            self._ids = self._db.ids()
+        except (sqlite3.Error, OSError) as error:
+            self._warn("import", f"WARN couldn't import the old .jsonl logs: {error}")
+
     def _load(self, cutoff):
-        """Read back the records that started at or after `cutoff` from the daily files."""
-        records = []
-        # Look one extra day back, in case the computer's timezone changed since
-        first_day = (datetime.fromtimestamp(cutoff) - timedelta(days=1)).date()
-        for path in sorted(self.folder.glob("sightings-*.jsonl")):
-            try:
-                day = datetime.strptime(path.stem.removeprefix("sightings-"), "%Y-%m-%d").date()
-            except ValueError:
-                continue                # not one of our daily files
-            if day < first_day:
-                continue                # too old to matter
-            try:
-                lines = path.read_bytes().splitlines()
-            except OSError as error:
-                print(f"WARN can't read {path}: {error}")
-                continue
-            for line in lines:
-                if not line.strip():
-                    continue
-                if len(line) > MAX_LINE_BYTES:          # far too long to be one of ours
-                    self.skipped_lines += 1
-                    continue
-                try:
-                    record = Sighting.from_dict(json.loads(line))
-                # Damaged, e.g. cut short by a crash. RecursionError: brackets
-                # inside brackets inside brackets..., deeper than Python can follow.
-                except (ValueError, OverflowError, RecursionError):
-                    self.skipped_lines += 1
-                    continue
-                if record.id in self._ids:              # the same id twice: keep the first
-                    self.skipped_lines += 1
-                    continue
-                self._ids.add(record.id)
-                if record.start >= cutoff:
-                    records.append(record)
-        records.sort(key=start_time)    # oldest first; equal starts keep their file order
+        """Read back the records that started at or after `cutoff` from the database."""
+        try:
+            records, skipped = self._db.load(cutoff)
+        except sqlite3.Error as error:
+            self._warn("read", f"WARN can't read the sighting log {self._db.path}: {error}")
+            return []
+        self.skipped_lines += skipped
         return records
 
     def _warn(self, topic, message):
@@ -493,18 +633,6 @@ def normalised_box(box, width, height):
     x1, y1, x2, y2 = (finite(v) for v in box)
     return [round(min(max(value / size, 0.0), 1.0), 4)
             for value, size in ((x1, width), (y1, height), (x2, width), (y2, height))]
-
-
-def ends_cleanly(path):
-    """True if the file is missing, empty, or ends with a newline."""
-    try:
-        with open(path, "rb") as f:
-            if f.seek(0, os.SEEK_END) == 0:
-                return True
-            f.seek(-1, os.SEEK_END)
-            return f.read(1) == b"\n"
-    except FileNotFoundError:
-        return True
 
 
 def hour_start(t):

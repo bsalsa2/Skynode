@@ -56,11 +56,13 @@ Detection, tracking, and control are separate modules, so each layer can be reus
 Software only. You can run detection on a webcam or video file without the Pico.
 
 ```bash
-pip install -r brain/requirements.txt opencv-python-headless onnx
+pip install -r brain/requirements.txt opencv-python-headless onnx pyyaml
 python -m unittest discover tests -v      # hardware-dependent tests skip with a stated reason
 ```
 
-Then follow [`brain/README.md`](brain/README.md) to export the YOLOv8n model once and run the brain. For the Pico, see [`pico/README.md`](pico/README.md).
+Then follow [`brain/README.md`](brain/README.md) to export the YOLOv8n model once and run the brain.
+
+No hardware? `python -m brain.demo <folder of test videos> --model <model.onnx>` runs detection, the logger and the dashboard on your own videos. See [Demo mode](brain/README.md#demo-mode-your-own-test-videos). For the Pico, see [`pico/README.md`](pico/README.md).
 
 ## Results
 
@@ -167,7 +169,7 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 **Vision.** Phase 1 is one passive sky-tracking node. The long-term goal is autonomy for missile and drone detection and defense systems. Open work is tracked as [GitHub issues](https://github.com/bsalsa2/Skynode/issues) under the *Phase 1: one working node* milestone.
 
 - [x] Pico servo firmware: smooth motion, calibration, command protocol
-- [x] Detection and tracking loop, working in simulation, 200 automated tests
+- [x] Detection and tracking loop, working in simulation, 226 automated tests
 - [x] Pan-tilt mount designed in CAD, with STEP and STL files
 - [x] Wiring diagram and bill of materials
 - [x] Sighting logger (built and tested in simulation)

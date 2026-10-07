@@ -49,12 +49,12 @@ export const content = {
     cost: 'About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     facts: ['Passive sensing only', 'Solar power planned', 'MIT licensed'],
     caption:
-      'Concept visualization. Live footage replaces this once the hardware is built.',
+      'SAMPLE: concept visualization. Live footage replaces this once the hardware is built.',
 
     // The glass readout card in the hero. Its numbers move with the
     // simulated aircraft crossing the sky behind it.
     card: {
-      label: 'NODE-01 · CONCEPT',
+      label: 'SAMPLE · NODE-01 · CONCEPT',
       state: 'TRACKING',
       target: 'AIRCRAFT',
     },
@@ -127,9 +127,9 @@ export const content = {
     },
     // Simulated sensor view: what the node's on-screen overlay will look like.
     sensor: {
-      label: 'SENSOR VIEW · SIMULATED',
+      label: 'SAMPLE · SENSOR VIEW · SIMULATED',
       caption:
-        'A simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
+        'SAMPLE: a simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
     },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
@@ -139,13 +139,15 @@ export const content = {
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
-      { label: 'DONE', text: 'Detection + tracking loop, working in simulation, 200 automated tests' },
+      { label: 'DONE', text: 'Detection and tracking loop, working in simulation, 226 automated tests' },
       { label: 'DONE', text: 'Pan-tilt mount designed in CAD, with STEP and STL files' },
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
-      { label: 'IN PROGRESS', text: 'Detection model training: v3 with drone and aircraft classes' },
-      { label: 'NEXT', text: 'Build the physical hardware. Nothing has run on real hardware yet.' },
-      { label: 'NEXT', text: 'Sighting logger' },
-      { label: 'NEXT', text: 'Live dashboard' },
+      { label: 'DONE', text: 'Sighting logger (built and tested in simulation)' },
+      { label: 'DONE', text: 'Live dashboard (built and tested in simulation)' },
+      { label: 'IN PROGRESS', text: 'Detection model v3 with drone and aircraft classes (in training)' },
+      { label: 'NEXT', text: 'Run the logger and dashboard on real hardware' },
+      { label: 'NEXT', text: 'Build the physical hardware' },
+      { label: 'NEXT', text: 'Outdoor test' },
       { label: 'NEXT', text: 'Test against real flight data (ADS-B) and publish accuracy results' },
       { label: 'NEXT', text: 'Pi 4 + solar deployment' },
     ],

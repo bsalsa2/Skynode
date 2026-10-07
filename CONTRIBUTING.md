@@ -9,7 +9,7 @@ Skynode is a **passive** sensing and tracking platform. Pull requests that trans
 ## Setup
 
 ```bash
-pip install -r brain/requirements.txt opencv-python-headless onnx
+pip install -r brain/requirements.txt opencv-python-headless onnx pyyaml
 python -m unittest discover tests -v
 pip install ruff && ruff check .
 ```

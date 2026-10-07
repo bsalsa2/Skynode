@@ -66,6 +66,8 @@ const preloadFonts = () => ({
 // a sub-path.
 export default defineConfig({
   base: './',
+  // graphite.css (shared brand tokens) lives in ../brain/dashboard
+  server: { fs: { allow: ['..'] } },
   plugins: [skynodeContent(), preloadFonts(), inlineCss()],
   build: {
     outDir: 'dist',

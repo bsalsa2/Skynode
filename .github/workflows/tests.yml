@@ -24,7 +24,7 @@ jobs:
       - name: Install brain dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r brain/requirements.txt opencv-python-headless onnx
+          pip install -r brain/requirements.txt opencv-python-headless onnx pyyaml
 
       - name: Run tests
         run: python -m unittest discover tests -v
