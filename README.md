@@ -43,7 +43,7 @@ flowchart LR
     LOG --> DASH[Live dashboard]
 ```
 
-1. **Detection.** The brain (a laptop for now, a Raspberry Pi 4 later) grabs webcam frames and runs a YOLO model through ONNX Runtime. For now that's the pretrained COCO YOLOv8n, tracking `airplane` and `bird`. A custom model can be swapped in through the config file.
+1. **Detection.** The brain (a laptop for now, a Raspberry Pi 4 later) grabs webcam frames and runs a YOLO model through ONNX Runtime. It runs a custom two-class model (`drone` and `aircraft`). See [Model](#model).
 2. **Tracking.** It picks one target and measures how far that target sits from the center of the frame, in pixels.
 3. **Pan-tilt control.** A proportional controller turns the pixel error into a small correction ("the target is 40 px right, so pan +2°").
 4. **Actuation.** The brain sends a plain-text command like `P92.5 T47.0` to the Pico over Wi-Fi (UDP) or USB serial. The Pico moves both servos smoothly and keeps them inside safe angle limits.
@@ -64,7 +64,7 @@ Then follow [`brain/README.md`](brain/README.md) to export the YOLOv8n model onc
 
 No hardware? `python -m brain.demo <folder of test videos> --model <model.onnx>` runs detection, the logger and the dashboard on your own videos. See [Demo mode](brain/README.md#demo-mode-your-own-test-videos). For the Pico, see [`pico/README.md`](pico/README.md).
 
-## Results
+## Results so far
 
 All numbers here come from the repo. Nothing has been measured on the physical node.
 
@@ -101,8 +101,10 @@ skynode/
 
 Model files are **not** in git (`*.onnx` and `*.pt` are gitignored).
 
-- **Now:** the pretrained COCO **YOLOv8n**, exported to ONNX. It detects `airplane` and `bird`. See [Get a model](brain/README.md#get-a-model).
-- **Custom:** the aircraft and drone model described in [Training](training/README.md). The model path and target classes are settings in `brain/config.toml`, so it drops in without code changes. Finished models go on [GitHub Releases](https://github.com/bsalsa2/Skynode/releases).
+- **Current model: a custom two-class YOLOv8n**, with classes `drone` and `aircraft`. It was built by merging the labels of a source dataset of **28,526 labeled images** into those two classes. Its first version is **v2** (results above).
+- **v3** (`drone` and `aircraft`, 960 px input, resumed from v2) is **in training**. It has not been scored yet.
+- The model path and target classes are settings in `brain/config.toml`, so a new model drops in without code changes.
+- See [Training](training/README.md) for how models are made. Finished models go on [GitHub Releases](https://github.com/bsalsa2/Skynode/releases).
 
 ## Bill of materials
 
@@ -168,18 +170,19 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 
 **Vision.** Phase 1 is one passive sky-tracking node. The long-term goal is autonomy for missile and drone detection and defense systems. Open work is tracked as [GitHub issues](https://github.com/bsalsa2/Skynode/issues) under the *Phase 1: one working node* milestone.
 
-- [x] Pico servo firmware: smooth motion, calibration, command protocol
-- [x] Detection and tracking loop, working in simulation, 226 automated tests
+- [x] Pico servo firmware: smooth motion, calibration, command protocol (tested in software)
+- [x] Detection and tracking loop, working in simulation, covered by automated tests
 - [x] Pan-tilt mount designed in CAD, with STEP and STL files
 - [x] Wiring diagram and bill of materials
-- [x] Sighting logger (built and tested in simulation)
-- [x] Live dashboard (built and tested in simulation)
-- [ ] Detection model v3 with drone and aircraft classes (in training)
-- [ ] Run the logger and dashboard on real hardware
+- [ ] Detection model training: v3 with drone and aircraft classes (in training, not yet scored)
+- [ ] Sighting logger (built and tested in simulation; not yet run on real hardware)
+- [ ] Live dashboard (built and tested in simulation; not yet run on real hardware)
 - [ ] Build the physical hardware
 - [ ] Outdoor test
 - [ ] Test against real flight data (ADS-B) and publish accuracy results
 - [ ] Pi 4 + solar deployment
+
+**Nothing has run on real hardware yet.** Every item marked as simulated or software-tested has only been checked on a computer.
 
 The website's Status section lists these same items. Update both together.
 

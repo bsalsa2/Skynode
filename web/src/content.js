@@ -1,3 +1,5 @@
+import { CONTACT_EMAIL } from './config.js';
+
 // ---------------------------------------------------------------------------
 //  SKYNODE SITE CONTENT
 //
@@ -247,7 +249,7 @@ export const content = {
       { label: 'Privacy', href: './privacy.html' },
     ],
     contactLabel: 'Contact',
-    email: 'bradensalcetti@icloud.com',
+    email: CONTACT_EMAIL,
   },
 
   // ---- Privacy policy page (privacy.html) ---------------------------------
