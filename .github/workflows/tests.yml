@@ -1,0 +1,45 @@
+# Runs the laptop-side test suite and the lint check on every push and pull request.
+# Tests that need real hardware (the Pico, a serial port) detect that themselves
+# and skip with a reason; nothing here needs a model file or a camera.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install brain dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r brain/requirements.txt opencv-python-headless onnx pyyaml
+
+      - name: Run tests
+        run: python -m unittest discover tests -v
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint (rules in ruff.toml)
+        run: ruff check .
