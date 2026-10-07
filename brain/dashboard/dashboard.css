@@ -1,6 +1,6 @@
 /* ==========================================================================
    SKYNODE · LIVE DASHBOARD · LIQUID GRAPHITE
-   Same tokens and glass as the website (web/src/styles.css), so the two
+   Shares its tokens with the website through graphite.css, so the two
    read as one brand. Carbon, smoke and light; colour appears only for what
    the sensor sees, so a colour on screen always means something.
    ========================================================================== */
@@ -58,65 +58,8 @@
   src: url('fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
 }
 
-/* ---- Tokens (names and values match the website) ------------------------- */
-:root {
-  color-scheme: dark;
 
-  /* Neutrals */
-  --void: #000000;
-  --carbon: #0a0a0b;
-  --carbon-2: #060607;
-  --carbon-3: #0e0e10;
-  --smoke: #2a2a2d;
-  --offline: #6e6e72;
-  --halo: #f4f4f2; /* accent + primary ink */
-  --white: #ffffff;
-  --ink-1: #d4d4d0;
-  --ink-2: #b4b4b0; /* body text */
-  --ink-3: #8c8c88; /* quiet notes */
-  --label: #a0a09c;
-  --dim: #76767a;
-
-  /* Signals: only ever used for what the sensor sees */
-  --drone: #ff4d2e;
-  --drone-ink: #ff7a60;
-  --drone-on: #140402;
-  --aircraft: #8fd3ff;
-  --aircraft-ink: #b5e2ff;
-  --aircraft-on: #04141e;
-  --clear: #9be89b;
-  --clear-ink: #b6f0b6;
-  --other: #f4f4f2; /* a tracked class that is neither drone nor aircraft, e.g. a bird */
-  --other-ink: #d4d4d0;
-
-  /* Chart marks. Checked with the dataviz palette validator against the dark
-     card: the pale brand blue is too light to read as a filled bar, so the
-     chart uses this deeper blue for aircraft. Don't change these hexes. */
-  --chart-aircraft: #3a99e3;
-  --chart-other: #76767a;
-  --chart-drone: #ff4d2e;
-
-  --line: rgba(255, 255, 255, 0.1);
-  --line-2: rgba(255, 255, 255, 0.18);
-
-  /* Liquid glass */
-  --glass-fill: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.09),
-    rgba(255, 255, 255, 0.02) 50%,
-    rgba(255, 255, 255, 0.05)
-  );
-  --glass-edge: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 24px 24px 48px -30px rgba(255, 255, 255, 0.22), inset -24px -24px 48px -30px rgba(0, 0, 0, 0.6);
-  --glass-drop: 0 40px 80px -30px rgba(0, 0, 0, 0.9);
-
-  --f-display: 'Saira', 'Segoe UI', system-ui, sans-serif;
-  --f-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-
-  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* Tokens (colours, glass, type stacks): see graphite.css, shared with the website. */
 
 /* ---- Reset ---------------------------------------------------------------- */
 *,

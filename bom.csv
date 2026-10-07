@@ -9,3 +9,4 @@ USB breakout board,1,Brings the supply's 5V and GND onto the breadboard rails,1.
 470-1000uF 16V+ electrolytic capacitor,1,Absorbs servo current spikes across the servo power rails,0.95,https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html
 Jumper wires (male/male),1,Breadboard and servo connections,3.95,https://www.adafruit.com/product/758
 M2/M3 screw assortment,1,Servo tabs and horns (M2) and tilt pivot + base mounting (M3),8.00,
+Computer that runs the model (laptop now / Raspberry Pi 4 later),1,Runs detection and tracking (NOT included in the 113.20 total),,

@@ -88,6 +88,26 @@ The page comes from the brain itself: no internet, no cloud, no account. It has 
 
 The dashboard's settings are under `[dashboard]` in `config.toml`. For one run on another port: `python -m brain.run --port 8081`. Without the dashboard: `--no-dashboard` (or `enabled = false`). The logger keeps working either way.
 
+### Demo mode: your own test videos
+
+No Pico, no camera, no real node yet? Run the whole thing (detector, tracker, logger and dashboard) on a folder of videos:
+
+```
+python -m brain.demo C:\Users\you\skynode-videos --model models\your-model.onnx --classes drone,aircraft
+```
+
+Then open the dashboard as usual. The videos play one after another, in file-name order, and everything on the dashboard comes from this run:
+
+- It's the same code as `python -m brain.run`. Only the camera is different.
+- The dashboard says **DEMO · TEST VIDEOS** at the top, because it isn't a live camera.
+- There's no Pico, so **pan and tilt are simulated** from where the target is in the picture: the angles the camera *would* point at to center it.
+- It logs to `logs/demo/`, apart from your real log, and **starts that log afresh every time**. Add `--keep-logs` to keep the last demo's sightings.
+- Time in the demo is the video's time. A 4-second clip is a 4-second sighting, even with `--fast`.
+
+Options: `--classes` (the model's class names to track, like `drone,aircraft`; the default is `target_classes` in `config.toml`), `--fast` (don't wait for each video's own speed), `--loop` (play the folder again and again), `--port`, `--show` (also open the preview window), and `--exit-when-done` (quit after one pass instead of keeping the dashboard open).
+
+**Keep the videos outside the repo folder.** They're never copied or changed, and the demo refuses a folder inside the repo that git doesn't ignore, so they can't be committed by accident. (`demo_videos/`, `test_videos/` and `videos/` in the repo folder are ignored.) The demo only looks at video files directly in the folder you give it (`.mp4 .mov .m4v .avi .mkv .webm`), not in sub-folders.
+
 ### What counts as a sighting
 
 A sighting is one continuous lock: from the frame the tracker locks on to the frame it gives up (after `max_missed_frames` frames without seeing the target). Locks shorter than `min_duration_s` (half a second) are most likely the detector blinking, so they aren't logged. For each sighting the log keeps when it started and ended, what the model called it, its best confidence, where the camera pointed at that best moment, and a snapshot of that frame. The terminal shows each one as it's saved:
@@ -103,11 +123,19 @@ While nothing is being tracked, the logger also writes a **sky check** once an h
 ### Where the logs go
 
 ```
-logs/sightings-2026-10-07.jsonl          one file per day, one sighting per line
+logs/skynode.db                          every sighting and sky check (SQLite)
 logs/snapshots/20261007-140217-001.jpg   the best frame of that sighting
 ```
 
-`logs/` sits in the repo folder, and git ignores it, so your sightings never end up on GitHub. Each line is plain JSON, written the moment a sighting ends, so a crash or a power cut loses nothing that was already logged. The dashboard shows the last 7 days; older sightings stay in the files. To start fresh, delete the folder while the brain isn't running.
+`logs/` sits in the repo folder, and git ignores it, so your sightings never end up on GitHub. `skynode.db` is one ordinary SQLite file, and each record is committed the moment a sighting ends, so a crash or a power cut loses nothing that was already logged. The dashboard shows the last 7 days; older sightings stay in the database. To start fresh, delete the folder while the brain isn't running.
+
+To look at it yourself, open it with any SQLite tool (DB Browser for SQLite, or `sqlite3 logs/skynode.db`). One row per sighting or sky check, in a table called `sightings`; `started` and `ended` are unix times in seconds:
+
+```
+sqlite3 logs/skynode.db "SELECT id, category, class_name, confidence FROM sightings WHERE kind = 'sighting' ORDER BY started DESC LIMIT 5"
+```
+
+Earlier versions wrote one `sightings-YYYY-MM-DD.jsonl` file per day. If you have those, they're imported into the database the first time you start the brain, then renamed to `.jsonl.imported`.
 
 ### Export a spreadsheet (to compare with ADS-B)
 
@@ -117,7 +145,7 @@ On the **Sightings** tab, pick a time range and a category, then click **Export 
 id,kind,category,class_name,start_iso,end_iso,duration_s,confidence,pan,tilt,frames,snapshot
 ```
 
-`start_iso` and `end_iso` are your local time with its offset from UTC, like `2026-10-07T14:02:17+02:00`. ADS-B flight data is usually in UTC, and the offset makes the conversion exact. Line the times up, then use `pan` and `tilt` to check that the aircraft was where the camera pointed. The export covers what the dashboard shows (the last 7 days, up to 10,000 rows); for anything older, read the `.jsonl` files.
+`start_iso` and `end_iso` are your local time with its offset from UTC, like `2026-10-07T14:02:17+02:00`. ADS-B flight data is usually in UTC, and the offset makes the conversion exact. Line the times up, then use `pan` and `tilt` to check that the aircraft was where the camera pointed. The export covers what the dashboard shows (the last 7 days, up to 10,000 rows); for anything older, query `logs/skynode.db`.
 
 ### Open it from your phone
 
@@ -153,6 +181,8 @@ How it stays safe: the dashboard answers only your own Codespace's address, not 
 Not verified: the live camera picture goes through GitHub's proxy, and I couldn't test how it handles a continuous stream. If the picture stalls, the stat tiles, sightings and chart still work.
 
 ## Swap in your own model
+
+No local GPU? Train in Google Colab with phone videos: see [`training/`](../training/README.md).
 
 1. Train with Ultralytics (YOLOv8, YOLO11, or YOLO26), then export: `yolo export model=best.pt format=onnx`.
 2. Copy the `.onnx` file into `brain/models/` and update `config.toml`:
@@ -200,4 +230,4 @@ Ultralytics YOLO weights and anything exported from them are licensed **AGPL-3.0
 python -m unittest discover tests
 ```
 
-The detector tests build tiny fake models, which needs one extra package: `pip install onnx`. Without it they're skipped.
+The detector tests build tiny fake models, which needs one extra package: `pip install onnx`. Without it they're skipped. The demo tests make their own tiny videos, and need numpy, OpenCV and onnxruntime (the same as running the brain).

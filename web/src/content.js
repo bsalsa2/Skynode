@@ -18,7 +18,7 @@ export const content = {
   meta: {
     title: 'Skynode | AI sky tracker',
     description:
-      'Skynode is a camera that detects and tracks aircraft and drones, built from about $113 in new parts, plus a small computer to run the model, instead of tens of thousands.',
+      'A low-cost visual sensing platform, starting with one passive sky-tracking node. About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     // Public URL of the live site (used for social share previews).
     url: 'https://skynode-si.netlify.app/',
   },
@@ -41,20 +41,20 @@ export const content = {
 
   hero: {
     eyebrow: 'PHASE 1 · AI SKY TRACKER',
-    headline: `Drones are cheap. Detecting them isn't.`,
-    sub: 'Skynode is a camera that detects and tracks aircraft and drones, built from about $113 in new parts, plus a small computer to run the model, instead of tens of thousands. It turns to follow what it sees and is designed to log every sighting.',
+    headline: 'A low-cost visual sensing platform, starting with one passive sky-tracking node.',
+    sub: 'A camera, a model and a pan-tilt mount that watch the sky, follow what they see and log every sighting.',
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/skynode' },
     secondary: { label: 'See where it stands', href: '#status' },
-    // Shown under the buttons.
-    goal: 'This is Phase 1. The long-term goal is autonomy for missile and drone detection and defense systems.',
-    facts: ['Passive sensing only', 'Designed for solar', 'MIT licensed'],
+    // Cost note, shown under the buttons. Keep the exclusions in the sentence.
+    cost: 'About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
+    facts: ['Passive sensing only', 'Solar power planned', 'MIT licensed'],
     caption:
-      'Concept visualization. Live footage replaces this once the hardware is built.',
+      'SAMPLE: concept visualization. Live footage replaces this once the hardware is built.',
 
     // The glass readout card in the hero. Its numbers move with the
     // simulated aircraft crossing the sky behind it.
     card: {
-      label: 'NODE-01 · CONCEPT',
+      label: 'SAMPLE · NODE-01 · CONCEPT',
       state: 'TRACKING',
       target: 'AIRCRAFT',
     },
@@ -80,9 +80,15 @@ export const content = {
     stats: [
       { label: 'A small drone', value: '$100s' },
       { label: 'Typical detection system', value: '$10,000s' },
-      { label: 'Skynode parts list', value: '$113.20', highlight: true },
+      { label: 'Skynode sensing parts, before the computer', value: '~$113', highlight: true },
     ],
-    body: 'So most farms, small airports, stadiums, and power substations have no way to know when something is overhead. Skynode is a first step toward making that sensing layer cheap enough to put anywhere.',
+    // Printed under the numbers so they can't be read as a capability claim.
+    statsNote: 'Price comparison only, not a capability comparison. Skynode is one passive camera node and has not run on real hardware yet.',
+    body: 'Skynode is a first step toward making that sensing layer cheap enough to put anywhere.',
+    useCases: {
+      tag: 'USE CASES',
+      text: `Early use cases I'm exploring: farms, small airports, stadiums, and power substations. First hypothesis to test: small general-aviation airfields.`,
+    },
   },
 
   how: {
@@ -121,9 +127,9 @@ export const content = {
     },
     // Simulated sensor view: what the node's on-screen overlay will look like.
     sensor: {
-      label: 'SENSOR VIEW · SIMULATED',
+      label: 'SAMPLE · SENSOR VIEW · SIMULATED',
       caption:
-        'A simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
+        'SAMPLE: a simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
     },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
@@ -133,13 +139,15 @@ export const content = {
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
-      { label: 'DONE', text: 'Detection + tracking loop, working in simulation, 70 automated tests' },
+      { label: 'DONE', text: 'Detection and tracking loop, working in simulation, 226 automated tests' },
       { label: 'DONE', text: 'Pan-tilt mount designed in CAD, with STEP and STL files' },
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
-      { label: 'IN PROGRESS', text: 'Detection model training: v3 with drone and aircraft classes' },
-      { label: 'NEXT', text: 'Build the physical hardware. Nothing has run on real hardware yet.' },
-      { label: 'NEXT', text: 'Sighting logger' },
-      { label: 'NEXT', text: 'Live dashboard' },
+      { label: 'DONE', text: 'Sighting logger (built and tested in simulation)' },
+      { label: 'DONE', text: 'Live dashboard (built and tested in simulation)' },
+      { label: 'IN PROGRESS', text: 'Detection model v3 with drone and aircraft classes (in training)' },
+      { label: 'NEXT', text: 'Run the logger and dashboard on real hardware' },
+      { label: 'NEXT', text: 'Build the physical hardware' },
+      { label: 'NEXT', text: 'Outdoor test' },
       { label: 'NEXT', text: 'Test against real flight data (ADS-B) and publish accuracy results' },
       { label: 'NEXT', text: 'Pi 4 + solar deployment' },
     ],
@@ -149,12 +157,38 @@ export const content = {
   // Only add numbers you have actually measured, and fill in source with how
   // and when they were measured. The build refuses numbers without a source.
   results: {
-    heading: 'Results',
-    intro: '',
+    heading: 'Results so far',
+    intro: 'The v2 model, run on 43 real-world videos of planes, military jets and drones. This tests the model on recorded video. It is not a hardware test.',
     items: [
-      // { value: '00%', label: 'What was measured', note: 'Optional detail' },
+      { value: '7.5%', label: 'False-drone rate on real aircraft', note: '798 of 10,657 frames were called a drone' },
+      { value: '0.8%', label: 'Civilian planes called drones' },
+      { value: '10.8%', label: 'Military jets called drones', note: 'Mostly distant F-35s' },
     ],
-    source: '',
+    source: 'Model v2, 43 real-world videos. v3 (drone and aircraft classes, 960 px input) is in training. There are no v3 results yet.',
+  },
+
+  // KNOWN LIMITS: what Skynode can't do, stated plainly.
+  limits: {
+    kicker: 'Honest limits',
+    heading: 'Known limits',
+    items: [
+      {
+        tag: 'RANGE · ESTIMATE',
+        text: 'A wide-lens webcam detects small drones only at short range, likely tens of meters (an estimate, still to be measured). Aircraft are detectable much farther.',
+      },
+      {
+        tag: 'CONDITIONS',
+        text: 'Visual sensing is weaker in darkness, fog and rain.',
+      },
+      {
+        tag: 'NOT REMOTE ID',
+        text: 'It can see drones that broadcast nothing, unlike Remote ID, but it does not replace Remote ID or RF sensors.',
+      },
+      {
+        tag: 'NOT BUILT YET',
+        text: 'Nothing has run on real hardware yet.',
+      },
+    ],
   },
 
   build: {
@@ -168,6 +202,8 @@ export const content = {
   roadmap: {
     kicker: 'Roadmap',
     heading: 'From one node to a company',
+    // The long-term vision lives here, not in the hero.
+    intro: 'This is Phase 1. The long-term goal is autonomy for missile and drone detection and defense systems.',
     phases: [
       {
         phase: 'PHASE 1 · NOW',

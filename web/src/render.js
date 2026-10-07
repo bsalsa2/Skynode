@@ -47,10 +47,11 @@ function litWords(statement) {
   return out.join(' ');
 }
 
-// Every sentence of the headline on its own line; the second one in grey.
+// Each sentence (or comma clause) of the headline on its own line; the
+// second one in grey.
 const headline = (h) =>
   h
-    .split(/(?<=[.!?])\s+/)
+    .split(/(?<=[.!?,])\s+/)
     .map((line, i) => `<span class="line${i ? ' line--dim' : ''}"><span class="line-in">${esc(line)}</span></span>`)
     .join(' ');
 
@@ -171,6 +172,31 @@ const resultsSection = (r) => {
   </section>`;
 };
 
+// Known limits: what Skynode can't do, stated plainly. Hidden if empty.
+const limitsSection = (l, next) => {
+  if (!l || !Array.isArray(l.items) || l.items.length === 0) return '';
+  return `
+  <section class="limits section" id="limits" aria-labelledby="limits-title">
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(next(), l.kicker || 'Honest limits')}
+        <h2 class="h-section" id="limits-title">${esc(l.heading)}</h2>
+      </header>
+      <ul class="limits-list">
+        ${l.items
+          .map(
+            (it) => `
+        <li class="limit glass" data-reveal>
+          <span class="mono limit-tag">${esc(it.tag)}</span>
+          <p>${esc(it.text)}</p>
+        </li>`
+          )
+          .join('')}
+      </ul>
+    </div>
+  </section>`;
+};
+
 const SUN =
   '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l2.8 2.8M21.7 21.7l2.8 2.8M7.5 24.5l2.8-2.8M21.7 10.3l2.8-2.8"/></svg>';
 
@@ -249,7 +275,7 @@ export function renderHead(c) {
 }
 
 export function renderBody(c) {
-  const { hero, math, how, status, results, build, roadmap, sister, footer } = c;
+  const { hero, math, how, status, results, limits, build, roadmap, sister, footer } = c;
   const footage = hero.footage && hero.footage.video ? hero.footage : null;
 
   const facts = hero.facts.map((f) => `<li>${esc(f)}</li>`).join('');
@@ -332,7 +358,7 @@ ${siteNav(c)}
             <span>${esc(hero.secondary.label)}</span>${ARROW_DN}
           </a>
         </div>
-        ${hero.goal ? `<p class="hero-goal" data-hero>${esc(hero.goal)}</p>` : ''}
+        ${hero.cost ? `<p class="hero-note" data-hero>${esc(hero.cost)}</p>` : ''}
       </div>
       ${footage ? heroFootage(footage) : heroCard(hero)}
     </div>
@@ -349,7 +375,16 @@ ${siteNav(c)}
           : `<p class="math-statement">${litWords(math.body)}</p>`
       }
       ${stats ? `<dl class="stats" data-reveal>${stats}</dl>` : ''}
+      ${math.statsNote ? `<p class="stats-note mono" data-reveal>${esc(math.statsNote)}</p>` : ''}
       ${math.statement ? `<p class="lede" data-reveal>${esc(math.body)}</p>` : ''}
+      ${
+        math.useCases
+          ? `<div class="note" data-reveal>
+        <span class="mono note-tag">${esc(math.useCases.tag)}</span>
+        <p>${esc(math.useCases.text)}</p>
+      </div>`
+          : ''
+      }
     </div>
   </section>
 
@@ -380,6 +415,7 @@ ${siteNav(c)}
     </div>
   </section>
   ${resultsSection(results)}
+  ${limitsSection(limits, () => ++n)}
   <section class="build section" id="build" aria-labelledby="build-title">
     <div class="wrap build-inner">
       <div class="build-orb" aria-hidden="true"></div>
@@ -403,6 +439,7 @@ ${siteNav(c)}
       <header class="section-head">
         ${kicker(++n, roadmap.kicker || 'Roadmap')}
         <h2 class="h-section" id="roadmap-title">${esc(roadmap.heading)}</h2>
+        ${roadmap.intro ? `<p class="lede" data-reveal>${esc(roadmap.intro)}</p>` : ''}
       </header>
       <div class="roadmap-track">
         <span class="roadmap-line" aria-hidden="true"><span class="roadmap-line-fill"></span></span>
