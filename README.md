@@ -139,6 +139,7 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 
 1. **Pico firmware:** flash, test, and calibrate the servos. See [`pico/README.md`](pico/README.md).
 2. **Brain:** install, export a model, and run detection with just the webcam. Then connect the Pico over Wi-Fi or USB. See [`brain/README.md`](brain/README.md).
+3. **Demo, no hardware:** `python -m brain.demo <folder of test videos> --model <model.onnx>` runs detection, the logger and the dashboard on your own videos. See [Demo mode](brain/README.md#demo-mode-your-own-test-videos).
 
 ## Known limits
 
@@ -159,8 +160,8 @@ The website's Status section lists these same items. Update both together.
 - [x] Wiring diagram and bill of materials
 - [ ] Detection model training: v3 with drone and aircraft classes (in progress)
 - [ ] Build the physical hardware. Nothing has run on real hardware yet.
-- [x] Sighting logger (built and tested in simulation; not yet run on the real hardware)
-- [x] Live dashboard (built and tested in simulation; not yet run on the real hardware)
+- [x] Sighting logger (SQLite, with snapshots and an hourly sky check; built and tested in simulation; not yet run on the real hardware)
+- [x] Live dashboard (built and tested in simulation; not yet run on the real hardware). `python -m brain.demo` runs it on a folder of your own test videos
 - [ ] Test against real flight data (ADS-B) and publish accuracy results
 - [ ] Pi 4 + solar deployment
 

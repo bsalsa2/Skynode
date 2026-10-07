@@ -26,7 +26,8 @@ tilt_sign = 1           # if the camera tilts AWAY from the target, flip this
 home_after_s = 10.0     # with no target for this long, return to the home position
 
 [link]
-type = "none"           # "wifi", "usb", or "none" (no Pico yet: detection only)
+type = "none"           # "wifi", "usb", or "none" (no Pico yet: detection only; the pan/tilt
+                        # in the log is then simulated from where the target is in the picture)
 serial_port = "auto"    # or e.g. "COM5" (Windows) / "/dev/ttyACM0" (Linux)
 wifi_host = "auto"      # "auto" finds the Pico by broadcast; or its IP, e.g. "192.168.1.42"
 wifi_port = 5005
@@ -36,7 +37,8 @@ show = true             # preview window; set false on a Pi with no screen
 
 [logger]
 enabled = true
-folder = "../logs"      # relative to this file, so <repo>/logs (git ignores it)
+folder = "../logs"      # relative to this file, so <repo>/logs (git ignores it).
+                        # Holds skynode.db (SQLite) and snapshots/
 min_duration_s = 0.5    # locks shorter than this aren't logged (detector blinks)
 snapshots = true        # save a JPEG of the best moment of each sighting
 heartbeat_min = 60      # while nothing is tracked, log a "sky clear" check this often

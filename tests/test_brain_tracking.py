@@ -93,6 +93,25 @@ class ControllerTest(unittest.TestCase):
         pan, tilt = c.update((WIDTH / 2 + 1, HEIGHT / 2 - 1), (WIDTH, HEIGHT))
         self.assertEqual((pan, tilt), (90.0, 45.0))
 
+    def test_simulated_aim_is_home_plus_the_offset_and_does_not_add_up(self):
+        c = self.make(pan_sign=-1, tilt_sign=1)
+        right, up = c.offset_deg((960, 100), (1280, 720))      # right of centre and above it
+        self.assertGreater(right, 0)
+        self.assertGreater(up, 0)
+        first = c.simulate_aim((960, 100), (1280, 720))
+        for _ in range(50):                                     # the same frame, again and again
+            again = c.simulate_aim((960, 100), (1280, 720))
+        self.assertEqual(first, again)                          # no wind-up
+        self.assertAlmostEqual(again[0], 90.0 - right)          # pan_sign = -1: right turns it down
+        self.assertAlmostEqual(again[1], 45.0 + up)
+        self.assertEqual(c.simulate_aim((640, 360), (1280, 720)), (90.0, 45.0))   # dead centre = home
+
+    def test_simulated_aim_stays_inside_the_limits(self):
+        c = self.make()
+        c.pan_limits, c.tilt_limits = (80.0, 100.0), (40.0, 50.0)
+        pan, tilt = c.simulate_aim((1279, 0), (1280, 720))
+        self.assertTrue(80.0 <= pan <= 100.0 and 40.0 <= tilt <= 50.0)
+
     def test_limits_and_home_come_from_the_pico(self):
         c = self.make()
         c.apply_pico_settings({
