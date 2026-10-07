@@ -135,6 +135,8 @@ Other web sites can't use the dashboard, even while you have it open. A page som
 
 ## Swap in your own model
 
+No local GPU? Train in Google Colab with phone videos: see [`training/`](../training/README.md).
+
 1. Train with Ultralytics (YOLOv8, YOLO11, or YOLO26), then export: `yolo export model=best.pt format=onnx`.
 2. Copy the `.onnx` file into `brain/models/` and update `config.toml`:
    ```toml
