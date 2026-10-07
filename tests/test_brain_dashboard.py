@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
-from brain.dashboard import MAX_VIEWERS, Dashboard, fetch_allowed
+from brain.dashboard import MAX_VIEWERS, Dashboard, fetch_allowed, host_allowed
 
 START = 1_791_000_000.0     # a fixed "now" for the fake clock
 INFO = {"model": "yolov8n.onnx", "target_classes": ["airplane", "bird"], "camera": "0",
@@ -365,6 +365,42 @@ class HostCheckTest(DashboardTestCase):
         self.assertEqual(self.pictures.encoded, 0)          # no picture was made for them
         self.assertEqual(self.logger.calls, [])             # the log was never read for them
         self.assertEqual(printed.getvalue().count("refused"), 1)    # warned once, not per request
+
+
+class AllowedHostsTest(DashboardTestCase):
+    """A name you list is answered; look-alikes and the rest of its domain are not."""
+
+    def setUp(self):
+        super().setUp()
+        self.dash = self.start_dashboard(self.logger, allowed_hosts=["Brave-Fox-8080.app.github.dev."])
+
+    def test_the_exact_listed_name_is_answered(self):
+        for host in ("brave-fox-8080.app.github.dev", "BRAVE-FOX-8080.app.github.dev",
+                     "brave-fox-8080.app.github.dev:443"):
+            with self.subTest(host=host):
+                status, _, body = self.request("/api/state", headers={"Host": host})
+                self.assertEqual(status, 200)
+                self.assertIn("online", strict_json(body))
+
+    def test_everything_else_under_that_domain_is_still_refused(self):
+        printed = io.StringIO()
+        with contextlib.redirect_stdout(printed):
+            for host in ("evil-8080.app.github.dev", "app.github.dev", "x.brave-fox-8080.app.github.dev",
+                         "brave-fox-8080.app.github.dev.evil.com", "brave-fox-8081.app.github.dev"):
+                with self.subTest(host=host):
+                    status, _, _ = self.request("/api/state", headers={"Host": host})
+                    self.assertEqual(status, 403)
+
+    def test_cross_site_pages_are_still_blocked_on_an_allowed_name(self):
+        host = {"Host": "brave-fox-8080.app.github.dev"}
+        status, _, _ = self.request("/stream.mjpg", headers={**host, **fetch("cross-site", "no-cors", "image")})
+        self.assertEqual(status, 403)
+        self.assertEqual(self.dash.viewers, 0)
+
+    def test_nothing_is_listed_by_default(self):
+        self.assertEqual(Dashboard(None).allowed_hosts, frozenset())
+        self.assertTrue(host_allowed("anything.example", {"anything.example"}))
+        self.assertFalse(host_allowed("anything.example"))
 
 
 def fetch(site, mode, dest):

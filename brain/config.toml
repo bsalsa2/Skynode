@@ -54,3 +54,5 @@ node_name = "NODE-01"
 location = ""           # optional label shown at the top, e.g. "BACKYARD"
 stream_fps = 12.0       # at most this many live frames per second go to the browser
 stream_width = 960      # live frames are shrunk to this width (smaller = lighter on a Pi)
+# allowed_hosts = ["my-codespace-8080.app.github.dev"]   # extra EXACT addresses allowed to open the page.
+                        # GitHub Codespaces is added for you automatically; you rarely need this.

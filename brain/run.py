@@ -14,6 +14,7 @@ Quit with q or Esc in the preview window, or Ctrl+C in the terminal.
 """
 import argparse
 import dataclasses
+import os
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -41,6 +42,8 @@ def parse_args(argv=None):
     parser.add_argument("--source", help="webcam number or video file (overrides [camera] source)")
     parser.add_argument("--model", help="path to an .onnx model (overrides [model] path)")
     parser.add_argument("--headless", action="store_true", help="no preview window")
+    parser.add_argument("--loop", action="store_true",
+                        help="when a video file ends, start it again (for demos)")
     parser.add_argument("--port", type=port_number,
                         help="dashboard port (overrides [dashboard] port, normally 8080)")
     parser.add_argument("--no-dashboard", action="store_true",
@@ -70,6 +73,8 @@ def main(argv=None):
         cfg.model.path = args.model
     if args.headless:
         cfg.display.show = False
+    if args.loop:
+        cfg.camera.loop = True
     if args.port is not None:
         cfg.dashboard.port = args.port
     if args.no_dashboard:
@@ -118,6 +123,9 @@ def run_loop(camera, detector, tracker, controller, link, cfg, logger=None, dash
 
     while True:
         ok, frame = camera.read()
+        if not ok and cfg.camera.loop:
+            camera.set(cv2.CAP_PROP_POS_FRAMES, 0)      # back to the first frame of the video
+            ok, frame = camera.read()                   # still nothing? then it isn't a video
         if not ok:
             print("Camera gave no frame (end of the video, or camera unplugged). Stopping.")
             return
@@ -191,6 +199,20 @@ def make_logger(cfg, **options):
     return logger
 
 
+def codespaces_host(port, env):
+    """This Codespace's public address for `port`, or None when we're not in one.
+
+    GitHub Codespaces shows the dashboard to its owner at
+    https://<codespace-name>-<port>.app.github.dev/ . That name is allowed
+    exactly (not the whole app.github.dev domain, which belongs to everyone).
+    """
+    name = env.get("CODESPACE_NAME")
+    if env.get("CODESPACES") != "true" or not name:
+        return None
+    domain = env.get("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN") or "app.github.dev"
+    return f"{name}-{port}.{domain}"
+
+
 def make_dashboard(cfg, logger, link, **options):
     """Start the live dashboard. Returns it, or None if it's turned off or couldn't start.
 
@@ -201,6 +223,11 @@ def make_dashboard(cfg, logger, link, **options):
     settings = cfg.dashboard
     if not settings.enabled:
         return None
+    allowed = list(settings.allowed_hosts)
+    codespace = codespaces_host(settings.port, os.environ)
+    if codespace:
+        allowed.append(codespace)
+    options.setdefault("allowed_hosts", allowed)
     dashboard = Dashboard(logger, settings.host, settings.port, settings.node_name,
                           settings.location, settings.stream_fps, settings.stream_width,
                           info=dashboard_info(cfg, link), **options)
@@ -212,6 +239,8 @@ def make_dashboard(cfg, logger, link, **options):
               "     Tracking carries on without the dashboard.")
         return None
     print(f"Dashboard: {url}")
+    if codespace:
+        print(f"     In GitHub Codespaces, open https://{codespace}/ (or the Ports tab ▸ the globe icon).")
     if settings.host not in ("127.0.0.1", "localhost", "::1"):
         print("     Other devices on your network can open it too, and there's no password.")
     return dashboard
