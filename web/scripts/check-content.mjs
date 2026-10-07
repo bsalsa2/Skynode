@@ -166,12 +166,26 @@ if (footage && footage.video) {
 
 text('math.heading');
 text('math.body');
+if (get('math.statement') !== undefined) {
+  if (text('math.statement') && (get('math.statement').match(/\[/g) || []).length !== (get('math.statement').match(/\]/g) || []).length)
+    err('math.statement has an unmatched [ or ]. Put [square brackets] around the words to light up.', lineOf('statement:'));
+}
+if (get('math.stats') !== undefined) {
+  list('math.stats').forEach((s, i) => {
+    text(`math.stats.${i}.label`, s?.label);
+    text(`math.stats.${i}.value`, s?.value);
+  });
+}
 
 text('how.heading');
 list('how.steps').forEach((s, i) => {
   ['number', 'title', 'body'].forEach((k) => text(`how.steps.${i}.${k}`, s?.[k]));
 });
 text('how.note');
+if (get('how.sensor')) {
+  text('how.sensor.label');
+  text('how.sensor.caption');
+}
 if (get('how.mount')) {
   text('how.mount.label');
   text('how.mount.caption');

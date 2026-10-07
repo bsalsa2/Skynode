@@ -52,7 +52,7 @@ const HORN_GAP = HORN_SEAT_Z - SERVO.tabZ - SERVO.tabT - UPRIGHT_T;
 const UP_L_X = -(CAM_W / 2 + CLEAR + WALL) - HORN_GAP; // inner face of the tilt-servo upright
 
 const MM = 1 / 50; // scene units per millimetre
-const AMBER = 0xf0be5a;
+const HALO = 0xf4f4f2; // brand accent: light, not colour
 const PAN_RANGE = [-0.75, 0.75];
 const TILT_RANGE = [-0.1, 0.62];
 
@@ -96,7 +96,7 @@ function dashedLine(points, opacity) {
   const line = new Line(
     geo,
     new LineDashedMaterial({
-      color: AMBER,
+      color: HALO,
       dashSize: 2.2,
       gapSize: 2.2,
       transparent: true,
@@ -112,12 +112,12 @@ function dashedLine(points, opacity) {
 function ghostServo() {
   const g = new Group();
   const fill = new MeshBasicMaterial({
-    color: 0xbfd0ff,
+    color: 0xd8dae0,
     transparent: true,
     opacity: 0.05,
     depthWrite: false,
   });
-  const line = new LineBasicMaterial({ color: 0xbfd0ff, transparent: true, opacity: 0.38 });
+  const line = new LineBasicMaterial({ color: 0xd8dae0, transparent: true, opacity: 0.38 });
   const cx = SERVO.l / 2 - SERVO.shaftOffset;
   const add = (geo, z) => {
     geo.translate(cx, 0, z);
@@ -147,18 +147,18 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
 
   const scene = new Scene();
   scene.environment = makeEnvironment(renderer);
-  scene.add(new HemisphereLight(0xb4c6ff, 0x0a0e1a, 1.1));
+  scene.add(new HemisphereLight(0xdfe2ea, 0x0a0a0b, 1.1));
   const key = new DirectionalLight(0xffffff, 2.4);
   key.position.set(3, 5, 2);
   scene.add(key);
-  const rim = new DirectionalLight(AMBER, 0.6);
+  const rim = new DirectionalLight(0xdce2f0, 0.9); // horizon-rim light from behind
   rim.position.set(-4, 2, -3);
   scene.add(rim);
 
   const camera = new PerspectiveCamera(26, 1, 0.1, 60);
   const target = new Vector3(0, 0.88, 0);
 
-  // ---- Materials -----------------------------------------------------------
+  // ---- Materials: smoke base, titanium yoke, halo-white camera arm -----------------------------------------------------------
   const mat = (hex, rough) =>
     new MeshPhysicalMaterial({
       color: hex,
@@ -170,8 +170,8 @@ export async function createMount({ container, url, reduceMotion, finePointer, o
       emissive: new Color(hex),
       emissiveIntensity: 0,
     });
-  const materials = [mat(0x46506a, 0.5), mat(0x7f99e6, 0.4), mat(AMBER, 0.42)];
-  const edgeMat = new LineBasicMaterial({ color: 0xe6edff, transparent: true, opacity: 0.16 });
+  const materials = [mat(0x3a3b40, 0.5), mat(0x8a8c93, 0.36), mat(HALO, 0.42)];
+  const edgeMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16 });
 
   const part = ({ geometry, edges }, material) => {
     const g = new Group();

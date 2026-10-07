@@ -49,7 +49,7 @@ const preloadFonts = () => ({
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const wanted = ['jura-latin-300-normal', 'dm-sans-latin-400-normal'];
+      const wanted = ['saira-latin-300-normal', 'ibm-plex-sans-latin-400-normal'];
       const files = Object.keys(ctx.bundle || {}).filter(
         (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
       );

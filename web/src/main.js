@@ -2,10 +2,8 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const root = document.documentElement;
-const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-const reduceMotion = motionQuery.matches;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
 if (!reduceMotion) root.classList.add('js-motion');
 
@@ -14,32 +12,46 @@ if (!reduceMotion) root.classList.add('js-motion');
 // backdrop-filter. Safari and Firefox parse the rule but drop the whole
 // backdrop, so gate it on a Chromium-only API and keep plain blur elsewhere.
 // ---------------------------------------------------------------------------
-if (
-  'userAgentData' in navigator &&
-  window.CSS?.supports?.('backdrop-filter', 'url(#glass-refract) blur(1px)')
-) {
+if ('userAgentData' in navigator && window.CSS?.supports?.('backdrop-filter', 'url(#sn-liquid) blur(1px)')) {
   root.classList.add('has-refraction');
 }
 
 // ---------------------------------------------------------------------------
-// Nav: glass pill after the hero, active section highlighting.
+// Nav: tucks away while you read down the page, comes back when you scroll
+// up. Highlights the section you're in.
 // ---------------------------------------------------------------------------
 const header = document.getElementById('top-nav');
-const hero = document.getElementById('top');
-
-new IntersectionObserver(
-  ([entry]) => header.classList.toggle('is-pinned', !entry.isIntersecting),
-  { rootMargin: '-35% 0px -65% 0px' }
-).observe(hero);
+{
+  let lastY = window.scrollY;
+  let raf = 0;
+  window.addEventListener(
+    'scroll',
+    () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const down = y > lastY + 4;
+        const up = y < lastY - 4;
+        if (down && y > window.innerHeight * 0.6) header.classList.add('is-hidden');
+        else if (up || y < 80) header.classList.remove('is-hidden');
+        if (down || up) lastY = y;
+      });
+    },
+    { passive: true }
+  );
+  // Keyboard users always get the nav back.
+  header.addEventListener('focusin', () => header.classList.remove('is-hidden'));
+}
 
 const navLinks = [...document.querySelectorAll('.nav-link')];
 const sectionFor = new Map(
-  navLinks.map((link) => [document.querySelector(link.getAttribute('href')), link])
+  navLinks.map((link) => [document.querySelector(link.getAttribute('href')), link]).filter(([s]) => s)
 );
-// The "About me" callout sits under the Status link.
-sectionFor.set(document.getElementById('build'), sectionFor.get(document.getElementById('status')));
-const visible = new Set();
+// The "About me" card sits under the Status link.
+const statusLink = sectionFor.get(document.getElementById('status'));
+if (statusLink) sectionFor.set(document.getElementById('build'), statusLink);
 {
+  const visible = new Set();
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => (e.isIntersecting ? visible.add(e.target) : visible.delete(e.target)));
@@ -64,18 +76,15 @@ document.addEventListener('click', (e) => {
 });
 
 // ---------------------------------------------------------------------------
-// Micro-interactions (fine pointers only, and never with reduced motion).
+// Micro-interactions (fine pointers only).
 // ---------------------------------------------------------------------------
 if (finePointer && !reduceMotion) {
   // Magnetic buttons: drift toward the cursor, spring back on leave.
   document.querySelectorAll('.magnetic').forEach((btn) => {
-    const strength = 0.32;
     btn.addEventListener('pointermove', (e) => {
       const r = btn.getBoundingClientRect();
-      const x = (e.clientX - (r.left + r.width / 2)) * strength;
-      const y = (e.clientY - (r.top + r.height / 2)) * strength;
-      btn.style.setProperty('--mx', `${x.toFixed(1)}px`);
-      btn.style.setProperty('--my', `${y.toFixed(1)}px`);
+      btn.style.setProperty('--mx', `${((e.clientX - (r.left + r.width / 2)) * 0.3).toFixed(1)}px`);
+      btn.style.setProperty('--my', `${((e.clientY - (r.top + r.height / 2)) * 0.3).toFixed(1)}px`);
     });
     btn.addEventListener('pointerleave', () => {
       btn.style.setProperty('--mx', '0px');
@@ -85,7 +94,7 @@ if (finePointer && !reduceMotion) {
 }
 
 if (finePointer) {
-  // Glass cards: light sheen follows the cursor; tilt only when motion is OK.
+  // Glass: the light follows the cursor; the panel tilts when motion is OK.
   document.querySelectorAll('.tilt').forEach((card) => {
     let raf = 0;
     card.addEventListener('pointermove', (e) => {
@@ -98,8 +107,8 @@ if (finePointer) {
         card.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
         if (!reduceMotion) {
           card.classList.add('is-tilting');
-          card.style.setProperty('--rx', `${((0.5 - py) * 9).toFixed(2)}deg`);
-          card.style.setProperty('--ry', `${((px - 0.5) * 11).toFixed(2)}deg`);
+          card.style.setProperty('--rx', `${((0.5 - py) * 6).toFixed(2)}deg`);
+          card.style.setProperty('--ry', `${((px - 0.5) * 8).toFixed(2)}deg`);
         }
       });
     });
@@ -113,6 +122,28 @@ if (finePointer) {
 }
 
 // ---------------------------------------------------------------------------
+// Count-up for the cost numbers: "$10,000s" counts from $0 to $10,000s.
+// ---------------------------------------------------------------------------
+function countUp(el, duration = 1.6) {
+  const m = /^(\D*)([\d,]+(?:\.\d+)?)(.*)$/.exec(el.dataset.count || '');
+  if (!m) return;
+  const [, pre, num, post] = m;
+  const target = parseFloat(num.replace(/,/g, ''));
+  const decimals = (num.split('.')[1] || '').length;
+  const fmt = (v) =>
+    pre + v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + post;
+  const state = { v: 0 };
+  el.textContent = fmt(0);
+  gsap.to(state, {
+    v: target,
+    duration,
+    ease: 'expo.out',
+    onUpdate: () => (el.textContent = fmt(state.v)),
+    onComplete: () => (el.textContent = el.dataset.count),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Scroll story (GSAP + ScrollTrigger). Skipped entirely for reduced motion:
 // the page is complete and readable without it.
 // ---------------------------------------------------------------------------
@@ -120,87 +151,106 @@ if (!reduceMotion) {
   gsap.registerPlugin(ScrollTrigger);
   const ease = 'expo.out';
 
-  // Hero entrance. Opacity starts just above zero so the browser still
+  // ---- Hero entrance. Opacity starts just above zero so the browser still
   // counts the headline as painted immediately (keeps LCP fast).
-  gsap.from('[data-hero]', {
-    y: 28,
-    opacity: 0.01,
-    duration: 1.6,
-    ease,
-    stagger: 0.09,
-    delay: 0.1,
+  gsap.from('.hero-title .line-in', { yPercent: 70, opacity: 0.01, duration: 1.8, ease, stagger: 0.12, delay: 0.25 });
+  gsap.from('[data-hero]', { y: 28, opacity: 0.01, duration: 1.6, ease, stagger: 0.08, delay: 0.45, clearProps: 'transform' });
+
+  // ---- Hero exit: the horizon rises to meet you, the moon slips away, and
+  // the copy recedes.
+  const heroTl = gsap.timeline({
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.8 },
+  });
+  heroTl
+    .to('#planet', { yPercent: -9, scale: 1.08, ease: 'none' }, 0)
+    .to('#moon', { yPercent: -70, ease: 'none' }, 0)
+    .to('.hero-inner', { y: -90, opacity: 0, ease: 'power1.in' }, 0)
+    .to('.hero-facts', { opacity: 0, ease: 'none' }, 0);
+
+  // ---- 01 The math: words light up as you read; the numbers count.
+  const words = gsap.utils.toArray('.math-statement .w');
+  if (words.length) {
+    gsap.to(words, {
+      color: (_, el) => (el.classList.contains('w--hi') ? '#ffffff' : '#76767a'),
+      stagger: 0.1,
+      ease: 'none',
+      scrollTrigger: { trigger: '.math-statement', start: 'top 82%', end: 'bottom 45%', scrub: 0.6 },
+    });
+  }
+  document.querySelectorAll('[data-count]').forEach((el, i) => {
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 90%',
+      once: true,
+      onEnter: () => gsap.delayedCall(i * 0.12, () => countUp(el)),
+    });
   });
 
-  // The math is backwards: pin it and light the words up one by one.
-  const words = gsap.utils.toArray('.math-body .w');
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: '.math-pin',
-        start: 'top top',
-        end: '+=110%',
-        pin: true,
-        scrub: 0.6,
-      },
-    })
-    .to(words, { color: '#f1f4fb', stagger: 0.12, ease: 'none', duration: 0.5 })
-    .to({}, { duration: 1.2 });
-
-  // Generic float-up reveals (below the fold, so they can start fully hidden).
-  gsap.utils
-    .toArray(
-      '.section-title, .mount, .how-note, .results-intro, .result, .build-card, .closing, .sister-card'
-    )
-    .forEach((el) => {
-      gsap.from(el, {
-        y: 48,
-        opacity: 0,
-        duration: 1.6,
-        ease,
-        clearProps: 'transform', // hand transforms back to CSS (card tilt)
-        scrollTrigger: { trigger: el, start: 'top 88%' },
-      });
+  // ---- Section headings rise in.
+  gsap.utils.toArray('.section-head').forEach((head) => {
+    gsap.from(head.children, {
+      y: 40,
+      opacity: 0,
+      duration: 1.5,
+      ease,
+      stagger: 0.08,
+      scrollTrigger: { trigger: head, start: 'top 88%' },
     });
+  });
 
-  // How it works: three glass cards float in.
-  gsap.from('.card', {
-    y: 90,
-    rotationX: 12,
+  // ---- Generic float-up reveals.
+  gsap.utils.toArray('[data-reveal]:not(.step)').forEach((el) => {
+    gsap.from(el, {
+      y: 56,
+      opacity: 0,
+      duration: 1.6,
+      ease,
+      clearProps: 'transform', // hand transforms back to CSS (glass tilt)
+      scrollTrigger: { trigger: el, start: 'top 90%' },
+    });
+  });
+
+  // ---- 02 How it works: the three glass panels float up in sequence.
+  gsap.from('.step', {
+    y: 100,
+    rotationX: 14,
     opacity: 0,
     duration: 1.8,
     ease,
     stagger: 0.14,
+    transformPerspective: 1100,
     clearProps: 'transform',
-    scrollTrigger: { trigger: '.cards', start: 'top 85%' },
+    scrollTrigger: { trigger: '.steps', start: 'top 86%' },
+  });
+  gsap.to('.halo', {
+    yPercent: 30,
+    ease: 'none',
+    scrollTrigger: { trigger: '.how', start: 'top bottom', end: 'bottom top', scrub: true },
   });
 
-  // Status: rows reveal, the spine fills as you go.
-  gsap.utils.toArray('.status-row').forEach((row) => {
-    gsap.from(row.children, {
-      x: (i) => (i === 0 ? 0 : -24),
-      scale: (i) => (i === 0 ? 0.4 : 1),
-      opacity: 0,
-      duration: 1.2,
-      ease,
-      stagger: 0.08,
-      scrollTrigger: { trigger: row, start: 'top 88%' },
-    });
+  // ---- 03 Status: rows reveal one after another.
+  ScrollTrigger.batch('.status-row', {
+    start: 'top 92%',
+    once: true,
+    onEnter: (rows) =>
+      gsap.from(rows, { x: -24, opacity: 0, duration: 1.2, ease, stagger: 0.06, clearProps: 'transform' }),
   });
-  const timeline = document.querySelector('.timeline');
+
+  // ---- 04 About: the orb drifts behind the glass, so the glass bends it.
   gsap.fromTo(
-    timeline,
-    { '--fill': 0 },
+    '.build-orb',
+    { yPercent: 30, xPercent: 8 },
     {
-      '--fill': 1,
+      yPercent: -25,
+      xPercent: -6,
       ease: 'none',
-      scrollTrigger: { trigger: timeline, start: 'top 70%', end: 'bottom 70%', scrub: 0.5 },
+      scrollTrigger: { trigger: '.build', start: 'top bottom', end: 'bottom top', scrub: true },
     }
   );
 
-  // Roadmap: the connecting line draws itself and lights each phase.
+  // ---- 05 Roadmap: the line draws itself and lights each phase.
   const track = document.querySelector('.roadmap-track');
   const phases = gsap.utils.toArray('.phase');
-  phases.forEach((p) => p.classList.remove('is-lit'));
   gsap.fromTo(
     track,
     { '--draw': 0 },
@@ -209,24 +259,44 @@ if (!reduceMotion) {
       ease: 'none',
       scrollTrigger: {
         trigger: track,
-        start: 'top 75%',
-        end: 'bottom 60%',
+        start: 'top 78%',
+        end: 'bottom 55%',
         scrub: 0.6,
-        onUpdate: (self) => {
-          phases.forEach((p, i) =>
-            p.classList.toggle('is-lit', self.progress >= (i / (phases.length - 1)) * 0.98)
-          );
-        },
+        onUpdate: (self) =>
+          phases.forEach((p, i) => p.classList.toggle('is-lit', self.progress >= (i / Math.max(1, phases.length - 1)) * 0.98)),
       },
     }
   );
-  gsap.from('.phase-card', {
-    y: 60,
+  gsap.from(phases, {
+    y: 50,
     opacity: 0,
-    duration: 1.6,
+    duration: 1.5,
     ease,
     stagger: 0.12,
-    scrollTrigger: { trigger: track, start: 'top 80%' },
+    clearProps: 'transform',
+    scrollTrigger: { trigger: track, start: 'top 84%' },
+  });
+
+  // Closing: a second horizon rises out of the dark under the last line.
+  gsap.fromTo(
+    '#outro-planet',
+    { y: 260 },
+    { y: 0, ease: 'none', scrollTrigger: { trigger: '.outro', start: 'top bottom', end: 'bottom bottom', scrub: 0.8 } }
+  );
+  gsap.from('.closing', {
+    y: 40,
+    opacity: 0,
+    duration: 1.8,
+    ease,
+    scrollTrigger: { trigger: '.outro', start: 'top 70%' },
+  });
+
+  // Footer wordmark surfaces as you reach the bottom.
+  gsap.from('.footer-giant', {
+    yPercent: 35,
+    opacity: 0,
+    ease: 'none',
+    scrollTrigger: { trigger: '.site-footer', start: 'top bottom', end: 'bottom bottom', scrub: 0.6 },
   });
 
   // Web fonts change line lengths; re-measure once they are in.
@@ -236,157 +306,100 @@ if (!reduceMotion) {
 }
 
 // ---------------------------------------------------------------------------
-// Scroll story for the 3D scene: p goes 0 -> 3 as the viewport centre moves
-// hero -> math -> the cards -> the mount viewer (or Status), and fade takes
-// the orb out before the mount viewer arrives.
+// Real footage (when content.js has it) plays muted, unless motion is off.
 // ---------------------------------------------------------------------------
-const stops = [
-  document.getElementById('top'),
-  document.getElementById('math'),
-  document.querySelector('.cards'),
-  document.getElementById('mount') || document.getElementById('status'),
-];
-function getStory() {
-  const vh = window.innerHeight;
-  const ys = stops.map((el, i) => {
-    const r = el.getBoundingClientRect();
-    // Centres for the first three; the last stop a little after its top edge.
-    return i === 3 ? r.top + vh * 0.2 : r.top + r.height / 2;
-  });
-  const y = vh / 2;
-  let p = 0;
-  if (y >= ys[3]) p = 3;
-  else {
-    for (let i = 0; i < 3; i++) {
-      if (y < ys[i + 1]) {
-        p = i + clamp01((y - ys[i]) / (ys[i + 1] - ys[i]));
-        break;
-      }
-    }
-  }
-  const fade = 1 - clamp01((p - 2.2) / 0.55);
-  return { p, fade };
-}
-
-// ---------------------------------------------------------------------------
-// 3D hero: lazy-loaded after the page has painted, never on the critical path.
-// ---------------------------------------------------------------------------
-// Only hardware-accelerated WebGL 2. Software renderers (SwiftShader,
-// llvmpipe) would grind the main thread, so they get the static hero.
-// Add ?gl=any to the URL to force 3D anyway (handy for testing).
-const forceGL = new URLSearchParams(location.search).get('gl') === 'any';
-let fastGL;
-function hasFastWebGL2() {
-  if (fastGL !== undefined) return fastGL;
-  fastGL = detectFastWebGL2();
-  return fastGL;
-}
-function detectFastWebGL2() {
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    if (!gl) return false;
-    const info = gl.getExtension('WEBGL_debug_renderer_info');
-    const renderer = String(
-      gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || ''
-    );
-    gl.getExtension('WEBGL_lose_context')?.loseContext();
-    if (forceGL) return true;
-    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer);
-  } catch {
-    return false;
-  }
-}
-
-function loadScene() {
-  if (!hasFastWebGL2()) {
-    root.classList.add('no-webgl');
-    return;
-  }
-  const container = reduceMotion
-    ? document.getElementById('hero-visual')
-    : document.getElementById('scene');
-  import('./scene.js')
-    .then(({ createScene }) =>
-      createScene({
-        container,
-        reduceMotion,
-        finePointer,
-        getStory,
-        // Device can't keep up even at low resolution: back to the static hero.
-        onTooSlow: () => {
-          container.classList.remove('is-ready');
-          root.classList.remove('has-scene');
-          root.classList.add('no-webgl');
-        },
-      })
-    )
-    .then(() => {
-      container.classList.add('is-ready');
-      if (!reduceMotion) root.classList.add('has-scene');
-      setTimeout(() => container.classList.add('is-settled'), 1700);
-    })
-    .catch((err) => {
-      // Anything goes wrong: the static SVG hero simply stays.
-      console.warn('[skynode] 3D scene unavailable, showing static hero.', err);
-      root.classList.add('no-webgl');
-    });
-}
-
-// ---------------------------------------------------------------------------
-// Real footage (when content.js has it) replaces the concept scene.
-// ---------------------------------------------------------------------------
-const heroVisual = document.getElementById('hero-visual');
-const footage = heroVisual.querySelector('.hero-video');
+const footage = document.querySelector('.hero-video');
 if (footage) {
   if (reduceMotion) footage.controls = true;
   else footage.play().catch(() => (footage.controls = true));
 }
 
 // ---------------------------------------------------------------------------
-// Pan-tilt mount viewer: loads when it's about to scroll into view.
+// Lazy pieces: never on the critical path.
 // ---------------------------------------------------------------------------
-function watchMount() {
-  const stage = document.getElementById('mount-stage');
-  if (!stage || !hasFastWebGL2()) return;
-  const parts = [...document.querySelectorAll('.mount-parts li')];
-  const io = new IntersectionObserver(
-    ([entry]) => {
-      if (!entry.isIntersecting) return;
-      io.disconnect();
-      import('./mount.js')
-        .then(({ createMount }) =>
-          createMount({
-            container: stage,
-            url: new URL('models/pantilt.bin', document.baseURI).href,
-            reduceMotion,
-            finePointer,
-            onTooSlow: () => stage.classList.remove('is-ready'),
-          })
-        )
-        .then((mount) => {
-          stage.classList.add('is-ready');
-          parts.forEach((li, i) => {
-            li.addEventListener('pointerenter', () => {
-              li.classList.add('is-active');
-              mount.setActive(i);
-            });
-            li.addEventListener('pointerleave', () => {
-              li.classList.remove('is-active');
-              mount.setActive(-1);
-            });
-          });
-        })
-        .catch((err) => console.warn('[skynode] mount viewer unavailable, keeping the still.', err));
-    },
-    { rootMargin: '600px 0px' }
-  );
-  io.observe(stage);
-}
-
 const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
 const afterLoad = (fn) => {
   if (document.readyState === 'complete') idle(fn, { timeout: 1500 });
   else window.addEventListener('load', () => idle(fn, { timeout: 1500 }), { once: true });
 };
-if (!footage) afterLoad(loadScene);
-afterLoad(watchMount);
+// Load a module when its element is about to scroll into view.
+const whenNear = (el, load) => {
+  if (!el) return;
+  const io = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      load();
+    },
+    { rootMargin: '600px 0px' }
+  );
+  io.observe(el);
+};
+
+// Hero sky: stars, the aircraft pass, and the live readout.
+afterLoad(() => {
+  const hero = document.getElementById('top');
+  const canvas = document.getElementById('sky-canvas');
+  if (!canvas) return;
+  import('./hero.js')
+    .then(({ createHeroSky }) =>
+      createHeroSky({ hero, canvas, card: document.getElementById('hud'), reduceMotion, finePointer })
+    )
+    .catch((err) => console.warn('[skynode] hero sky unavailable.', err));
+});
+
+// Simulated sensor view.
+whenNear(document.getElementById('sensor'), () =>
+  import('./sensor.js')
+    .then(({ createSensor }) => createSensor({ root: document.getElementById('sensor'), reduceMotion }))
+    .catch((err) => console.warn('[skynode] sensor view unavailable.', err))
+);
+
+// Pan-tilt mount viewer (three.js). Only hardware-accelerated WebGL 2:
+// software renderers would grind the main thread, so they keep the still.
+// Add ?gl=any to the URL to force it anyway (handy for testing).
+function hasFastWebGL2() {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl2');
+    if (!gl) return false;
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    if (new URLSearchParams(location.search).get('gl') === 'any') return true;
+    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer);
+  } catch {
+    return false;
+  }
+}
+
+afterLoad(() => {
+  const stage = document.getElementById('mount-stage');
+  if (!stage || !hasFastWebGL2()) return;
+  const parts = [...document.querySelectorAll('.mount-parts li')];
+  whenNear(stage, () =>
+    import('./mount.js')
+      .then(({ createMount }) =>
+        createMount({
+          container: stage,
+          url: new URL('models/pantilt.bin', document.baseURI).href,
+          reduceMotion,
+          finePointer,
+          onTooSlow: () => stage.classList.remove('is-ready'),
+        })
+      )
+      .then((mount) => {
+        stage.classList.add('is-ready');
+        parts.forEach((li, i) => {
+          li.addEventListener('pointerenter', () => {
+            li.classList.add('is-active');
+            mount.setActive(i);
+          });
+          li.addEventListener('pointerleave', () => {
+            li.classList.remove('is-active');
+            mount.setActive(-1);
+          });
+        });
+      })
+      .catch((err) => console.warn('[skynode] mount viewer unavailable, keeping the still.', err))
+  );
+});

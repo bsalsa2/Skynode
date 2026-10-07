@@ -1,37 +1,52 @@
 /* Self-hosted fonts (SIL Open Font License, via @fontsource).
-   Latin subset only; no requests to third-party servers. */
+   Latin subset only; no requests to third-party servers.
+   Saira: headings and wordmark. IBM Plex Sans: body. IBM Plex Mono: data. */
 @font-face {
-  font-family: 'Jura';
+  font-family: 'Saira';
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url('../node_modules/@fontsource/jura/files/jura-latin-300-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/saira/files/saira-latin-300-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Jura';
+  font-family: 'Saira';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('../node_modules/@fontsource/jura/files/jura-latin-400-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/saira/files/saira-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'DM Sans';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../node_modules/@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'DM Sans';
+  font-family: 'Saira';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('../node_modules/@fontsource/dm-sans/files/dm-sans-latin-500-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/saira/files/saira-latin-500-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'DM Mono';
+  font-family: 'IBM Plex Sans';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('../node_modules/@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
 }
