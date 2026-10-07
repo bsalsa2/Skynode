@@ -358,6 +358,29 @@ class CommandLineTest(unittest.TestCase):
         cfg.camera.source = 0
         self.assertEqual(dashboard_info(cfg, NullLink())["camera"], "0")
 
+    def test_dashboard_info_never_shows_a_network_cameras_password(self):
+        cfg = Config()
+        expected = {
+            "rtsp://admin:hunter2@192.168.1.50:554": "rtsp://192.168.1.50:554",
+            "rtsp://admin:hunter2@192.168.1.50/live": "rtsp://192.168.1.50",
+            "http://192.168.1.50/video.cgi?user=admin&pwd=hunter2": "http://192.168.1.50",
+            "RTSP://admin:hunter2@[FE80::1]:8554/stream1": "rtsp://[fe80::1]:8554",
+            "rtsp://admin:hunter2@cam.local:99999/": "rtsp://cam.local",    # not a real port
+            "rtsp://admin:hunter2@[::1": "network stream",                  # too garbled to read
+            "rtspsrc location=rtsp://admin:hunter2@192.168.1.50/ ! appsink": "network stream",
+            "C:/videos/planes.mp4": "planes.mp4",       # a Windows drive letter is not an address
+        }
+        for source, shown in expected.items():
+            with self.subTest(source=source):
+                cfg.camera.source = source
+                info = dashboard_info(cfg, NullLink())
+                self.assertEqual(info["camera"], shown)
+                self.assertEqual(info["config"]["camera"]["source"], shown)
+                everything = json.dumps(info)       # all that /api/state and /api/config show
+                self.assertNotIn("hunter2", everything)
+                self.assertNotIn("admin", everything)
+                self.assertEqual(cfg.camera.source, source)     # the real setting is untouched
+
 
 class AlwaysAPlane:
     """Stands in for brain.detector.Detector: sees one airplane in the middle of every frame."""

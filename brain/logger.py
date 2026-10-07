@@ -44,6 +44,7 @@ KINDS = ("sighting", "check")
 SNAPSHOT_WIDTH = 640                                 # snapshots are shrunk to at most this wide
 SAFE_ID = re.compile(r"[0-9A-Za-z_-]+")              # ids end up in file names and URLs
 SNAPSHOT_NAME = re.compile(r"[0-9A-Za-z_-]+\.jpg")   # the only names snapshot_path() accepts
+MAX_LINE_BYTES = 16 * 1024      # a real record is a few hundred bytes; longer lines are skipped
 
 
 @dataclass
@@ -349,9 +350,14 @@ class SightingLogger:
             for line in lines:
                 if not line.strip():
                     continue
+                if len(line) > MAX_LINE_BYTES:          # far too long to be one of ours
+                    self.skipped_lines += 1
+                    continue
                 try:
                     record = Sighting.from_dict(json.loads(line))
-                except (ValueError, OverflowError):     # damaged, e.g. cut short by a crash
+                # Damaged, e.g. cut short by a crash. RecursionError: brackets
+                # inside brackets inside brackets..., deeper than Python can follow.
+                except (ValueError, OverflowError, RecursionError):
                     self.skipped_lines += 1
                     continue
                 if record.id in self._ids:              # the same id twice: keep the first

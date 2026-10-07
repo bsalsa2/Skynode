@@ -131,6 +131,8 @@ By default only the computer running the brain can open the dashboard. To open i
 
 On Windows, the firewall may block the phone. Allow Python through it for **Private** networks, the same as for the Pico's Wi-Fi link.
 
+Other web sites can't use the dashboard, even while you have it open. A page somewhere else can't show your camera inside itself, peek at your snapshots, or take up the live stream's places (there are 4). The brain only answers the dashboard's own page, an address you type in or bookmark, and plain links to its front page.
+
 ## Swap in your own model
 
 1. Train with Ultralytics (YOLOv8, YOLO11, or YOLO26), then export: `yolo export model=best.pt format=onnx`.
@@ -170,6 +172,8 @@ Ultralytics YOLO weights and anything exported from them are licensed **AGPL-3.0
 | `WARN the dashboard can't start on 127.0.0.1:8080` | Another program (or a second copy of the brain) is using port 8080. Run with `--port 8081`, or change `port` in `config.toml`. Tracking and logging keep going without the dashboard |
 | The dashboard says OFFLINE | The brain isn't running, or the camera stopped sending frames. Check the terminal |
 | The phone can't open the dashboard | Set `host = "0.0.0.0"`, use the computer's IP address (not `localhost`), and stay on the same Wi-Fi. On Windows, allow Python through the firewall for Private networks |
+| `403`: *Open the dashboard by this computer's address* | You opened it by a name with a real domain, like a custom DNS name `skynode.example.com`. To block a trick called DNS rebinding, the dashboard only answers to `localhost`, an IP address (`http://192.168.1.42:8080/`), the computer's plain name (`raspberrypi`) or a home-network name like `raspberrypi.local`. Use one of those |
+| `403`: *Only the dashboard's own page can load this* | Another web site (or another app on this computer) tried to load the camera or the log. That's blocked on purpose. Open the dashboard itself, e.g. `http://localhost:8080/` |
 
 ## Tests
 

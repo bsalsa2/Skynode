@@ -34,6 +34,8 @@ Files only ever come from brain/dashboard/ and the snapshots folder: names
 with "..", hidden files and odd characters are refused. And the page must be
 opened by an address like localhost, 192.168.1.20 or raspberrypi.local, not
 by a web site's name: see host_allowed() for the trick that this blocks.
+Other web sites can't put the camera or the snapshots on their pages either:
+see fetch_allowed().
 
 OpenCV is only imported to make pictures, so without it everything except the
 live picture still works (and the tests run without it).
@@ -141,8 +143,12 @@ class Dashboard:
         self._gaps = 0.0                    # total of the pauses between frames longer than GAP_S
         self._image = None                  # latest shrunk frame: our own copy, never the caller's
         self._image_seq = 0                 # goes up by one with every new _image
-        self._image_time = None             # when publish() last made one (main loop only)
+        self._next_image_at = None          # when the next _image is due (main loop only)
         self._jpeg_seq, self._jpeg = 0, None    # _image as JPEG, made once, shared by all viewers
+        # Only one thread turns a picture into a JPEG at a time; the others wait
+        # for it and share its result. A lock of its own, so publish() (which
+        # takes _lock) never has to wait for an encoder.
+        self._encode_lock = threading.Lock()
         self._viewers = set()               # connections currently watching /stream.mjpg
         self._stopping = threading.Event()
         self._warned = set()
@@ -275,12 +281,26 @@ class Dashboard:
                 "box": normalised_box(detection.box, width, height)}
 
     def _picture_due(self, now, watched):
-        """Time for a new live picture? stream_fps while someone watches, else about 1 a second."""
+        """Time for a new live picture? stream_fps while someone watches, else about 1 a second.
+
+        Pictures follow a timetable: each one is due `every` seconds after the
+        previous one was DUE, not after it was made. Frames only come when the
+        camera sends them, so most pictures are made a little late. Counting
+        from "made" would add that lateness every time: a 20 fps camera with
+        stream_fps = 12 would only give 10 pictures a second (every other frame).
+        """
         every = self.stream_interval if watched else max(self.stream_interval, STILL_EVERY_S)
-        last = self._image_time
-        if last is not None and 0 <= now - last < every:     # (a clock that jumped back: make one)
-            return False
-        self._image_time = now
+        due = self._next_image_at
+        if due is not None and now < due <= now + every:
+            return False                    # not yet
+        # Start the timetable again from now if this is the first picture, if we
+        # fell more than one picture behind (the camera paused: no burst of
+        # pictures to catch up), or if the next one is due further off than it
+        # could be (the clock jumped back, or a viewer just arrived and the slow
+        # once-a-second timetable gives way to stream_fps).
+        if due is None or abs(now - due) > every:
+            due = now
+        self._next_image_at = due + every
         return True
 
     def _store_picture(self, frame):
@@ -408,21 +428,25 @@ class Dashboard:
         """JPEG bytes of picture number `seq`, or None if it can't be encoded.
 
         Encoded once and shared, so four viewers don't cost four times the work.
+        A new picture wakes all the stream threads at the same moment, and they
+        all ask for it at once. The first one through _encode_lock makes the
+        JPEG; the others wait for it there, then find it ready-made.
         """
-        with self._lock:
-            if self._jpeg_seq == seq and self._jpeg is not None:
-                return self._jpeg
-        try:
-            data = bytes(self.encode_jpeg(image))       # the slow part: outside the lock
-        except Exception as error:
-            self.picture_problem = f"Can't encode the live picture: {error}"
-            self.warn_once("encode", f"WARN {self.picture_problem}")
-            return None
-        self.picture_problem = None
-        with self._lock:
-            if seq > self._jpeg_seq:
-                self._jpeg_seq, self._jpeg = seq, data
-        return data
+        with self._encode_lock:
+            with self._lock:
+                if self._jpeg_seq == seq and self._jpeg is not None:
+                    return self._jpeg
+            try:
+                data = bytes(self.encode_jpeg(image))   # the slow part: outside _lock
+            except Exception as error:
+                self.picture_problem = f"Can't encode the live picture: {error}"
+                self.warn_once("encode", f"WARN {self.picture_problem}")
+                return None
+            self.picture_problem = None
+            with self._lock:
+                if seq > self._jpeg_seq:
+                    self._jpeg_seq, self._jpeg = seq, data
+            return data
 
     def warn_once(self, topic, message):
         """Print a warning once per topic, so one problem doesn't flood the terminal."""
@@ -495,6 +519,17 @@ class _Handler(BaseHTTPRequestHandler):
             self.send_json(403, {"error": "Open the dashboard by this computer's address, like "
                                           f"http://localhost:{port}/ or http://192.168.1.20:{port}/, "
                                           "not by a web site's name."})
+            return
+        # Checked here, before any route runs, so a refused request never takes
+        # one of the MAX_VIEWERS stream places or makes a JPEG.
+        if not fetch_allowed(path, self.headers.get("Sec-Fetch-Site"),
+                             self.headers.get("Sec-Fetch-Mode"),
+                             self.headers.get("Sec-Fetch-Dest")):
+            self.dashboard.warn_once("cross-site", "WARN the dashboard refused a request from "
+                                                   "another web site's page. Only its own page "
+                                                   "may show the camera and the log.")
+            self.send_json(403, {"error": "Only the dashboard's own page can load this, "
+                                          "not other web sites."})
             return
         try:
             route = self.ROUTES.get(path)
@@ -615,6 +650,7 @@ class _Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Cross-Origin-Resource-Policy", "same-origin")    # see send()
             self.end_headers()
             while not dash.stopping:
                 if jpeg is not None:
@@ -663,6 +699,9 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", cache)
         self.send_header("X-Content-Type-Options", "nosniff")
+        # "Only pages from this same address may use this." The browser enforces
+        # it too (even for a copy it kept in its cache), on top of fetch_allowed().
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         for name, value in headers:
             self.send_header(name, value)
         self.end_headers()
@@ -718,6 +757,32 @@ def host_allowed(host):
     if not HOST_NAME.fullmatch(name):
         return False
     return "." not in name or name.endswith(HOME_NETWORK_ENDINGS)
+
+
+def fetch_allowed(path, site, mode, dest):
+    """May a browser have `path`, given who asked for it (its Sec-Fetch-... headers)?
+
+    host_allowed() can't stop this one: any web page you visit can contain
+    <img src="http://localhost:8080/stream.mjpg">, and the browser then asks
+    for it by the right name. That page can't SEE the picture, but it could
+    take all MAX_VIEWERS stream places (so you can't watch your own camera),
+    keep this computer busy making JPEGs, or find out which snapshots exist
+    (an <img> that loads versus one that fails).
+
+    Modern browsers say who is asking, in the Sec-Fetch-Site header:
+      same-origin    the dashboard's own page: its fetches, its <img src="/stream.mjpg">
+      none           you: an address you typed, or a bookmark
+      same-site, cross-site   a page from somewhere else
+    Other pages get nothing, with one exception: a plain link from elsewhere
+    to the front page (mode "navigate", dest "document") still opens it.
+    No Sec-Fetch-Site at all is fine: older browsers and scripts don't send it.
+    """
+    if site is None:
+        return True
+    if site.strip().lower() in ("same-origin", "none"):
+        return True
+    return (path == "/" and str(mode).strip().lower() == "navigate"
+            and str(dest).strip().lower() == "document")
 
 
 def decode_path(text):

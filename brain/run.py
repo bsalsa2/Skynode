@@ -16,6 +16,7 @@ import argparse
 import dataclasses
 import time
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import cv2
 
@@ -219,7 +220,7 @@ def make_dashboard(cfg, logger, link, **options):
 def dashboard_info(cfg, link):
     """What the dashboard's Nodes and Settings tabs show about this brain."""
     source = cfg.camera.source
-    camera = str(source) if isinstance(source, int) else Path(source).name
+    camera = shown_camera(source)
     config = dataclasses.asdict(cfg)
     # Short paths only: anyone who can open the page sees these, and a full
     # path like C:\Users\<your name>\... says more than it needs to.
@@ -231,6 +232,46 @@ def dashboard_info(cfg, link):
             "camera": camera,
             "link": link.description,
             "config": config}
+
+
+def shown_camera(source):
+    """The camera as the dashboard shows it, without anything secret in it.
+
+        0                                         -> "0"             (a webcam number)
+        "videos/planes.mp4"                       -> "planes.mp4"    (a file: just its name)
+        "rtsp://admin:hunter2@192.168.1.50/live"  -> "rtsp://192.168.1.50"
+
+    A network camera's address often carries its user name and password
+    (before the @, or after the ? as user=...&pwd=...). Only the kind of
+    stream and the camera's address are shown, never the rest.
+    """
+    if isinstance(source, int):
+        return str(source)
+    text = str(source)
+    try:
+        parts = urlsplit(text)
+    except ValueError:      # an address too garbled to take apart (e.g. "rtsp://[::1")
+        return "network stream"
+    # A real scheme like "rtsp" or "http" is longer than one letter. One letter
+    # is a Windows drive: C:\videos\planes.mp4 is a file, not an address.
+    if len(parts.scheme) > 1:
+        return network_camera(parts)
+    if "://" in text:       # an address somewhere inside (e.g. a GStreamer pipeline): show none of it
+        return "network stream"
+    return Path(text).name
+
+
+def network_camera(parts):
+    """'rtsp' + '192.168.1.50' + 554 -> 'rtsp://192.168.1.50:554' (no password, path or query)."""
+    try:
+        host, port = parts.hostname, parts.port
+    except ValueError:      # a port that isn't a number
+        host, port = parts.hostname, None
+    if not host:
+        return "network stream"
+    if ":" in host:         # an IPv6 address goes in [brackets], like [fe80::1]
+        host = f"[{host}]"
+    return f"{parts.scheme}://{host}" + (f":{port}" if port is not None else "")
 
 
 def shown_path(path):

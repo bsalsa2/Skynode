@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
-from brain.dashboard import MAX_VIEWERS, Dashboard
+from brain.dashboard import MAX_VIEWERS, Dashboard, fetch_allowed
 
 START = 1_791_000_000.0     # a fixed "now" for the fake clock
 INFO = {"model": "yolov8n.onnx", "target_classes": ["airplane", "bird"], "camera": "0",
@@ -186,6 +186,7 @@ class DashboardTestCase(unittest.TestCase):
         self.assertEqual(headers["Content-Type"], "application/json; charset=utf-8")
         self.assertEqual(headers["Cache-Control"], "no-store")
         self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(headers["Cross-Origin-Resource-Policy"], "same-origin")
         self.assertIsNone(headers["Access-Control-Allow-Origin"])
         return status, strict_json(body)
 
@@ -199,9 +200,9 @@ class DashboardTestCase(unittest.TestCase):
                           settings["link_text"])
         return frame
 
-    def open_stream(self):
+    def open_stream(self, headers=None):
         conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=3)
-        conn.request("GET", "/stream.mjpg?t=123")
+        conn.request("GET", "/stream.mjpg?t=123", headers=headers or {})
         response = conn.getresponse()
 
         def close():
@@ -251,6 +252,7 @@ class StaticFilesTest(DashboardTestCase):
                 self.assertEqual(status, 200)
                 self.assertEqual(headers["Content-Type"], content_type)
                 self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+                self.assertEqual(headers["Cross-Origin-Resource-Policy"], "same-origin")
                 self.assertEqual(int(headers["Content-Length"]), len(body))
         self.assertEqual(self.request("/assets/fonts/saira.woff2")[2], b"wOF2")
 
@@ -363,6 +365,110 @@ class HostCheckTest(DashboardTestCase):
         self.assertEqual(self.pictures.encoded, 0)          # no picture was made for them
         self.assertEqual(self.logger.calls, [])             # the log was never read for them
         self.assertEqual(printed.getvalue().count("refused"), 1)    # warned once, not per request
+
+
+def fetch(site, mode, dest):
+    """The Sec-Fetch-... headers a browser sends: who asked, and how, and for what."""
+    return {"Sec-Fetch-Site": site, "Sec-Fetch-Mode": mode, "Sec-Fetch-Dest": dest}
+
+
+OWN_FETCH = fetch("same-origin", "cors", "empty")           # the page's own fetch("/api/state")
+OWN_IMAGE = fetch("same-origin", "no-cors", "image")        # its <img src="/stream.mjpg">
+TYPED = fetch("none", "navigate", "document")               # an address typed in, or a bookmark
+LINK_FROM_ELSEWHERE = fetch("cross-site", "navigate", "document")
+OTHER_SITE_IMAGE = fetch("cross-site", "no-cors", "image")  # <img src="http://localhost:8080/...">
+
+
+class CrossSiteTest(DashboardTestCase):
+    """Other web pages can't put the camera on their page or poke at the log."""
+
+    PATHS = ("/", "/api/state", "/api/stats", "/api/sightings", "/api/sightings.csv",
+             "/api/config", "/snapshot.jpg", "/stream.mjpg", f"/snapshots/{SNAPSHOT}",
+             "/assets/dashboard.js", "/nope")
+
+    def assert_refused(self, path, headers):
+        status, answer_headers, body = self.request(path, headers=headers)
+        self.assertEqual(status, 403)
+        self.assertEqual(answer_headers["Cross-Origin-Resource-Policy"], "same-origin")
+        self.assertEqual(list(strict_json(body)), ["error"])
+
+    def test_other_web_sites_get_nothing(self):
+        self.publish()
+        foreign = [
+            OTHER_SITE_IMAGE,
+            fetch("same-site", "no-cors", "image"),     # e.g. another app on this computer
+            fetch("cross-site", "cors", "empty"),       # its scripts' fetch()
+            fetch("cross-site", "navigate", "iframe"),  # the dashboard inside its page
+            {"Sec-Fetch-Site": "Cross-Site"},           # odd capitals, nothing else
+        ]
+        printed = io.StringIO()
+        with contextlib.redirect_stdout(printed):
+            for headers in foreign:
+                for path in self.PATHS:
+                    with self.subTest(headers=headers, path=path):
+                        self.assert_refused(path, headers)
+            # A link from elsewhere may open the page, but nothing else
+            for path in self.PATHS[1:]:
+                with self.subTest(link_to=path):
+                    self.assert_refused(path, LINK_FROM_ELSEWHERE)
+        # Refused before anything ran: no stream place taken, no JPEG made, no log read
+        self.assertEqual(self.dash.viewers, 0)
+        self.assertEqual(self.pictures.encoded, 0)
+        self.assertEqual(self.logger.calls, [])
+        self.assertEqual(printed.getvalue().count("WARN"), 1)      # warned once, not per request
+
+    def test_other_sites_cant_take_the_stream_places_from_you(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            for _ in range(MAX_VIEWERS + 1):
+                self.assert_refused("/stream.mjpg", OTHER_SITE_IMAGE)
+        self.assertEqual(self.dash.viewers, 0)
+        response, _ = self.open_stream(OWN_IMAGE)
+        self.assertEqual(response.status, 200)
+
+    def test_the_dashboards_own_page_still_works(self):
+        self.publish(frame=FakeFrame(label="own"))
+        # The page itself: typed in, a link from another site, or no Sec-Fetch at all
+        for headers in (TYPED, LINK_FROM_ELSEWHERE, {}):
+            with self.subTest(headers=headers):
+                status, answer_headers, _ = self.request("/?from=elsewhere", headers=headers)
+                self.assertEqual(status, 200)
+                self.assertEqual(answer_headers["Content-Type"], "text/html; charset=utf-8")
+        # Everything the page loads, plus an address typed in, plus scripts (no Sec-Fetch)
+        for headers in (OWN_FETCH, OWN_IMAGE, TYPED, {}):
+            for path in ("/api/state", "/api/sightings", "/api/sightings.csv", "/api/config",
+                         "/snapshot.jpg", f"/snapshots/{SNAPSHOT}", "/assets/dashboard.css"):
+                with self.subTest(headers=headers, path=path):
+                    self.assertEqual(self.request(path, headers=headers)[0], 200)
+        # Its <img src="/stream.mjpg">, and the stream opened from the address bar
+        for viewers, headers in enumerate((OWN_IMAGE, TYPED), start=1):
+            response, _ = self.open_stream(headers)
+            self.assertEqual(response.status, 200)
+            self.assertEqual(self.read_part(response), jpeg_of("own"))
+            self.assertEqual(self.dash.viewers, viewers)
+
+    def test_who_may_fetch_what(self):
+        allowed = [
+            ("/api/state", None, None, None),           # no Sec-Fetch-Site: old browser or script
+            ("/stream.mjpg", "same-origin", "no-cors", "image"),
+            ("/stream.mjpg", " Same-Origin ", None, None),
+            ("/api/state", "none", "navigate", "document"),
+            ("/", "cross-site", "navigate", "document"),
+            ("/", "same-site", "Navigate", "Document"),
+        ]
+        refused = [
+            ("/stream.mjpg", "cross-site", "no-cors", "image"),
+            ("/", "cross-site", "no-cors", "image"),
+            ("/", "cross-site", "navigate", "iframe"),
+            ("/", "cross-site", None, None),
+            ("/api/state", "cross-site", "navigate", "document"),
+            ("/", "something-new", "cors", "empty"),
+        ]
+        for args in allowed:
+            with self.subTest(args=args):
+                self.assertTrue(fetch_allowed(*args))
+        for args in refused:
+            with self.subTest(args=args):
+                self.assertFalse(fetch_allowed(*args))
 
 
 class LiveStateTest(DashboardTestCase):
@@ -610,6 +716,7 @@ class LogEndpointsTest(DashboardTestCase):
         self.assertEqual(status, 200)
         self.assertEqual(headers["Content-Type"], "image/jpeg")
         self.assertEqual(headers["Cache-Control"], "max-age=86400")
+        self.assertEqual(headers["Cross-Origin-Resource-Policy"], "same-origin")
         self.assertEqual(body, b"\xff\xd8snapshot\xff\xd9")
         self.assertEqual(self.last_call(), ("snapshot_path", SNAPSHOT))
         self.assertEqual(self.request("/snapshots/20261007-140217-009.jpg")[0], 404)
@@ -637,6 +744,7 @@ class LivePictureTest(DashboardTestCase):
         self.assertEqual(status, 200)
         self.assertEqual(headers["Content-Type"], "image/jpeg")
         self.assertEqual(headers["Cache-Control"], "no-store")
+        self.assertEqual(headers["Cross-Origin-Resource-Policy"], "same-origin")
         self.assertEqual(body, jpeg_of("one"))
         self.request("/snapshot.jpg")
         self.assertEqual(self.pictures.encoded, 1)       # the same picture is encoded once
@@ -648,6 +756,7 @@ class LivePictureTest(DashboardTestCase):
         self.assertEqual(response.headers["Content-Type"],
                          "multipart/x-mixed-replace; boundary=frame")
         self.assertEqual(response.headers["Cache-Control"], "no-store")
+        self.assertEqual(response.headers["Cross-Origin-Resource-Policy"], "same-origin")
         self.assertEqual(self.read_part(response), jpeg_of("first"))
         self.assertEqual(self.dash.viewers, 1)
 
@@ -656,16 +765,53 @@ class LivePictureTest(DashboardTestCase):
         self.assertEqual(self.dash.viewers, 1)
         self.publish(frame=FakeFrame(label="a"))
         self.assertEqual(self.read_part(response), jpeg_of("a"))
-        # stream_fps is 12: frames 0.05 s apart, so only every other one becomes a picture
+        # stream_fps is 12, so a picture is due every 1/12 s (at 0.083, 0.167, 0.25 ...).
+        # Frames about 0.05 s apart (a 20 fps camera): the first frame at or after
+        # each due time becomes a picture.
         for label in "bcdefg":
-            self.clock.advance(0.05)
+            self.clock.advance(0.0501)
             self.publish(frame=FakeFrame(label=label))
-        self.assertEqual([f.label for f, _ in self.pictures.shrunk], ["a", "c", "e", "g"])
+        self.assertEqual([f.label for f, _ in self.pictures.shrunk], ["a", "c", "e", "f"])
         # The stream always sends the NEWEST picture, so a slow reader skips some, never lags
         parts = [self.read_part(response)]
-        while parts[-1] != jpeg_of("g"):
+        while parts[-1] != jpeg_of("f"):
             parts.append(self.read_part(response))
-        self.assertLessEqual(set(parts), {jpeg_of("c"), jpeg_of("e"), jpeg_of("g")})
+        self.assertLessEqual(set(parts), {jpeg_of("c"), jpeg_of("e"), jpeg_of("f")})
+
+    def test_a_20_fps_camera_streams_at_stream_fps_without_bursts(self):
+        self.open_stream()                        # someone watches, so stream_fps (12) applies
+        for i in range(40):                       # about 2 s of a 20 fps camera
+            self.clock.t = START + i * 0.0501
+            self.publish()
+        # Pictures were due at 0, 1/12, 2/12, ... 23/12 s: 24 of them in those 2 s.
+        # (Timing each one from when the previous one was MADE gives every other frame: 20.)
+        self.assertEqual(len(self.pictures.shrunk), 24)
+        # The camera hangs for 2 s. Afterwards the timetable starts again from
+        # now: one picture, not a burst of back-to-back frames to catch up.
+        for i in range(3):
+            self.clock.t = START + 4.0 + i * 0.0501
+            self.publish()
+        self.assertEqual(len(self.pictures.shrunk), 26)     # the frames at +0 and +0.1 s
+
+    def test_viewers_share_one_jpeg_per_picture(self):
+        encoded = []
+
+        def slow_encode(image):
+            encoded.append(image.label)
+            time.sleep(0.05)        # slow, like a big picture on a Pi: the other viewers ask meanwhile
+            return b"\xff\xd8" + image.label.encode() + b"\xff\xd9"
+
+        dash = self.start_dashboard(None, encode_jpeg=slow_encode)
+        streams = [self.open_stream()[0] for _ in range(MAX_VIEWERS)]
+        self.assertEqual(dash.viewers, MAX_VIEWERS)
+        for label in ("one", "two"):
+            self.clock.advance(1.0)
+            # A new picture wakes all four stream threads at the same moment...
+            dash.publish(FakeFrame(label=label), [], None, [], 0, 0, 0, "")
+            for response in streams:
+                self.assertEqual(self.read_part(response), jpeg_of(label))
+        # ...but only one of them makes its JPEG; the other three share it
+        self.assertEqual(encoded, ["one-small", "two-small"])
 
     def test_viewer_cap(self):
         streams = [self.open_stream() for _ in range(MAX_VIEWERS)]
