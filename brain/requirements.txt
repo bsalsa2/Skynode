@@ -1,5 +1,5 @@
 # Brain dependencies (Python 3.11+):  pip install -r brain/requirements.txt
-numpy>=1.24
+numpy>=2.5.3
 opencv-python>=4.8      # on a Pi with no screen, opencv-python-headless is lighter
 onnxruntime>=1.30.0
 pyserial>=3.5           # only used by the USB link
