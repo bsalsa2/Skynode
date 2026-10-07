@@ -8,6 +8,10 @@ Train Skynode's own aircraft and drone detector in **Google Colab**, using video
 | `skynode_v4_export_and_phone_finetune.ipynb` | Fits the existing `skynode/` Drive folder: export v3, then fine-tune on phone video |
 | `skynode_data.py` | The bookkeeping the notebook uses (frames, labels, the train/validation split, the dataset folder). Tested in `tests/test_training_data.py` |
 
+## Automatic: `skynode_auto_train.ipynb` (start here)
+
+One notebook, one Run. Put clips in **phone_videos**, run it, and it retrains on only the new clips. It replaces the model only when the new one scores at least as well. Full details are in the notebook. The logic lives in `training/auto_train.py` and is tested in `tests/test_auto_train.py`.
+
 ## If you already have a trained model: `skynode_v4_export_and_phone_finetune.ipynb`
 
 This is the notebook that matches the existing `skynode/` Drive folder (classes `drone` and `aircraft`, 960 px, `drone_v3/weights/best.pt`). It leaves the v3 notebook and run untouched and:
