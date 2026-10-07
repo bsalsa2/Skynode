@@ -3,6 +3,7 @@
 The TOML file only needs the settings you want to change. A misspelled
 setting name is an error, not something that gets silently ignored.
 """
+import os
 import tomllib
 from dataclasses import dataclass, field, fields
 from pathlib import Path
@@ -54,6 +55,29 @@ class DisplayConfig:
 
 
 @dataclass
+class LoggerConfig:
+    enabled: bool = True
+    folder: str = "../logs"           # relative to the config file -> <repo>/logs (gitignored)
+    min_duration_s: float = 0.5       # locks shorter than this aren't logged (detector blinks)
+    snapshots: bool = True            # save a JPEG of the best frame of each sighting
+    heartbeat_min: int = 60           # log a "clear" sky check this often while nothing is
+                                      # tracked; 0 turns it off
+    drone_classes: list = field(default_factory=lambda: ["drone"])
+    aircraft_classes: list = field(default_factory=lambda: ["airplane", "aircraft", "helicopter"])
+
+
+@dataclass
+class DashboardConfig:
+    enabled: bool = True
+    host: str = "127.0.0.1"           # "0.0.0.0" = reachable from other devices on your Wi-Fi
+    port: int = 8080
+    node_name: str = "NODE-01"
+    location: str = ""                # optional label shown in the header, e.g. "BACKYARD"
+    stream_fps: float = 12.0          # max frames per second sent to the browser
+    stream_width: int = 960           # stream frames are shrunk to this width
+
+
+@dataclass
 class Config:
     camera: CameraConfig = field(default_factory=CameraConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
@@ -61,6 +85,8 @@ class Config:
     control: ControlConfig = field(default_factory=ControlConfig)
     link: LinkConfig = field(default_factory=LinkConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
+    logger: LoggerConfig = field(default_factory=LoggerConfig)
+    dashboard: DashboardConfig = field(default_factory=DashboardConfig)
 
 
 def load_config(path):
@@ -86,4 +112,10 @@ def load_config(path):
     model_path = Path(config.model.path)
     if not model_path.is_absolute():
         config.model.path = str(path.parent / model_path)
+
+    # Same for the log folder. normpath tidies "brain/../logs" into "logs",
+    # so the folder printed at start-up is easy to find.
+    log_folder = Path(config.logger.folder)
+    if not log_folder.is_absolute():
+        config.logger.folder = os.path.normpath(path.parent / log_folder)
     return config

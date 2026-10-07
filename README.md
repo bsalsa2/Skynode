@@ -6,7 +6,7 @@
 
 **Website: [skynode-si.netlify.app](https://skynode-si.netlify.app)** (source in [`web/`](web/))
 
-AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting will be logged.
+AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
 
 Skynode is layer one of a larger project: sense and track, built toward drone and aerospace systems.
 
@@ -30,7 +30,7 @@ flowchart LR
 2. **Track.** It picks one target and measures how far the target sits from the center of the frame, in pixels.
 3. **Control.** A proportional controller turns that pixel error into a small pan/tilt correction ("the target is 40 px right, so pan +2°").
 4. **Actuate.** The brain sends a plain-text command like `P92.5 T47.0` to the Pico over Wi-Fi (UDP) or USB serial. The Pico moves both servos smoothly, keeps them inside safe angle limits, and the camera re-centers on the target.
-5. **Log.** Every sighting will be recorded with time, class, confidence, and pan/tilt angle. The logger isn't written yet (see [Roadmap](#roadmap)).
+5. **Log.** Every sighting is recorded with time, class, confidence, pan/tilt angle, and a snapshot. A live dashboard in your browser shows the camera, the boxes, and the log as it grows (see [Live dashboard](brain/README.md#live-dashboard)). Both are built and tested in simulation; they haven't run on the real hardware yet.
 
 Detection, tracking, and control are separate modules, so each layer can be reused on future platforms.
 
@@ -149,8 +149,8 @@ The website's Status section lists these same items. Update both together.
 - [x] Wiring diagram and bill of materials
 - [ ] Detection model training: v3 with drone and aircraft classes (in progress)
 - [ ] Build the physical hardware. Nothing has run on real hardware yet.
-- [ ] Sighting logger
-- [ ] Live dashboard
+- [x] Sighting logger (built and tested in simulation; not yet run on the real hardware)
+- [x] Live dashboard (built and tested in simulation; not yet run on the real hardware)
 - [ ] Test against real flight data (ADS-B) and publish accuracy results
 - [ ] Pi 4 + solar deployment
 

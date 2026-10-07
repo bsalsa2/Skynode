@@ -1,0 +1,273 @@
+<!doctype html>
+<!--
+  Skynode live dashboard.
+
+  The brain (python -m brain.run) serves this page from your own computer, so
+  it works with no internet: fonts, styles and scripts all come from
+  brain/dashboard/. dashboard.js fills it in from the brain's /api/... answers.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Skynode dashboard</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/assets/dashboard.css" />
+    <script src="/assets/dashboard.js" defer></script>
+  </head>
+  <body>
+    <!-- Liquid-glass refraction filter. Only Chromium can use it inside
+         backdrop-filter; dashboard.js switches it on there. -->
+    <svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <filter id="sn-liquid" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="2" seed="7" result="n" />
+        <feGaussianBlur in="n" stdDeviation="3" result="b" />
+        <feDisplacementMap in="SourceGraphic" in2="b" scale="70" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+
+    <!-- The sky behind everything: the bright rim of the horizon and a soft
+         glow top-left. Glass needs light behind it to look like glass. -->
+    <div class="sky" aria-hidden="true">
+      <div class="sky-horizon"></div>
+      <div class="sky-glow"></div>
+    </div>
+
+    <div class="page">
+      <header class="topbar glass glass--bar">
+        <div class="topbar-left">
+          <a class="brand" href="#overview" aria-label="Skynode, go to overview">
+            <svg class="mark" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M5 22A11 11 0 0 1 27 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M2.5 22H29.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <circle cx="23.07" cy="13.57" r="2.8" fill="#ffffff" />
+            </svg>
+            <span class="wordmark">SKYNODE</span>
+          </a>
+          <div class="tabs" role="tablist" aria-label="Dashboard sections">
+            <button class="tab" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true">Overview</button>
+            <button class="tab" type="button" role="tab" id="tab-sightings" aria-controls="panel-sightings" aria-selected="false" tabindex="-1">Sightings</button>
+            <button class="tab" type="button" role="tab" id="tab-nodes" aria-controls="panel-nodes" aria-selected="false" tabindex="-1">Nodes</button>
+            <button class="tab" type="button" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1">Settings</button>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <span class="node-label" id="node-label">NODE-01</span>
+          <span class="pill" id="status-pill" data-state="connecting">
+            <span class="pill-dot" aria-hidden="true"></span><span class="pill-text" id="status-text">CONNECTING</span>
+          </span>
+        </div>
+      </header>
+
+      <main class="main" id="main">
+        <h1 class="sr-only">Skynode live dashboard</h1>
+
+        <!-- ============================== OVERVIEW ============================== -->
+        <section class="panel panel--overview" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+          <dl class="tiles">
+            <div class="tile glass glass--tile">
+              <dt class="tile-label">SIGHTINGS · 24H</dt>
+              <dd class="tile-value" id="tile-total">—</dd>
+              <dd class="tile-note" id="tile-total-note">&nbsp;</dd>
+            </div>
+            <div class="tile glass glass--tile">
+              <dt class="tile-label">DRONES · 24H</dt>
+              <dd class="tile-value" id="tile-drone">—</dd>
+              <dd class="tile-note" id="tile-drone-note">&nbsp;</dd>
+            </div>
+            <div class="tile glass glass--tile">
+              <dt class="tile-label">AIRCRAFT · 24H</dt>
+              <dd class="tile-value" id="tile-aircraft">—</dd>
+              <dd class="tile-note" id="tile-aircraft-note">&nbsp;</dd>
+            </div>
+            <div class="tile glass glass--tile">
+              <dt class="tile-label">UPTIME</dt>
+              <dd class="tile-value" id="tile-uptime">—</dd>
+              <dd class="tile-note" id="tile-uptime-note">&nbsp;</dd>
+            </div>
+          </dl>
+
+          <div class="overview-grid">
+            <section class="card card--camera glass" aria-labelledby="camera-title">
+              <div class="card-head">
+                <h2 class="card-title" id="camera-title">Live camera</h2>
+                <span class="live-pill" id="live-pill" data-state="off">
+                  <span class="live-dot" aria-hidden="true"></span><span id="live-text">CONNECTING</span>
+                </span>
+              </div>
+              <div class="frame-wrap">
+                <div class="frame" id="frame" data-state="connecting">
+                  <img class="frame-img" id="stream" alt="Live view from the node's camera" decoding="async" />
+                  <div class="frame-grid" aria-hidden="true"></div>
+                  <div class="frame-layer" id="frame-layer" aria-hidden="true">
+                    <div class="frame-ring"></div>
+                  </div>
+                  <p class="frame-msg" id="frame-msg">Connecting…</p>
+                </div>
+                <div class="hud" id="hud" hidden>
+                  <span id="hud-fps">— FPS</span>
+                  <span id="hud-pan">PAN —</span>
+                  <span id="hud-tilt">TILT —</span>
+                  <span id="hud-link">LINK —</span>
+                  <span class="hud-state" id="hud-state" data-state="watching"><span class="hud-dot" aria-hidden="true"></span><span id="hud-state-text">WATCHING</span></span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card card--recent glass" aria-labelledby="recent-title">
+              <div class="card-head card-head--recent">
+                <h2 class="card-title" id="recent-title">Recent sightings</h2>
+                <span class="card-meta">24H</span>
+              </div>
+              <ol class="recent" id="recent-list"></ol>
+              <p class="empty" id="recent-empty" hidden>Loading sightings…</p>
+            </section>
+          </div>
+
+          <section class="card card--chart glass glass--flat" aria-labelledby="chart-title">
+            <div class="chart-head">
+              <h2 class="card-title" id="chart-title">Sightings by hour</h2>
+              <div class="chart-tools">
+                <ul class="legend" id="chart-legend" aria-label="Legend"></ul>
+                <button class="toggle" type="button" id="chart-table-toggle" aria-pressed="false" aria-controls="chart-table">
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 3.5h11v9h-11zM2.5 6.5h11M2.5 9.5h11M6.5 6.5v6" /></svg>
+                  Table
+                </button>
+              </div>
+            </div>
+            <div class="chart" id="chart">
+              <div class="chart-plot" id="chart-plot">
+                <div class="chart-grid" id="chart-grid" aria-hidden="true"></div>
+                <div class="chart-cols" id="chart-cols" role="group" aria-label="Sightings in each of the last 24 hours. Use the arrow keys to move between hours."></div>
+                <p class="chart-empty" id="chart-empty" hidden>Nothing logged in this window yet.</p>
+                <div class="tip" id="chart-tip" role="tooltip" hidden></div>
+              </div>
+              <div class="chart-x" id="chart-x" aria-hidden="true"></div>
+            </div>
+            <div class="table-wrap" id="chart-table" hidden>
+              <table class="data-table">
+                <caption class="sr-only">Sightings by hour, last 24 hours</caption>
+                <thead>
+                  <tr><th scope="col">Hour</th><th scope="col">Aircraft</th><th scope="col">Drone</th><th scope="col">Other</th><th scope="col">Total</th></tr>
+                </thead>
+                <tbody id="chart-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- ============================== SIGHTINGS ============================= -->
+        <section class="panel panel--sightings" id="panel-sightings" role="tabpanel" aria-labelledby="tab-sightings" hidden>
+          <h2 class="sr-only">Sightings log</h2>
+          <div class="filters glass glass--bar">
+            <div class="seg" role="group" aria-label="Time range" id="filter-range">
+              <button type="button" class="seg-btn" data-range="24" aria-pressed="true">24 hours</button>
+              <button type="button" class="seg-btn" data-range="168" aria-pressed="false">7 days</button>
+              <button type="button" class="seg-btn" data-range="all" aria-pressed="false">All</button>
+            </div>
+            <div class="chips" role="group" aria-label="What to show" id="filter-kind">
+              <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+              <button type="button" class="chip" data-filter="drone" aria-pressed="false"><span class="shape shape--drone" aria-hidden="true"></span>Drone</button>
+              <button type="button" class="chip" data-filter="aircraft" aria-pressed="false"><span class="shape shape--aircraft" aria-hidden="true"></span>Aircraft</button>
+              <button type="button" class="chip" data-filter="other" aria-pressed="false"><span class="shape shape--other" aria-hidden="true"></span>Other</button>
+              <button type="button" class="chip" data-filter="check" aria-pressed="false"><span class="shape shape--clear" aria-hidden="true"></span>Sky checks</button>
+            </div>
+            <a class="export" id="export-csv" href="/api/sightings.csv?kind=sighting&amp;hours=24" download>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10" /></svg>
+              <span class="export-text">Export CSV</span>
+            </a>
+          </div>
+
+          <section class="card card--log glass" aria-label="Sightings">
+            <div class="log" id="log" aria-busy="false">
+              <ul class="cards" id="log-cards"></ul>
+              <p class="empty empty--log" id="log-empty" hidden></p>
+            </div>
+            <div class="log-foot" id="log-foot" hidden>
+              <button type="button" class="btn-glass" id="log-more">Load more</button>
+            </div>
+          </section>
+        </section>
+
+        <!-- ============================== NODES ================================= -->
+        <section class="panel panel--nodes" id="panel-nodes" role="tabpanel" aria-labelledby="tab-nodes" hidden>
+          <h2 class="sr-only">Nodes</h2>
+          <article class="card card--node glass" id="node-card" data-state="connecting" aria-labelledby="node-name">
+            <div class="node-head">
+              <div class="node-id">
+                <span class="node-beacon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32">
+                    <path d="M5 22A11 11 0 0 1 27 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    <path d="M2.5 22H29.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    <circle class="node-beacon-dot" cx="23.07" cy="13.57" r="2.6" />
+                  </svg>
+                </span>
+                <div class="node-names">
+                  <h3 class="node-name" id="node-name">NODE-01</h3>
+                  <span class="node-location" id="node-location">No location set</span>
+                </div>
+              </div>
+              <span class="pill" id="node-pill" data-state="connecting">
+                <span class="pill-dot" aria-hidden="true"></span><span class="pill-text" id="node-pill-text">CONNECTING</span>
+              </span>
+            </div>
+            <dl class="facts" id="node-facts">
+              <div class="fact"><dt>UPTIME</dt><dd id="nf-uptime">—</dd></div>
+              <div class="fact"><dt>WATCH RATIO</dt><dd id="nf-watch">—</dd></div>
+              <div class="fact"><dt>FRAME RATE</dt><dd id="nf-fps">—</dd></div>
+              <div class="fact"><dt>FRAME SIZE</dt><dd id="nf-size">—</dd></div>
+              <div class="fact fact--long"><dt>MODEL</dt><dd id="nf-model">—</dd></div>
+              <div class="fact"><dt>TRACKS</dt><dd id="nf-classes">—</dd></div>
+              <div class="fact"><dt>CAMERA</dt><dd id="nf-camera">—</dd></div>
+              <div class="fact fact--long"><dt>LINK</dt><dd id="nf-link">—</dd></div>
+            </dl>
+            <p class="node-foot" id="node-foot">&nbsp;</p>
+          </article>
+          <aside class="note">
+            <span class="note-tag">PHASE 2</span>
+            <p>One node for now. Phase 2 links several nodes so they can work out where a drone is and where it is heading.</p>
+          </aside>
+        </section>
+
+        <!-- ============================== SETTINGS ============================== -->
+        <section class="panel panel--settings" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+          <h2 class="sr-only">Settings</h2>
+          <aside class="note">
+            <span class="note-tag">READ-ONLY</span>
+            <p>These are read-only here. Edit <code>brain/config.toml</code>, then restart the brain.</p>
+          </aside>
+          <div class="settings" id="settings-grid"></div>
+          <p class="empty" id="settings-empty">Loading settings…</p>
+        </section>
+      </main>
+    </div>
+
+    <!-- One sighting, opened from a row or a card. -->
+    <dialog class="detail" id="detail" aria-labelledby="detail-title">
+      <div class="detail-head">
+        <div class="detail-title-row">
+          <span id="detail-badge"></span>
+          <h2 class="detail-title" id="detail-title">Sighting</h2>
+          <span class="detail-when" id="detail-when"></span>
+        </div>
+        <button type="button" class="icon-btn" id="detail-close" aria-label="Close">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+        </button>
+      </div>
+      <div class="detail-media" id="detail-media"></div>
+      <dl class="facts facts--detail" id="detail-facts"></dl>
+      <div class="detail-foot">
+        <a class="detail-raw" id="detail-raw" href="#" target="_blank" rel="noopener">
+          Open the full image
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 10.5l5-5M6.5 5.5h4v4" /></svg>
+        </a>
+        <span class="detail-note" id="detail-note"></span>
+      </div>
+    </dialog>
+
+    <p class="sr-only" id="announcer" aria-live="polite"></p>
+  </body>
+</html>

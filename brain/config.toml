@@ -33,3 +33,24 @@ wifi_port = 5005
 
 [display]
 show = true             # preview window; set false on a Pi with no screen
+
+[logger]
+enabled = true
+folder = "../logs"      # relative to this file, so <repo>/logs (git ignores it)
+min_duration_s = 0.5    # locks shorter than this aren't logged (detector blinks)
+snapshots = true        # save a JPEG of the best moment of each sighting
+heartbeat_min = 60      # while nothing is tracked, log a "sky clear" check this often
+                        # (on the clock: 13:00, 14:00, ...); 0 turns it off
+drone_classes = ["drone"]                                  # model classes that count as drones
+aircraft_classes = ["airplane", "aircraft", "helicopter"]  # ...and as aircraft. Anything else
+                                                           # (like "bird") is filed as "other"
+
+[dashboard]
+enabled = true          # the live dashboard in your browser (or use --no-dashboard)
+host = "127.0.0.1"      # only this computer can open it. "0.0.0.0" lets phones and laptops on
+                        # your Wi-Fi open it too, with NO password: see brain/README.md first
+port = 8080             # open http://localhost:8080/
+node_name = "NODE-01"
+location = ""           # optional label shown at the top, e.g. "BACKYARD"
+stream_fps = 12.0       # at most this many live frames per second go to the browser
+stream_width = 960      # live frames are shrunk to this width (smaller = lighter on a Pi)
