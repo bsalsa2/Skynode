@@ -231,3 +231,6 @@ wifi_secrets.py
 /demo_videos/
 /test_videos/
 /videos/
+
+# Local developer tool config (Claude Code colab-mcp server), not shared
+.mcp.json
