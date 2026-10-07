@@ -35,8 +35,8 @@ from brain.controller import PanTiltController              # noqa: E402
 from brain.detector import Detection                        # noqa: E402
 from brain.link import NullLink                             # noqa: E402
 from brain.logger import COLUMNS, Sighting, row_to_dict     # noqa: E402
-from brain.run import (dashboard_info, main, make_dashboard, make_logger,  # noqa: E402
-                       parse_args, run_loop)
+from brain.run import (codespaces_host, dashboard_info, main, make_dashboard,  # noqa: E402
+                       make_logger, parse_args, run_loop)
 from brain.tracker import Tracker                           # noqa: E402
 
 WIDTH, HEIGHT = 320, 240
@@ -337,7 +337,95 @@ class WithoutLoggerAndDashboardTest(RunLoopTestCase):
         self.assertEqual(printed.count("LOGGED"), 2)
 
 
+class CodespacesTest(unittest.TestCase):
+    IN_CODESPACE = {"CODESPACES": "true", "CODESPACE_NAME": "brave-fox-abc123",
+                    "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN": "app.github.dev"}
+
+    def test_the_address_is_built_from_the_codespaces_settings(self):
+        self.assertEqual(codespaces_host(8080, self.IN_CODESPACE), "brave-fox-abc123-8080.app.github.dev")
+        env = {"CODESPACES": "true", "CODESPACE_NAME": "x"}          # no domain given: the usual one
+        self.assertEqual(codespaces_host(9000, env), "x-9000.app.github.dev")
+
+    def test_outside_a_codespace_there_is_no_address(self):
+        self.assertIsNone(codespaces_host(8080, {}))
+        self.assertIsNone(codespaces_host(8080, {"CODESPACE_NAME": "x"}))             # not flagged as one
+        self.assertIsNone(codespaces_host(8080, {"CODESPACES": "true"}))              # no name
+        self.assertIsNone(codespaces_host(8080, {"CODESPACES": "false", "CODESPACE_NAME": "x"}))
+
+    def test_make_dashboard_allows_only_this_codespace_and_tells_you_the_address(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        static = Path(tmp.name)
+        (static / "index.html").write_text("<title>Skynode</title>")
+        cfg = Config()
+        cfg.dashboard.port = 0
+        cfg.dashboard.allowed_hosts = ["my.trusted.example"]
+        with mock.patch.dict("os.environ", self.IN_CODESPACE, clear=False), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            dashboard = make_dashboard(cfg, None, NullLink(), static_dir=static)
+        self.addCleanup(dashboard.stop)
+        self.assertEqual(dashboard.allowed_hosts,
+                         {"my.trusted.example", "brave-fox-abc123-0.app.github.dev"})
+        self.assertIn("https://brave-fox-abc123-0.app.github.dev/", out.getvalue())
+
+    def test_no_codespace_no_extra_names(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        cfg = Config()
+        cfg.dashboard.port = 0
+        with mock.patch.dict("os.environ", {}, clear=True), contextlib.redirect_stdout(io.StringIO()) as out:
+            dashboard = make_dashboard(cfg, None, NullLink(), static_dir=Path(tmp.name))
+        self.addCleanup(dashboard.stop)
+        self.assertEqual(dashboard.allowed_hosts, frozenset())
+        self.assertNotIn("Codespaces", out.getvalue())
+
+
+class LoopingVideoTest(RunLoopTestCase):
+    class ShortVideo:
+        """Five frames, and it can be rewound twice (then it stays at the end)."""
+
+        def __init__(self):
+            self.position = 0
+            self.rewinds = 0
+            self.rewound_with = []
+
+        def read(self):
+            if self.position >= 5:
+                return False, None
+            self.position += 1
+            return True, np.zeros((HEIGHT, WIDTH, 3), np.uint8)
+
+        def set(self, prop, value):
+            self.rewound_with.append((prop, value))
+            if self.rewinds < 2:
+                self.rewinds += 1
+                self.position = 0
+
+    def test_loop_starts_the_video_again_and_still_stops_when_it_cannot(self):
+        self.cfg.camera.loop = True
+        video = self.ShortVideo()
+        tracker, controller, link = self.parts()
+        detector = FakeDetector(schedule=[None] * 100)
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            run_loop(video, detector, tracker, controller, link, self.cfg)
+        self.assertEqual(detector.count, 15)                       # 5 frames x (1 play + 2 replays)
+        self.assertEqual(video.rewound_with[0], (cv2.CAP_PROP_POS_FRAMES, 0))
+        self.assertIn("Camera gave no frame", out.getvalue())      # the third rewind did nothing
+
+    def test_without_loop_the_video_just_ends(self):
+        video = self.ShortVideo()
+        tracker, controller, link = self.parts()
+        detector = FakeDetector(schedule=[None] * 100)
+        with contextlib.redirect_stdout(io.StringIO()):
+            run_loop(video, detector, tracker, controller, link, self.cfg)
+        self.assertEqual((detector.count, video.rewound_with), (5, []))
+
+
 class CommandLineTest(unittest.TestCase):
+    def test_loop_flag(self):
+        self.assertTrue(parse_args(["--loop"]).loop)
+        self.assertFalse(parse_args([]).loop)
+
     def test_dashboard_flags(self):
         args = parse_args(["--port", "9000", "--no-dashboard"])
         self.assertEqual((args.port, args.no_dashboard), (9000, True))

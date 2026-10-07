@@ -1,0 +1,11 @@
+# Settings for the trained v3 model (classes: drone, aircraft). Use it with:
+#   python -m brain.run --config brain/config.v3.toml --source clip.mp4 --loop
+# Anything left out uses the defaults in brain/config.py.
+
+[model]
+path = "models/skynode-v3-2026-10-07.onnx"   # relative to this file: brain/models/
+target_classes = ["drone", "aircraft"]
+min_confidence = 0.35                          # raise it if you see false drones; lower it to catch more
+
+[display]
+show = false                                   # no screen in the cloud; the dashboard is the view

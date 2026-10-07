@@ -116,12 +116,17 @@ class Dashboard:
 
     def __init__(self, logger, host="127.0.0.1", port=8080, node_name="NODE-01",
                  location="", stream_fps=12.0, stream_width=960, info=None,
-                 static_dir=None, clock=time.time, encode_jpeg=None, shrink=None):
+                 static_dir=None, clock=time.time, encode_jpeg=None, shrink=None,
+                 allowed_hosts=()):
         self.logger = logger                # a SightingLogger, or None (the log then looks empty)
         self.host = host
         self.port = port                    # 0 = any free port; start() fills in the real one
         self.node_name = str(node_name)
         self.location = str(location)
+        # Extra exact names (no port) that may open the dashboard, e.g. a GitHub
+        # Codespaces address. See host_allowed().
+        self.allowed_hosts = frozenset(str(h).strip().lower().removesuffix(".")
+                                       for h in allowed_hosts if str(h).strip())
         # Seconds between live-stream pictures (stream_fps is capped below at 0.1 per second)
         self.stream_interval = 1.0 / max(finite(stream_fps, 12.0), 0.1)
         self.stream_width = max(16, int(stream_width))
@@ -510,7 +515,7 @@ class _Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path, query = split_target(self.path)
         host = self.headers.get("Host")
-        if not host_allowed(host):
+        if not host_allowed(host, self.dashboard.allowed_hosts):
             port = self.dashboard.port
             self.dashboard.warn_once("host", f"WARN the dashboard refused a page that asked for it "
                                              f"as {host!r}. Open it by IP address or "
@@ -518,7 +523,8 @@ class _Handler(BaseHTTPRequestHandler):
             self.close_connection = True
             self.send_json(403, {"error": "Open the dashboard by this computer's address, like "
                                           f"http://localhost:{port}/ or http://192.168.1.20:{port}/, "
-                                          "not by a web site's name."})
+                                          "not by a web site's name. (A name you trust can be added "
+                                          "to allowed_hosts in brain/config.toml.)"})
             return
         # Checked here, before any route runs, so a refused request never takes
         # one of the MAX_VIEWERS stream places or makes a JPEG.
@@ -726,7 +732,7 @@ def split_target(target):
     return path, query
 
 
-def host_allowed(host):
+def host_allowed(host, extra=()):
     """May a browser that asked for us by this name (its Host header) see the dashboard?
 
     The trick this stops is called DNS rebinding. A web page you visit on
@@ -739,6 +745,9 @@ def host_allowed(host):
       - IP addresses: 127.0.0.1, 192.168.1.20, [::1]
       - names without a dot, like this computer's own name: raspberrypi
       - home-network names nobody can own on the internet: raspberrypi.local
+      - exact names you list in `extra` (the allowed_hosts setting). Only add
+        a name that points at YOUR machine, like your own Codespace's address,
+        never a whole domain: the name has to match exactly.
     No Host at all is fine too: browsers always send one, so that's a script.
     """
     if host is None:
@@ -754,6 +763,8 @@ def host_allowed(host):
         return True
     except ValueError:
         pass
+    if name in extra:
+        return True
     if not HOST_NAME.fullmatch(name):
         return False
     return "." not in name or name.endswith(HOME_NETWORK_ENDINGS)

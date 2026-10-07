@@ -161,6 +161,25 @@ On Windows, the firewall may block the phone. Allow Python through it for **Priv
 
 Other web sites can't use the dashboard, even while you have it open. A page somewhere else can't show your camera inside itself, peek at your snapshots, or take up the live stream's places (there are 4). The brain only answers the dashboard's own page, an address you type in or bookmark, and plain links to its front page.
 
+### Try it in the cloud (GitHub Codespaces)
+
+No install and nothing stored on your own computer. A Codespace is a computer GitHub runs for you, and the dashboard opens in a browser tab. It uses a video file as the camera (a cloud computer has no webcam).
+
+1. Download two files to your device: the model `skynode-v3-<date>.onnx` (from Drive ▸ skynode ▸ models) and one short video of a plane or drone.
+2. On github.com open the repo, use the branch menu to pick the branch you want, then **Code ▸ Codespaces ▸ Create codespace**. Wait about 2 minutes: `.devcontainer/devcontainer.json` installs the packages for you.
+3. In the file list on the left, drag the `.onnx` into `brain/models/` and the video into the top folder (call it `clip.mp4`).
+4. Open the terminal (Terminal ▸ New Terminal) and run:
+   ```
+   python -m brain.run --config brain/config.v3.toml --source clip.mp4 --loop
+   ```
+   If your model file has a different name, edit `path` in `brain/config.v3.toml`.
+5. When it prints `In GitHub Codespaces, open https://...`, click that link (or open the **Ports** tab and click the globe next to port 8080).
+6. Press Ctrl+C in the terminal to stop. **Stop the Codespace** when you're done (github.com/codespaces ▸ the `...` menu ▸ Stop). It also stops itself after a while, and the free monthly allowance is limited.
+
+How it stays safe: the dashboard answers only your own Codespace's address, not the rest of `app.github.dev`. Codespaces ports are private (you must be signed in to GitHub) unless you change them to Public, so **don't make port 8080 public**.
+
+Not verified: the live camera picture goes through GitHub's proxy, and I couldn't test how it handles a continuous stream. If the picture stalls, the stat tiles, sightings and chart still work.
+
 ## Swap in your own model
 
 No local GPU? Train in Google Colab with phone videos: see [`training/`](../training/README.md).
@@ -202,7 +221,7 @@ Ultralytics YOLO weights and anything exported from them are licensed **AGPL-3.0
 | `WARN the dashboard can't start on 127.0.0.1:8080` | Another program (or a second copy of the brain) is using port 8080. Run with `--port 8081`, or change `port` in `config.toml`. Tracking and logging keep going without the dashboard |
 | The dashboard says OFFLINE | The brain isn't running, or the camera stopped sending frames. Check the terminal |
 | The phone can't open the dashboard | Set `host = "0.0.0.0"`, use the computer's IP address (not `localhost`), and stay on the same Wi-Fi. On Windows, allow Python through the firewall for Private networks |
-| `403`: *Open the dashboard by this computer's address* | You opened it by a name with a real domain, like a custom DNS name `skynode.example.com`. To block a trick called DNS rebinding, the dashboard only answers to `localhost`, an IP address (`http://192.168.1.42:8080/`), the computer's plain name (`raspberrypi`) or a home-network name like `raspberrypi.local`. Use one of those |
+| `403`: *Open the dashboard by this computer's address* | You opened it by a name with a real domain, like a custom DNS name `skynode.example.com`. To block a trick called DNS rebinding, the dashboard only answers to `localhost`, an IP address (`http://192.168.1.42:8080/`), the computer's plain name (`raspberrypi`) or a home-network name like `raspberrypi.local`. Use one of those, or list the one exact name you trust in `allowed_hosts` in `config.toml` (GitHub Codespaces addresses are added for you) |
 | `403`: *Only the dashboard's own page can load this* | Another web site (or another app on this computer) tried to load the camera or the log. That's blocked on purpose. Open the dashboard itself, e.g. `http://localhost:8080/` |
 
 ## Tests

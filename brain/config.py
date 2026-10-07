@@ -15,6 +15,7 @@ class CameraConfig:
     width: int = 1280                 # requested capture size; the camera picks the nearest it has
     height: int = 720
     hfov_deg: float = 70.0            # horizontal field of view in degrees
+    loop: bool = False                # a video file starts over at the end (handy for demos)
 
 
 @dataclass
@@ -75,6 +76,7 @@ class DashboardConfig:
     location: str = ""                # optional label shown in the header, e.g. "BACKYARD"
     stream_fps: float = 12.0          # max frames per second sent to the browser
     stream_width: int = 960           # stream frames are shrunk to this width
+    allowed_hosts: list = field(default_factory=list)   # extra exact web addresses that may open it
 
 
 @dataclass
