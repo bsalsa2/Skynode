@@ -1290,7 +1290,7 @@ code {
   border-bottom: 0;
 }
 .data-table td.is-zero {
-  color: var(--label); /* quieter than the other numbers, still easy to read */
+  color: var(--ink-2); /* a step quieter than the other numbers, but 4.5:1 even over the horizon glow */
 }
 
 /* ---- Sightings tab ----------------------------------------------------------- */
