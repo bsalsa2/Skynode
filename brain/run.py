@@ -111,6 +111,9 @@ def main(argv=None):
 
 
 def run_loop(camera, detector, tracker, controller, link, cfg, logger=None, dashboard=None):
+    # With no Pico the camera can't turn, so the pan/tilt in the log and on the
+    # dashboard are simulated from where the target is in the picture.
+    simulated = isinstance(link, NullLink)
     last_seen = time.monotonic()        # when we last had a target
     last_command = None
     fps = 0.0
@@ -138,7 +141,10 @@ def run_loop(camera, detector, tracker, controller, link, cfg, logger=None, dash
         now = time.monotonic()
         if target is not None:
             last_seen = now
-            controller.update(target.center, (width, height))
+            if simulated:
+                controller.simulate_aim(target.center, (width, height))
+            else:
+                controller.update(target.center, (width, height))
         elif now - last_seen > cfg.control.home_after_s:
             controller.go_home()
 

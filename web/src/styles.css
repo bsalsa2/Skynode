@@ -5,56 +5,12 @@
    ========================================================================== */
 
 @import './fonts.css';
+@import '../../brain/dashboard/graphite.css';
 
+/* Brand tokens (colours, glass, type stacks) live in graphite.css, shared with
+   the live dashboard. Only the website's layout sizes are defined here. */
 :root {
   color-scheme: dark;
-
-  /* Neutrals */
-  --void: #000000;
-  --carbon: #0a0a0b;
-  --carbon-2: #060607;
-  --carbon-3: #0e0e10;
-  --smoke: #2a2a2d;
-  --offline: #6e6e72;
-  --halo: #f4f4f2; /* accent + primary ink */
-  --white: #ffffff;
-  --ink-1: #d4d4d0;
-  --ink-2: #b4b4b0; /* body text */
-  --ink-3: #8c8c88; /* labels */
-  --label: #a0a09c;
-  --dim: #76767a;
-
-  /* Signals: only ever used for what the sensor sees */
-  --drone: #ff4d2e;
-  --drone-ink: #ff7a60;
-  --drone-on: #140402;
-  --aircraft: #8fd3ff;
-  --aircraft-ink: #b5e2ff;
-  --aircraft-on: #04141e;
-  --clear: #9be89b;
-  --clear-ink: #b6f0b6;
-
-  --line: rgba(255, 255, 255, 0.1);
-  --line-2: rgba(255, 255, 255, 0.18);
-
-  /* Liquid glass */
-  --glass-fill: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.09),
-    rgba(255, 255, 255, 0.02) 50%,
-    rgba(255, 255, 255, 0.05)
-  );
-  --glass-edge: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 24px 24px 48px -30px rgba(255, 255, 255, 0.22), inset -24px -24px 48px -30px rgba(0, 0, 0, 0.6);
-  --glass-drop: 0 40px 80px -30px rgba(0, 0, 0, 0.9);
-
-  --f-display: 'Saira', 'Segoe UI', system-ui, sans-serif;
-  --f-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-
-  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-
   --gutter: clamp(20px, 5vw, 80px);
   --section-y: clamp(96px, 12vw, 160px);
   --nav-h: 60px;
@@ -953,6 +909,8 @@ svg {
   color: var(--halo);
 }
 .sensor-id {
+  flex: none;
+  white-space: nowrap;
   font-size: 11px;
   color: var(--ink-3);
 }

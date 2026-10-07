@@ -47,6 +47,20 @@ class PanTiltController:
         self.tilt = clamp(self.tilt + self.tilt_sign * self.correction(up), *self.tilt_limits)
         return self.pan, self.tilt
 
+    def simulate_aim(self, point, frame_size):
+        """No Pico (or a recording, which can't turn): where the camera WOULD point.
+
+        That is home plus the target's offset from the image center, turned the
+        same way update() turns the servos, and kept inside the limits. Unlike
+        update() it doesn't add up from frame to frame. On a recording the
+        target stays off-center for good, and adding up would wind the angles
+        against their limits within seconds. Returns (pan, tilt).
+        """
+        right, up = self.offset_deg(point, frame_size)
+        self.pan = clamp(self.home[0] + self.pan_sign * right, *self.pan_limits)
+        self.tilt = clamp(self.home[1] + self.tilt_sign * up, *self.tilt_limits)
+        return self.pan, self.tilt
+
     def correction(self, error_deg):
         if abs(error_deg) < self.deadband_deg:
             return 0.0

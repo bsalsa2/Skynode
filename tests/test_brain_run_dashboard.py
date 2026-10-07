@@ -15,6 +15,7 @@ import importlib.util
 import io
 import json
 import socket
+import sqlite3
 import tempfile
 import threading
 import unittest
@@ -33,6 +34,7 @@ from brain.config import Config                             # noqa: E402
 from brain.controller import PanTiltController              # noqa: E402
 from brain.detector import Detection                        # noqa: E402
 from brain.link import NullLink                             # noqa: E402
+from brain.logger import COLUMNS, Sighting, row_to_dict     # noqa: E402
 from brain.run import (dashboard_info, main, make_dashboard, make_logger,  # noqa: E402
                        parse_args, run_loop)
 from brain.tracker import Tracker                           # noqa: E402
@@ -51,6 +53,14 @@ SCHEDULE = ([("airplane", c) for c in AIRPLANE] + [None] * 20
             + [("drone", c) for c in DRONE] + [None] * 20)
 TARGET_BOX = (200.0, 60.0, 240.0, 90.0)     # up and to the right of the centre
 CAR_BOX = (10.0, 200.0, 60.0, 230.0)        # a class we don't track, in every frame
+
+
+
+def read_log(folder):
+    """Every record in <folder>/skynode.db as a dict, in the order it was written."""
+    with contextlib.closing(sqlite3.connect(Path(folder) / "skynode.db")) as conn:
+        rows = conn.execute(f"SELECT {', '.join(COLUMNS)} FROM sightings ORDER BY rowid").fetchall()
+    return [Sighting.from_dict(row_to_dict(row)).to_dict() for row in rows]
 
 
 class FakeClock:
@@ -258,10 +268,9 @@ class WithLoggerAndDashboardTest(RunLoopTestCase):
         self.assertEqual(len(csv_rows), 3)
         self.assertTrue(csv_rows[1].startswith(f"{drone['id']},sighting,drone,drone,"))
 
-        # And the same three records are on disk, one JSON object per line
-        log_files = list((self.root / "logs").glob("sightings-*.jsonl"))
-        self.assertEqual(len(log_files), 1)
-        records = [json.loads(line) for line in log_files[0].read_text().splitlines()]
+        # And the same three records are on disk, in the database
+        self.assertTrue((self.root / "logs" / "skynode.db").is_file())
+        records = read_log(self.root / "logs")
         self.assertEqual([r["category"] for r in records], ["aircraft", "clear", "drone"])
 
     def test_pictures_are_taken_before_the_overlay_draws_on_the_frame(self):
@@ -420,8 +429,7 @@ class MainTest(unittest.TestCase):
         return out.getvalue()
 
     def logged(self):
-        return [json.loads(line) for path in (self.root / "logs").glob("sightings-*.jsonl")
-                for line in path.read_text().splitlines()]
+        return read_log(self.root / "logs")
 
     def test_main_logs_the_sighting_still_going_on_when_the_video_ends(self):
         printed = self.main()

@@ -9,7 +9,9 @@ import contextlib
 import importlib.util
 import io
 import json
+import math
 import os
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -19,8 +21,10 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
-from brain.logger import Sighting, SightingLogger, default_encode_jpeg, default_shrink
+from brain.logger import (COLUMNS, Sighting, SightingDB, SightingLogger, default_encode_jpeg,
+                          default_shrink, row_to_dict)
 
 REPO = Path(__file__).resolve().parent.parent
 HAS_TZSET = hasattr(time, "tzset")
@@ -122,13 +126,18 @@ class LoggerTestCase(unittest.TestCase):
         return SightingLogger(folder or self.folder, **options)
 
     def write_records(self, records, folder=None):
-        """Write records into the daily files, as an earlier run would have."""
-        folder = folder or self.folder
-        folder.mkdir(parents=True, exist_ok=True)
+        """Put records in the database, as an earlier run would have."""
+        db = SightingDB(folder or self.folder)
         for r in records:
-            day = datetime.fromtimestamp(r.start).strftime("%Y-%m-%d")
-            with open(folder / f"sightings-{day}.jsonl", "a") as f:
-                f.write(json.dumps(r.to_dict()) + "\n")
+            db.insert(r)
+        db.close()
+
+    def db_dicts(self, folder=None):
+        """Every record in the database as a dict, in the order it was written."""
+        path = (folder or self.folder) / "skynode.db"
+        with contextlib.closing(sqlite3.connect(path)) as conn:
+            rows = conn.execute(f"SELECT {', '.join(COLUMNS)} FROM sightings ORDER BY rowid")
+            return [Sighting.from_dict(row_to_dict(row)).to_dict() for row in rows.fetchall()]
 
     def quietly(self, make_logger):
         """Build a logger that prints a warning, and return (logger, what it printed)."""
@@ -169,8 +178,7 @@ class LifecycleTest(LoggerTestCase):
 
         snapshot = self.folder / "snapshots" / "20261007-140217-001.jpg"
         self.assertEqual(snapshot.read_bytes(), fake_encode(("shrunk", "f1", 640)))  # best frame
-        lines = (self.folder / "sightings-2026-10-07.jsonl").read_text().splitlines()
-        self.assertEqual([json.loads(line) for line in lines], [expected])
+        self.assertEqual(self.db_dicts(), [expected])
 
     def test_class_is_the_one_at_the_best_frame(self):
         log = self.make()
@@ -229,7 +237,7 @@ class LifecycleTest(LoggerTestCase):
         self.assertEqual((logged.duration_s, logged.end), (2.0, t + 2))
         self.assertIsNone(log.current())
         self.assertEqual(ids(log.recent()[0]), [logged.id])
-        self.assertTrue((self.folder / "sightings-2026-10-07.jsonl").exists())
+        self.assertTrue((self.folder / "skynode.db").exists())
         self.assertIsNone(log.close(now=t + 4))                 # already closed
 
         log.update(det(), True, FakeFrame(), 0, 0, now=t + 10)  # too short to keep
@@ -238,7 +246,7 @@ class LifecycleTest(LoggerTestCase):
         self.assertIsNone(log.current())
         self.assertEqual(len(log.recent()[0]), 1)
 
-    def test_junk_numbers_never_reach_the_json(self):
+    def test_junk_numbers_never_reach_the_database(self):
         log = self.make(min_duration_s=0)
         t = local(2026, 10, 7, 14, 0, 0)
         target = det("airplane", float("nan"), (float("nan"), -5, 2000, 600))
@@ -247,10 +255,9 @@ class LifecycleTest(LoggerTestCase):
         self.assertEqual((logged.confidence, logged.pan, logged.tilt), (0.0, 0.0, 0.0))
         self.assertEqual(logged.box, [0.0, 0.0, 1.0, 1.0])     # clamped into the frame
 
-        def refuse(constant):
-            raise ValueError(constant)
-        line = (self.folder / "sightings-2026-10-07.jsonl").read_text()
-        json.loads(line, parse_constant=refuse)                 # no NaN or Infinity in the file
+        stored = self.db_dicts()[0]
+        numbers = [stored[k] for k in ("start", "end", "duration_s", "confidence", "pan", "tilt")]
+        self.assertTrue(all(math.isfinite(v) for v in numbers + stored["box"]))   # no NaN or Infinity
 
     def test_lock_and_drop_in_the_same_call(self):
         # The real tracker never does this, but the logger shouldn't get confused
@@ -342,10 +349,32 @@ class SnapshotTest(LoggerTestCase):
 
 
 class FileTest(LoggerTestCase):
-    def test_new_logger_reloads_the_files_and_skips_damaged_lines(self):
+    def test_new_logger_reloads_the_database(self):
         log = self.make(min_duration_s=0)
         plane = log_sighting(log, local(2026, 10, 7, 14, 0, 0), name="airplane")
         drone = log_sighting(log, local(2026, 10, 7, 14, 10, 0), name="drone")
+        log.close()
+
+        self.clock.t = local(2026, 10, 7, 15, 0, 0)
+        again = self.make()
+        self.assertEqual(again.skipped_lines, 0)
+        self.assertEqual(again.recent(), ([drone.to_dict(), plane.to_dict()], False))
+        self.assertEqual(again.history_start, plane.start)       # earlier than its own start
+        self.assertEqual(again.started_at, self.clock.t)
+
+        # keep_hours limits what's loaded into memory
+        self.clock.t = local(2026, 10, 7, 15, 5, 0)
+        short = self.make(keep_hours=1)
+        self.assertEqual(ids(short.recent()[0]), [drone.id])
+        self.assertEqual(short.history_start, drone.start)
+
+    def test_old_jsonl_logs_are_imported_once_and_damaged_lines_skipped(self):
+        # Records an older version wrote as .jsonl files. They're made in another folder,
+        # so this logger meets them for the first time in the files.
+        scratch = self.make(folder=self.folder.parent / "scratch", min_duration_s=0)
+        plane = log_sighting(scratch, local(2026, 10, 7, 14, 0, 0), name="airplane")
+        drone = log_sighting(scratch, local(2026, 10, 7, 14, 10, 0), name="drone")
+        ancient = log_sighting(scratch, local(2026, 9, 1, 10, 0, 0))
         good = drone.to_dict()
         damaged = [
             "not json at all",
@@ -362,36 +391,65 @@ class FileTest(LoggerTestCase):
             "[" * 100000,                   # far too long to even look at
             json.dumps({**good, "id": "long-1"}) + " " * 20000,     # a record, but padded huge
         ]
-        with open(self.folder / "sightings-2026-10-07.jsonl", "a") as f:
+        self.folder.mkdir(parents=True)
+        with open(self.folder / "sightings-2026-10-07.jsonl", "w") as f:
+            f.write(json.dumps(plane.to_dict()) + "\n" + json.dumps(good) + "\n")
             f.write("\n".join(["", "   "] + damaged) + "\n")             # blank lines are fine
-        # Files that must not even be read: too old, and not named like ours
-        (self.folder / "sightings-2026-09-01.jsonl").write_text("garbage\n")
-        (self.folder / "sightings-notes.jsonl").write_text("garbage\n")
+        (self.folder / "sightings-2026-09-01.jsonl").write_text(json.dumps(ancient.to_dict()) + "\n")
+        (self.folder / "sightings-notes.jsonl").write_text("garbage\n")    # not named like ours
 
         self.clock.t = local(2026, 10, 7, 15, 0, 0)
         again, printed = self.quietly(lambda: self.make())
         self.assertEqual(again.skipped_lines, len(damaged))
-        self.assertIn(f"skipped {len(damaged)} damaged line(s)", printed)
-        self.assertEqual(again.recent(), ([drone.to_dict(), plane.to_dict()], False))
-        self.assertEqual(again.history_start, plane.start)       # earlier than its own start
-        self.assertEqual(again.started_at, self.clock.t)
+        self.assertIn(f"skipped {len(damaged)} damaged record(s)", printed)
+        self.assertEqual(ids(self.db_dicts()), [ancient.id, plane.id, drone.id])    # all imported (by file date)
+        self.assertEqual(again.recent(), ([drone.to_dict(), plane.to_dict()], False))  # ...but the
+        #                                      September one is older than keep_hours: not in memory
+        self.assertEqual(sorted(p.name for p in self.folder.glob("sightings-*")),
+                         ["sightings-2026-09-01.jsonl.imported",
+                          "sightings-2026-10-07.jsonl.imported", "sightings-notes.jsonl"])
 
-        # keep_hours limits what's loaded, even from today's file
-        self.clock.t = local(2026, 10, 7, 15, 5, 0)
-        short, _ = self.quietly(lambda: self.make(keep_hours=1))
-        self.assertEqual(ids(short.recent()[0]), [drone.id])
-        self.assertEqual(short.history_start, drone.start)
+        again.close()
+        third, printed = self.quietly(lambda: self.make())      # nothing left to import
+        self.assertEqual((third.skipped_lines, printed), (0, ""))
+        self.assertEqual(third.recent(), again.recent())
+        self.assertEqual(len(self.db_dicts()), 3)
 
-    def test_line_cut_short_by_a_crash_loses_only_itself(self):
-        t = local(2026, 10, 7, 14, 0, 0)
-        log_sighting(self.make(min_duration_s=0), t)
-        with open(self.folder / "sightings-2026-10-07.jsonl", "a") as f:
-            f.write('{"id": "20261007-1')                      # power cut mid-write
-        second, _ = self.quietly(lambda: self.make(min_duration_s=0))
-        log_sighting(second, t + 600)
-        third, _ = self.quietly(lambda: self.make())
-        self.assertEqual(len(third.recent()[0]), 2)
-        self.assertEqual(third.skipped_lines, 1)
+    def test_a_file_that_is_not_a_database_is_moved_aside(self):
+        self.folder.mkdir(parents=True)
+        (self.folder / "skynode.db").write_bytes(b"this is not an sqlite file" * 100)
+        log, printed = self.quietly(lambda: self.make(min_duration_s=0))
+        self.assertIn("is damaged", printed)
+        self.assertEqual(len(list(self.folder.glob("skynode.db.damaged-*"))), 1)    # kept, not deleted
+        logged = log_sighting(log, local(2026, 10, 7, 14, 0, 0))
+        self.assertEqual(ids(self.db_dicts()), [logged.id])     # and a fresh log works
+
+    def test_rows_edited_badly_are_skipped_not_fatal(self):
+        log = self.make(min_duration_s=0)
+        good = log_sighting(log, local(2026, 10, 7, 14, 0, 0))
+        log.close()
+        t = local(2026, 10, 7, 14, 5, 0)
+        bad = [("bad-1", "sighting", "drone", "drone", t, t, 0.0, "abc", 0.0, 0.0, None, 1, None),
+               ("bad-2", "sighting", "drone", "drone", t, t, 0.0, 0.5, 0.0, 0.0, "[1, 2", 1, None),
+               ("bad-3", "sighting", "drone", "drone", t, t, 0.0, 0.5, 0.0, 0.0, None, 1,
+                "../../etc/passwd")]
+        with contextlib.closing(sqlite3.connect(self.folder / "skynode.db")) as conn, conn:
+            conn.executemany("INSERT INTO sightings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", bad)
+        self.clock.t = local(2026, 10, 7, 15, 0, 0)
+        again, printed = self.quietly(lambda: self.make())
+        self.assertEqual(again.skipped_lines, 3)
+        self.assertIn("skipped 3 damaged record(s)", printed)
+        self.assertEqual(ids(again.recent()[0]), [good.id])
+
+    def test_a_failing_write_is_reported_once_and_tracking_goes_on(self):
+        log = self.make(min_duration_s=0)
+        out = io.StringIO()
+        with mock.patch.object(SightingDB, "insert", side_effect=sqlite3.OperationalError("disk is full")), \
+                contextlib.redirect_stdout(out):
+            first = log_sighting(log, local(2026, 10, 7, 14, 0, 0))
+            second = log_sighting(log, local(2026, 10, 7, 14, 10, 0))
+        self.assertEqual(out.getvalue().count("WARN can't write the sighting log"), 1)
+        self.assertEqual(ids(log.recent()[0]), [second.id, first.id])   # the dashboard still sees both
 
     def test_ids_stay_unique_across_runs(self):
         t = local(2026, 10, 7, 14, 2, 17)
@@ -419,11 +477,7 @@ class FileTest(LoggerTestCase):
         early = log_sighting(log, local(2026, 10, 8, 0, 5, 0))
         self.assertEqual((late.id, early.id), ("20261007-235959-001", "20261008-000500-002"))
 
-        def ids_in(day):
-            path = self.folder / f"sightings-{day}.jsonl"
-            return [json.loads(line)["id"] for line in path.read_text().splitlines()]
-        self.assertEqual(ids_in("2026-10-07"), [late.id])        # filed by the day it started
-        self.assertEqual(ids_in("2026-10-08"), [early.id])
+        self.assertEqual(ids(self.db_dicts()), [late.id, early.id])     # one database, as written
 
         self.clock.t = local(2026, 10, 8, 1, 0, 0)
         again = self.make()
@@ -432,7 +486,7 @@ class FileTest(LoggerTestCase):
         self.assertEqual([(b["start"], b["aircraft"]) for b in buckets],
                          [(local(2026, 10, 7, 23, 0, 0), 1), (local(2026, 10, 8, 0, 0, 0), 1)])
 
-    def test_old_records_are_forgotten_but_stay_on_disk(self):
+    def test_old_records_are_forgotten_by_memory_but_stay_in_the_database(self):
         t = local(2026, 10, 7, 10, 0, 0)
         self.clock.t = t
         log = self.make(min_duration_s=0, keep_hours=1)
@@ -440,8 +494,7 @@ class FileTest(LoggerTestCase):
         second = log_sighting(log, t + 2 * 3600)              # logging this prunes the first
         self.assertEqual(ids(log.recent()[0]), [second.id])
         self.assertAlmostEqual(log.history_start, second.end + 0.25 - 3600)
-        lines = (self.folder / "sightings-2026-10-07.jsonl").read_text().splitlines()
-        self.assertEqual([json.loads(line)["id"] for line in lines], [first.id, second.id])
+        self.assertEqual(ids(self.db_dicts()), [first.id, second.id])
 
     def test_nothing_is_written_until_something_happens(self):
         log = self.make()
@@ -633,8 +686,7 @@ class HeartbeatTest(LoggerTestCase):
             "class_name": "", "start": start, "end": start, "duration_s": 0.0,
             "confidence": 0.0, "pan": 90.0, "tilt": 45.0, "box": None, "frames": 0,
             "snapshot": None}])
-        line = (self.folder / "sightings-2026-10-07.jsonl").read_text()
-        self.assertEqual(json.loads(line), checks[0])
+        self.assertEqual(self.db_dicts(), [checks[0]])
         self.assertEqual(log.stats(now=t)["total"], 0)          # checks aren't sightings
 
     def test_not_on_the_first_frame(self):
@@ -695,7 +747,7 @@ class HeartbeatTest(LoggerTestCase):
         self.quiet_frame(log, local(2026, 10, 8, 0, 0, 0) + 0.5)
         checks = log.recent(kind="check")[0]
         self.assertEqual(ids(checks), ["20261008-000000-001"])
-        self.assertTrue((self.folder / "sightings-2026-10-08.jsonl").exists())
+        self.assertEqual(ids(self.db_dicts()), ["20261008-000000-001"])
 
     def test_local_hours_half_an_hour_off_utc(self):
         use_timezone(self, "IST-5:30")

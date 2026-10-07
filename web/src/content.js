@@ -49,12 +49,12 @@ export const content = {
     cost: 'About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     facts: ['Passive sensing only', 'Solar power planned', 'MIT licensed'],
     caption:
-      'Concept visualization. Live footage replaces this once the hardware is built.',
+      'SAMPLE: concept visualization. Live footage replaces this once the hardware is built.',
 
     // The glass readout card in the hero. Its numbers move with the
     // simulated aircraft crossing the sky behind it.
     card: {
-      label: 'NODE-01 · CONCEPT',
+      label: 'SAMPLE · NODE-01 · CONCEPT',
       state: 'TRACKING',
       target: 'AIRCRAFT',
     },
@@ -127,9 +127,9 @@ export const content = {
     },
     // Simulated sensor view: what the node's on-screen overlay will look like.
     sensor: {
-      label: 'SENSOR VIEW · SIMULATED',
+      label: 'SAMPLE · SENSOR VIEW · SIMULATED',
       caption:
-        'A simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
+        'SAMPLE: a simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
     },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
