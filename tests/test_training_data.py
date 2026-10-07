@@ -191,6 +191,31 @@ class DatasetTest(TempCase):
                          "1 0.5 0.5 0.2 0.2\n")
         self.assertTrue((builder.root / "images" / "val" / "ext__valid-q.jpg").exists())
 
+    def test_merge_with_aliases_limits_and_split_first_layout(self):
+        old = self.tmp / "rf"
+        for split in ("train", "valid"):
+            (old / split / "images").mkdir(parents=True)
+            (old / split / "labels").mkdir(parents=True)
+        names = ["civilian aircraft", "multi-rotor", "military helicopter", "civilian car"]
+        for i in range(10):
+            write_image(old / "train" / "images" / f"t{i}.jpg")
+            (old / "train" / "labels" / f"t{i}.txt").write_text(
+                "0 0.5 0.5 0.2 0.2\n1 0.3 0.3 0.1 0.1\n3 0.9 0.9 0.1 0.1\n2 0.1 0.1 0.1 0.1\n")
+        write_image(old / "valid" / "images" / "v0.jpg")
+        aliases = {"civilian aircraft": "airplane", "military helicopter": "airplane",
+                   "multi-rotor": "drone", "civilian car": None}
+        builder = DatasetBuilder(self.tmp / "ds", ["drone", "airplane"])
+        added, dropped = builder.add_existing(old, names, aliases=aliases, layout="split-first",
+                                              limits={"train": 4})
+        self.assertEqual(added, 5)                     # 4 sampled train + 1 val
+        self.assertEqual(dropped, 4)                   # the car box in each of the 4 train images
+        label = next((builder.root / "labels" / "train").glob("*.txt")).read_text().splitlines()
+        self.assertEqual([line.split()[0] for line in label], ["1", "0", "1"])   # airplane, drone, airplane
+        again = DatasetBuilder(self.tmp / "ds2", ["drone", "airplane"])
+        again.add_existing(old, names, aliases=aliases, layout="split-first", limits={"train": 4})
+        self.assertEqual(sorted(p.name for p in (builder.root / "images" / "train").iterdir()),
+                         sorted(p.name for p in (again.root / "images" / "train").iterdir()))   # repeatable sample
+
     def test_warnings(self):
         text = " ".join(dataset_warnings(self.build().summary()))
         self.assertIn("Only 1 validation images", text)

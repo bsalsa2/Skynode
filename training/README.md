@@ -5,7 +5,22 @@ Train Skynode's own aircraft and drone detector in **Google Colab**, using video
 | File | What it is |
 |---|---|
 | `skynode_train.ipynb` | The Colab notebook. Open it in Colab and run the cells top to bottom |
+| `skynode_v4_export_and_phone_finetune.ipynb` | Fits the existing `skynode/` Drive folder: export v3, then fine-tune on phone video |
 | `skynode_data.py` | The bookkeeping the notebook uses (frames, labels, the train/validation split, the dataset folder). Tested in `tests/test_training_data.py` |
+
+## If you already have a trained model: `skynode_v4_export_and_phone_finetune.ipynb`
+
+This is the notebook that matches the existing `skynode/` Drive folder (classes `drone` and `aircraft`, 960 px, `drone_v3/weights/best.pt`). It leaves the v3 notebook and run untouched and:
+
+1. **exports v3 to ONNX** for `brain/detector.py` (a 2-minute job, runs on its own);
+2. scores v3 on your phone videos (false-drone rate on aircraft clips and so on);
+3. uses v3 itself to draw first-guess boxes, which you check on contact sheets;
+4. fine-tunes v3 into **v4** with the backbone frozen, mixing in a sample of the Roboflow dataset so it doesn't forget;
+5. compares v3 and v4 on phone clips the model never trained on, then exports v4.
+
+Put clips in **Drive ▸ skynode ▸ phone_videos**, named `drone_*.mp4`, `aircraft_*.mp4` or `sky_*.mp4`. Your Roboflow key stays in Colab's Secrets (`ROBOFLOW_API_KEY`), never in a cell.
+
+`skynode_train.ipynb` below is the from-scratch version for a fresh Drive.
 
 ## Quick start
 
