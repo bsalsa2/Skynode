@@ -6,7 +6,7 @@
 
 **Website: [skynode-si.netlify.app](https://skynode-si.netlify.app)** (source in [`web/`](web/))
 
-AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
+AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting will be logged.
 
 Skynode is layer one of a larger project: sense and track, built toward drone and aerospace systems.
 
@@ -30,7 +30,7 @@ flowchart LR
 2. **Track.** It picks one target and measures how far the target sits from the center of the frame, in pixels.
 3. **Control.** A proportional controller turns that pixel error into a small pan/tilt correction ("the target is 40 px right, so pan +2°").
 4. **Actuate.** The brain sends a plain-text command like `P92.5 T47.0` to the Pico over Wi-Fi (UDP) or USB serial. The Pico moves both servos smoothly, keeps them inside safe angle limits, and the camera re-centers on the target.
-5. **Log.** Every sighting is recorded with time, class, confidence, and pan/tilt angle.
+5. **Log.** Every sighting will be recorded with time, class, confidence, and pan/tilt angle. The logger isn't written yet (see [Roadmap](#roadmap)).
 
 Detection, tracking, and control are separate modules, so each layer can be reused on future platforms.
 
@@ -60,6 +60,15 @@ Training results for **YOLOv8n** on a **28,526-image** aircraft and drone datase
 
 To track these classes, point `[model] path` in `brain/config.toml` at the exported `.onnx` and set `target_classes` to the names above.
 
+The project is moving from these five classes to two: `drone` and `aircraft` (see v3 below).
+
+### Results so far
+
+- **v2** was tested on **43 real-world videos** of planes, military jets, and drones.
+- On real aircraft, v2 wrongly called **7.5%** of frames a drone (**798 of 10,657** frames): **0.8%** for civilian planes and **10.8%** for military jets (mostly distant F-35s).
+- **v3** is in training: classes merged to `drone` and `aircraft`, **960 px** input, resumed from v2.
+- **Next:** score v3 against the same 43 clips.
+
 ## Bill of materials
 
 Also in [`bom.csv`](bom.csv). Costs are rough USD estimates for the whole line (both servos in the servo row), before shipping.
@@ -77,6 +86,8 @@ Also in [`bom.csv`](bom.csv). Costs are rough USD estimates for the whole line (
 | Jumper wires (male/male) | 1 | Breadboard and servo connections | $3.95 | [link](https://www.adafruit.com/product/758) |
 | M2/M3 screw assortment | 1 | Servo tabs and horns (M2) and tilt pivot + base mounting (M3) | $8.00 |  |
 | **Total to buy** | | | **$113.20** | |
+
+The total covers the camera, servos, mount, power and wiring. It doesn't include the Pico WH and breadboard (already owned) or the computer that runs the model (a laptop now, a Raspberry Pi 4 later).
 
 The servo link is Adafruit's SG92R, a drop-in SG90 equivalent. The webcam link is a full-size C920s; for the printed mount, a smaller 1080p webcam or camera board is lighter on the servos. Set its size in `hardware/pantilt.scad`.
 
@@ -130,11 +141,22 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 
 ## Roadmap
 
-- [ ] Pico servo firmware
-- [ ] Detection + tracking loop
+The website's Status section lists these same items. Update both together.
+
+- [x] Pico servo firmware: smooth motion, calibration, command protocol
+- [x] Detection + tracking loop, working in simulation, 70 automated tests
+- [x] Pan-tilt mount designed in CAD, with STEP and STL files
+- [x] Wiring diagram and bill of materials
+- [ ] Detection model training: v3 with drone and aircraft classes (in progress)
+- [ ] Build the physical hardware. Nothing has run on real hardware yet.
 - [ ] Sighting logger
 - [ ] Live dashboard
+- [ ] Test against real flight data (ADS-B) and publish accuracy results
 - [ ] Pi 4 + solar deployment
+
+## Build photos
+
+Photos coming soon. They'll go in [`docs/media/`](docs/media/).
 
 ## License
 
