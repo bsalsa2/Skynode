@@ -555,19 +555,50 @@
     return node;
   }
 
+  const LABEL_GAP = 5; // px between a box and its label (the CSS margin)
+
+  // The label normally sits above the box, starting at its left edge. Near an
+  // edge of the picture there may be no room for it there, so measure the real
+  // label and the real frame (a phone's frame is small, so a long label like
+  // "HELICOPTER 0.97" can be a third of it) and move it:
+  //   box--below   not enough room above the box
+  //   box--inside  not enough room above OR below (a huge, close-up box)
+  //   box--end     not enough room to the right: line it up with the box's right edge
+  // Room is measured in the frame, because the frame is what cuts things off.
+  function labelPlacement(label, box) {
+    const frameW = cam.frame.clientWidth;
+    const frameH = cam.frame.clientHeight;
+    if (!frameW || !frameH || label.hidden) return ''; // not on screen: nothing to measure
+    const layer = cam.layer;
+    const boxLeft = layer.offsetLeft + box[0] * layer.offsetWidth;
+    const boxRight = layer.offsetLeft + box[2] * layer.offsetWidth;
+    const boxTop = layer.offsetTop + box[1] * layer.offsetHeight;
+    const boxBottom = layer.offsetTop + box[3] * layer.offsetHeight;
+    const width = label.offsetWidth;
+    const height = label.offsetHeight + LABEL_GAP;
+
+    let cls = ''; // room above: the usual place
+    if (boxTop < height) cls = frameH - boxBottom >= height ? ' box--below' : ' box--inside';
+    const roomRight = frameW - boxLeft; // label starts at the box's left edge
+    const roomLeft = boxRight; // label ends at the box's right edge
+    if (width > roomRight && roomLeft > roomRight) cls += ' box--end';
+    return cls;
+  }
+
   function drawBox(node, item) {
     const { d, box, locked, tracked } = item;
     const c = CATEGORIES.includes(d.category) ? d.category : 'other';
     let cls = `box c-${c}`;
     if (locked) cls += ' box--locked';
     else if (!tracked) cls += ' box--faint';
-    if (box[1] < 0.07) cls += ' box--below'; // no room for the label above
-    if (box[0] > 0.78) cls += ' box--end'; // keep the label inside the picture
-    if (node.className !== cls) node.className = cls;
+    // A locked label has padding, so give the box its style before measuring.
+    if (node.className.replace(/ box--(below|inside|end)/g, '') !== cls) node.className = cls;
     placeBox(node, box);
     const label = node.firstChild;
     label.hidden = !tracked;
     if (tracked) setText(label, `${(str(d.class_name) || c).toUpperCase()} ${confidence(d.confidence)}`);
+    cls += labelPlacement(label, box);
+    if (node.className !== cls) node.className = cls;
     node.hidden = false;
   }
 
@@ -730,8 +761,11 @@
     const t = num(seconds);
     if (t === null) return 'none';
     const reference = num(now) || Date.now() / 1000;
-    if (reference - t <= 24 * 3600) return `last at ${hhmm(t)}`;
-    return `last on ${shortDay.format(new Date(t * 1000))}`;
+    if (reference - t > 24 * 3600) return `last on ${shortDay.format(new Date(t * 1000))}`;
+    // Within a day a clock time is enough, but say when it was yesterday:
+    // "last at 22:57" read at 14:27 would sound like later today.
+    const day = dayWord(t);
+    return day === 'today' ? `last at ${hhmm(t)}` : `last at ${hhmm(t)} ${day}`;
   }
 
   function renderTiles() {
@@ -769,9 +803,13 @@
 
   // Uptime = how much of the time since the brain started it was really
   // watching (gaps of more than a second between frames don't count).
+  // While the node can't be reached we don't know how well it is watching, so
+  // show "—" rather than the last number (a stale "100%" next to "node offline"
+  // would be a fib).
   function renderUptimeTile() {
     const node = (app.state && app.state.node) || null;
-    setText($('tile-uptime'), node ? percent(node.watch_ratio) : '—');
+    const away = app.reachable === false;
+    setText($('tile-uptime'), node && !away ? percent(node.watch_ratio) : '—');
     let note = ' ';
     if (app.reachable === false) note = 'node offline';
     else if (node && num(node.uptime_s) !== null) note = `${uptime(node.uptime_s)} since start`;
@@ -884,6 +922,7 @@
     cols: [],
     rows: [],
     top: 10,
+    plotPx: 0, // plot height the columns were last drawn for
     showOther: false,
     active: -1, // column with the tooltip open
     focus: 23, // column that gets Tab focus (roving tabindex)
@@ -998,22 +1037,9 @@
     }
     chart.grid.replaceChildren(...lines);
 
-    // Columns: show the segment of each series that has something in this hour.
+    // Columns (the bar heights are drawn by layoutColumns, below).
     rows.forEach((row, i) => {
       const col = chart.cols[i];
-      const bar = col.firstChild;
-      bar.style.setProperty('--h', `${(row.total / top) * 100}%`);
-      let topSeg = null;
-      SERIES.forEach((s, k) => {
-        const seg = bar.children[k];
-        seg.hidden = !row[s.key];
-        seg.classList.remove('is-top');
-        if (row[s.key]) {
-          seg.style.setProperty('--v', String(row[s.key]));
-          topSeg = seg;
-        }
-      });
-      if (topSeg) topSeg.classList.add('is-top'); // the data end gets the rounded corners
       const parts = SERIES.filter((s) => s.key !== 'other' || chart.showOther).map((s) => `${row[s.key]} ${s.label.toLowerCase()}`);
       col.setAttribute('aria-label', `${hourRange(row, i === 23)}: ${plural(row.total, 'sighting', 'sightings')} (${parts.join(', ')})`);
     });
@@ -1030,7 +1056,8 @@
     const legend = LEGEND_ORDER.filter((key) => key !== 'other' || chart.showOther).map((key) => {
       const s = SERIES.find((x) => x.key === key);
       const li = el('li');
-      const swatch = el('span', 'swatch');
+      // Same shapes as the badges: circle = aircraft, square = drone, ring = other.
+      const swatch = el('span', `swatch swatch--${key}`);
       swatch.style.setProperty('--s', s.color);
       li.append(swatch, document.createTextNode(s.label.toUpperCase()));
       return li;
@@ -1038,8 +1065,64 @@
     $('chart-legend').replaceChildren(...legend);
 
     $('chart-empty').hidden = !(app.stats && max === 0);
+    layoutColumns();
     renderChartTable(rows);
     if (chart.active >= 0) showTip(chart.active);
+  }
+
+  const SEG_GAP = 2; // px of card showing between two stacked series
+  const SEG_MIN = 2; // px: the least a series is drawn, when the column has room
+
+  // Pixel heights of one column's segments, bottom first. The rules, in order:
+  // 1. The column's top lands exactly at total × pxPerUnit, so it reads true
+  //    against the axis. Nothing below may move it.
+  // 2. Each series gets its share of that height.
+  // 3. The 2 px gap between two series is cut out of the LOWER one.
+  // 4. A series too thin to see is given SEG_MIN px, borrowed from the bigger
+  //    series in the same column (so the top still doesn't move).
+  // A very short column can't fit gaps (or even SEG_MIN each), so then the
+  // segments just touch and keep their plain shares.
+  function segmentHeights(values, pxPerUnit) {
+    const n = values.length;
+    const columnPx = values.reduce((a, v) => a + v, 0) * pxPerUnit;
+    let gap = SEG_GAP;
+    let min = SEG_MIN;
+    if (columnPx < n * min + (n - 1) * gap) gap = 0;
+    if (columnPx < n * min) min = 0;
+    // Shares, with the gap taken off every segment that has one above it.
+    const heights = values.map((v, k) => v * pxPerUnit - (k < n - 1 ? gap : 0));
+    // Lift the thin ones to `min`, and take what they needed from the others,
+    // each giving in proportion to how much it has above `min`.
+    const needed = heights.reduce((a, h) => a + Math.max(0, min - h), 0);
+    const spare = heights.reduce((a, h) => a + Math.max(0, h - min), 0);
+    const fair = heights.map((h) => (h < min ? min : h - (spare ? (needed * (h - min)) / spare : 0)));
+    return { heights: fair, gap }; // heights + gaps add up to exactly columnPx
+  }
+
+  // Draw the columns in pixels. Needs the plot's real height, so it runs again
+  // when the window is resized or the chart is shown after the table view.
+  function layoutColumns() {
+    const plotPx = chart.plot.clientHeight;
+    chart.plotPx = plotPx;
+    if (!plotPx) return; // hidden right now; drawn when it's shown
+    const pxPerUnit = plotPx / chart.top;
+    chart.rows.forEach((row, i) => {
+      const bar = chart.cols[i].firstChild;
+      const present = SERIES.filter((s) => row[s.key] > 0);
+      const { heights, gap } = segmentHeights(present.map((s) => row[s.key]), pxPerUnit);
+      bar.style.height = `${row.total * pxPerUnit}px`;
+      let bottom = 0;
+      SERIES.forEach((s, k) => {
+        const seg = bar.children[k];
+        const at = present.indexOf(s);
+        seg.hidden = at < 0;
+        seg.classList.toggle('is-top', at >= 0 && at === present.length - 1); // rounded data end
+        if (at < 0) return;
+        seg.style.bottom = `${bottom}px`;
+        seg.style.height = `${heights[at]}px`;
+        bottom += heights[at] + gap; // the next series starts above the gap
+      });
+    });
   }
 
   function showTip(i) {
@@ -1108,6 +1191,7 @@
       $('chart').hidden = showTable;
       $('chart-table').hidden = !showTable;
       hideTip();
+      if (!showTable) layoutColumns(); // it couldn't measure while hidden
     });
   }
 
@@ -1296,6 +1380,12 @@
     pick($('filter-kind'), 'filter', (value) => {
       log.filter = value;
     });
+    // On a phone the chips are a sideways-scrolling row. Bring a chip fully
+    // into view when it gets focus (by Tab or tap), clear of the fade at the
+    // edge (the CSS scroll-padding keeps that strip free).
+    $('filter-kind').addEventListener('focusin', (event) => {
+      if (event.target.matches('.chip')) event.target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
     $('log-more').addEventListener('click', () => loadLog('more'));
     updateExportLink();
   }
@@ -1304,7 +1394,10 @@
   // Detail dialog (one sighting)
   // ---------------------------------------------------------------------------
   const detail = $('detail');
-  let detailOpener = null;
+  // Where focus goes back to when the dialog closes: the row or card that
+  // opened it, the list it was in, and that list's heading.
+  let detailReturn = null;
+  const LIST_HEADINGS = { 'recent-list': 'recent-title', 'log-cards': 'log-title' };
 
   function fact(label, value, wide) {
     const box = el('div', `fact${wide ? ' fact--wide' : ''}`);
@@ -1347,7 +1440,8 @@
     setText($('detail-when'), `${dayWord(item.start)} · ${clock(item.start)}`);
     setText($('detail-note'), check ? 'Logged while nothing was tracked.' : 'The box shows where it was on the most confident frame.');
 
-    detailOpener = opener || null;
+    const list = opener ? opener.closest('ol, ul') : null;
+    detailReturn = opener ? { id: opener.dataset.id, opener, list } : null;
     if (typeof detail.showModal === 'function') detail.showModal();
     else detail.setAttribute('open', '');
     $('detail-close').focus();
@@ -1364,14 +1458,22 @@
     });
     detail.addEventListener('close', () => {
       $('detail-media').replaceChildren(); // stop loading the big picture
-      // Give focus back to the row or card that opened it. The list may have
-      // been redrawn meanwhile, so look it up again by its id if needed.
-      let back = detailOpener;
-      if (back && !document.contains(back) && back.dataset.id) {
-        back = document.querySelector(`.${back.classList[0]}[data-id="${CSS.escape(back.dataset.id)}"]`);
+      // Give focus back to the row or card that opened it, so a keyboard user
+      // carries on where they were. The list may have been redrawn meanwhile:
+      // find it again by its id. If newer sightings pushed it off the list,
+      // use the first one in that list instead, and if the list is empty, its
+      // heading. Never leave focus on the page itself (Tab would restart at the top).
+      const ret = detailReturn;
+      detailReturn = null;
+      if (!ret) return;
+      let back = document.contains(ret.opener) ? ret.opener : null;
+      if (!back && ret.list && ret.id) back = ret.list.querySelector(`[data-id="${CSS.escape(ret.id)}"]`);
+      if (!back && ret.list) back = ret.list.querySelector('button');
+      if (!back && ret.list) {
+        back = $(LIST_HEADINGS[ret.list.id]);
+        if (back && !back.hasAttribute('tabindex')) back.tabIndex = -1; // headings can't take focus otherwise
       }
-      if (back && document.contains(back)) back.focus();
-      detailOpener = null;
+      if (back) back.focus();
     });
   }
 
@@ -1391,7 +1493,7 @@
     setText($('node-location'), str(node.location).trim() || 'No location set');
     const away = app.reachable === false;
     setText($('nf-uptime'), away ? '—' : uptime(node.uptime_s));
-    setText($('nf-watch'), percent(node.watch_ratio));
+    setText($('nf-watch'), away ? '—' : percent(node.watch_ratio)); // unknown while away, like uptime
     const fps = live ? num(live.fps) : null;
     setText($('nf-fps'), fps === null ? '—' : `${fps.toFixed(1)} fps`);
     const size = live && Array.isArray(live.frame_size) ? live.frame_size.map(num) : [];
@@ -1547,6 +1649,7 @@
       }
     });
     window.addEventListener('resize', () => {
+      if (chart.plot.clientHeight !== chart.plotPx) layoutColumns(); // the plot is shorter on phones
       if (chart.active >= 0) showTip(chart.active);
       layoutSettings();
     });

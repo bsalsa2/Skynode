@@ -358,6 +358,9 @@ class FileTest(LoggerTestCase):
             json.dumps({**good, "id": "bool-1", "frames": True}),
             json.dumps({**good, "id": "huge-1", "start": 10 ** 400}),
             json.dumps(plane.to_dict()),                                       # same id again
+            "[" * 15000,                    # nested deeper than Python can follow: RecursionError
+            "[" * 100000,                   # far too long to even look at
+            json.dumps({**good, "id": "long-1"}) + " " * 20000,     # a record, but padded huge
         ]
         with open(self.folder / "sightings-2026-10-07.jsonl", "a") as f:
             f.write("\n".join(["", "   "] + damaged) + "\n")             # blank lines are fine
