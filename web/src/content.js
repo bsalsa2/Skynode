@@ -40,16 +40,24 @@ export const content = {
   },
 
   hero: {
-    eyebrow: 'PHASE 1: AI SKY TRACKER',
+    eyebrow: 'PHASE 1 · AI SKY TRACKER',
     headline: `Drones are cheap. Detecting them isn't.`,
     sub: 'Skynode is a camera that detects and tracks aircraft and drones, built from about $113 in new parts, plus a small computer to run the model, instead of tens of thousands. It turns to follow what it sees and is designed to log every sighting.',
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/skynode' },
     secondary: { label: 'See where it stands', href: '#status' },
     // Shown under the buttons.
     goal: 'This is Phase 1. The long-term goal is autonomy for missile and drone detection and defense systems.',
-    facts: ['Passive sensing only', 'Designed for solar power', 'MIT licensed'],
+    facts: ['Passive sensing only', 'Designed for solar', 'MIT licensed'],
     caption:
-      'Concept visualization. Live footage will replace this once the hardware is built.',
+      'Concept visualization. Live footage replaces this once the hardware is built.',
+
+    // The glass readout card in the hero. Its numbers move with the
+    // simulated aircraft crossing the sky behind it.
+    card: {
+      label: 'NODE-01 · CONCEPT',
+      state: 'TRACKING',
+      target: 'AIRCRAFT',
+    },
 
     // REAL FOOTAGE: leave video empty until real footage exists.
     // When it does: put a short video file in web/public/media/ and set
@@ -67,25 +75,36 @@ export const content = {
 
   math: {
     heading: 'The math is backwards',
-    body: 'A small drone costs a few hundred dollars. Systems built to detect one cost tens of thousands. So most farms, small airports, stadiums, and power substations have no way to know when something is overhead. Skynode is a first step toward making that sensing layer cheap enough to put anywhere.',
+    // Words inside [square brackets] light up white; the rest stay grey.
+    statement: 'A small drone costs [a few hundred dollars.] Systems built to detect one cost [tens of thousands.]',
+    stats: [
+      { label: 'A small drone', value: '$100s' },
+      { label: 'Typical detection system', value: '$10,000s' },
+      { label: 'Skynode parts list', value: '$113.20', highlight: true },
+    ],
+    body: 'So most farms, small airports, stadiums, and power substations have no way to know when something is overhead. Skynode is a first step toward making that sensing layer cheap enough to put anywhere.',
   },
 
   how: {
+    kicker: 'System',
     heading: 'How it works',
     steps: [
       {
         number: '01',
         title: 'SENSE',
+        metric: '28,526 IMAGES',
         body: 'A YOLO object-detection model looks at the camera feed and picks out aircraft and drones. It is training now on a dataset of 28,526 labeled images.',
       },
       {
         number: '02',
         title: 'TRACK',
+        metric: 'P92.5 T47.0',
         body: 'A Raspberry Pi Pico drives two small servos on a pan-tilt mount, turning the camera to keep the target centered.',
       },
       {
         number: '03',
         title: 'LOG',
+        metric: 'TIME · CLASS · CONF',
         body: 'Every sighting will be saved with the time, what it was, how confident the model was, and which way the camera was pointing.',
       },
     ],
@@ -100,10 +119,17 @@ export const content = {
         { name: 'CAMERA ARM', text: 'Webcam cradle on the tilt horn and pivot.' },
       ],
     },
+    // Simulated sensor view: what the node's on-screen overlay will look like.
+    sensor: {
+      label: 'SENSOR VIEW · SIMULATED',
+      caption:
+        'A simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
+    },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
 
   status: {
+    kicker: 'Where it stands',
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
@@ -140,7 +166,8 @@ export const content = {
   },
 
   roadmap: {
-    heading: 'Roadmap',
+    kicker: 'Roadmap',
+    heading: 'From one node to a company',
     phases: [
       {
         phase: 'PHASE 1 · NOW',

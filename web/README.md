@@ -144,38 +144,48 @@ web/
   scripts/build-models.mjs    packs hardware/*.stl for the 3D mount viewer
   src/content.js          ALL page copy and status items  <- edit this
   src/render.js           HTML templates for each section
-  src/styles.css          design tokens, liquid glass, layout
-  src/fonts.css           self-hosted Jura, DM Sans, DM Mono
-  src/main.js             scroll animation, nav, buttons, card tilt, lazy loading
-  src/scene.js            the Three.js hero
+  src/styles.css          Liquid Graphite tokens, liquid glass, layout
+  src/fonts.css           self-hosted Saira, IBM Plex Sans, IBM Plex Mono
+  src/main.js             scroll story, nav, buttons, glass tilt, lazy loading
+  src/hero.js             hero sky: stars, the aircraft pass, live readout card
+  src/sensor.js           the simulated sensor view in "How it works"
   src/mount.js            the Three.js pan-tilt mount viewer
-  src/three-env.js        shared studio lighting for both 3D views
+  src/three-env.js        studio lighting for the mount viewer
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
 ```
 
+Design: **Liquid Graphite** (the Skynode brand system). Carbon, smoke and
+light; colour appears only for what the sensor sees (drone red, aircraft
+blue, clear green), so a colour on screen always means something. Saira for
+headings, IBM Plex Sans for text, IBM Plex Mono for data.
+
 How it behaves:
-- **3D hero:** a glass sensor orb, an aircraft circling it, and an amber
-  reticle that tracks the aircraft. It's generated in code. Three.js loads
-  only after the page has painted. Rendering pauses when the tab is hidden
-  or the scene has scrolled away, and pixel density is capped at 2.
+- **Hero:** the planet's bright rim and the moon are plain CSS, so they are
+  there on first paint. After load, a small canvas adds twinkling stars and,
+  every so often, an aircraft crossing the sky; a blue lock box closes in on
+  it and the glass card shows the pan/tilt the node would command. It's
+  labelled as a concept, and pauses when scrolled away or the tab is hidden.
+- **Sensor view:** a simulation of the overlay from `brain/overlay.py`. The
+  camera pans to keep the locked drone in the centre ring. Labelled as
+  simulated on the page; it only runs while on screen.
 - **3D mount:** loads when it's about to scroll into view and pauses off
   screen. Drag it to turn it. Hover a part name to highlight that part.
-- **No WebGL, software-only WebGL, or a slow device:** static images are
-  shown instead (an SVG hero and a still of the mount). Add `?gl=any` to the
-  URL to force 3D anyway, for testing.
-- **Reduced motion:** no scroll animation, no pinning, and no motion. Both
-  3D views are drawn once as stills.
+- **No WebGL, software-only WebGL, or a slow device:** the mount shows a
+  still image instead. Add `?gl=any` to the URL to force 3D anyway.
+- **Reduced motion:** no scroll animation and no motion; the hero sky and
+  the sensor view are drawn once as stills.
 - **Liquid glass:** frosted blur everywhere. Chrome and Edge also get a
-  refraction effect on key cards; Safari and Firefox keep the plain blur.
-- **Privacy:** fonts are served from the site itself. There are no
-  third-party requests at all: no analytics, no trackers, and no cookies.
+  refraction effect; Safari and Firefox keep the plain blur.
+- **Privacy:** fonts and scripts are served from the site itself. The only
+  third-party request is the optional GoatCounter visit counter.
 
 ---
 
 ## Performance
 
 Lighthouse, mobile preset (simulated slow 4G and a 4× slower CPU), measured
-against the production build:
+against the production build before the Liquid Graphite redesign (re-run it
+on the live URL to get current numbers):
 
 | Performance | Accessibility | Best practices | SEO |
 | :---------: | :-----------: | :------------: | :-: |

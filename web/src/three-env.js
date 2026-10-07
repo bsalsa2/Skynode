@@ -14,8 +14,6 @@ import {
   Scene,
 } from 'three';
 
-const AMBER = 0xf0be5a;
-
 export function makeEnvironment(renderer) {
   const env = new Scene();
   const disposables = [];
@@ -25,7 +23,7 @@ export function makeEnvironment(renderer) {
     env.add(m);
     disposables.push(geo, mat);
   };
-  add(new BoxGeometry(12, 12, 12), new MeshBasicMaterial({ color: 0x03050c, side: BackSide }));
+  add(new BoxGeometry(12, 12, 12), new MeshBasicMaterial({ color: 0x030304, side: BackSide }));
   const panel = (w, h, hex, intensity, pos) =>
     add(
       new PlaneGeometry(w, h),
@@ -35,11 +33,11 @@ export function makeEnvironment(renderer) {
         m.lookAt(0, 0, 0);
       }
     );
-  panel(7, 2.2, 0xbcd0ff, 2.4, [0, 5.5, 1.5]); // cool overhead softbox
-  panel(2.4, 6, 0x5a78e8, 1.1, [-5.5, 0.5, -1]); // blue fill, left
-  panel(1.6, 3.6, AMBER, 1.6, [5.5, -0.8, 2]); // warm rim, right
+  panel(7, 2.2, 0xe8ebf2, 2.4, [0, 5.5, 1.5]); // overhead softbox
+  panel(2.4, 6, 0x8a8e99, 1.1, [-5.5, 0.5, -1]); // smoke fill, left
+  panel(1.6, 3.6, 0xdce2f0, 1.6, [5.5, -0.8, 2]); // horizon rim, right
   panel(3.2, 1.2, 0xffffff, 1.8, [2.2, 1.4, 5.5]); // small key, front
-  panel(10, 1.5, 0x1a2a5a, 1.0, [0, -5.5, 0]); // faint floor bounce
+  panel(10, 1.5, 0x1c1d21, 1.0, [0, -5.5, 0]); // faint floor bounce
 
   const pmrem = new PMREMGenerator(renderer);
   const texture = pmrem.fromScene(env, 0.035).texture;
