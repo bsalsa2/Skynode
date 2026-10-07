@@ -139,7 +139,7 @@ export const content = {
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
-      { label: 'DONE', text: 'Detection + tracking loop, working in simulation, 70 automated tests' },
+      { label: 'DONE', text: 'Detection + tracking loop, working in simulation, 200 automated tests' },
       { label: 'DONE', text: 'Pan-tilt mount designed in CAD, with STEP and STL files' },
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
       { label: 'IN PROGRESS', text: 'Detection model training: v3 with drone and aircraft classes' },
