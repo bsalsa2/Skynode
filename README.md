@@ -1,8 +1,8 @@
-<p align="center"><img src="docs/skynode_banner.jpg" alt="Skynode banner"></p>
+<p align="center"><img src="docs/skynode_banner.png" width="1280" alt="Skynode: Drones are cheap. Detecting them isn't."></p>
 
 # Skynode
 
-[![Live site](https://img.shields.io/badge/live%20site-skynode--si.netlify.app-f0be5a?style=flat)](https://skynode-si.netlify.app) [![Netlify Status](https://api.netlify.com/api/v1/badges/da2218d8-c877-4824-b41d-af5c4ffb2dc2/deploy-status)](https://app.netlify.com/projects/skynode-si/deploys)
+[![Live site](https://img.shields.io/badge/live%20site-skynode--si.netlify.app-76767A?style=flat)](https://skynode-si.netlify.app) [![Netlify Status](https://api.netlify.com/api/v1/badges/da2218d8-c877-4824-b41d-af5c4ffb2dc2/deploy-status)](https://app.netlify.com/projects/skynode-si/deploys)
 
 **Website: [skynode-si.netlify.app](https://skynode-si.netlify.app)** (source in [`web/`](web/))
 
