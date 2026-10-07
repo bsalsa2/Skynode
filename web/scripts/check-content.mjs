@@ -195,6 +195,12 @@ list('how.steps').forEach((s, i) => {
   ['number', 'title', 'body'].forEach((k) => text(`how.steps.${i}.${k}`, s?.[k]));
 });
 text('how.note');
+// Sample and preview content must say so.
+for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label']) {
+  const v = get(path);
+  if (typeof v === 'string' && !/\bSAMPLE\b/.test(v))
+    err(`${path} shows simulated content, so it must contain the word SAMPLE.`, lineOf(v));
+}
 if (get('how.sensor')) {
   text('how.sensor.label');
   text('how.sensor.caption');
