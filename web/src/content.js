@@ -18,7 +18,7 @@ export const content = {
   meta: {
     title: 'Skynode | AI sky tracker',
     description:
-      'Skynode is a camera that detects and tracks aircraft and drones, built to cost hundreds of dollars instead of tens of thousands.',
+      'Skynode is a camera that detects and tracks aircraft and drones, built from about $113 in new parts, plus a small computer to run the model, instead of tens of thousands.',
     // Public URL of the live site (used for social share previews).
     url: 'https://skynode-si.netlify.app/',
   },
@@ -42,11 +42,11 @@ export const content = {
   hero: {
     eyebrow: 'PHASE 1: AI SKY TRACKER',
     headline: `Drones are cheap. Detecting them isn't.`,
-    sub: 'Skynode is a camera that detects and tracks aircraft and drones, built to cost hundreds of dollars instead of tens of thousands. It turns to follow what it sees and logs every sighting.',
+    sub: 'Skynode is a camera that detects and tracks aircraft and drones, built from about $113 in new parts, plus a small computer to run the model, instead of tens of thousands. It turns to follow what it sees and is designed to log every sighting.',
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/skynode' },
     secondary: { label: 'See where it stands', href: '#status' },
     // Shown under the buttons.
-    goal: 'This is Phase 1. The long-term goal is autonomy for missile and drone defense and attack systems.',
+    goal: 'This is Phase 1. The long-term goal is autonomy for missile and drone detection and defense systems.',
     facts: ['Passive sensing only', 'Designed for solar power', 'MIT licensed'],
     caption:
       'Concept visualization. Live footage will replace this once the hardware is built.',
@@ -86,7 +86,7 @@ export const content = {
       {
         number: '03',
         title: 'LOG',
-        body: 'Every sighting is saved with the time, what it was, how confident the model was, and which way the camera was pointing.',
+        body: 'Every sighting will be saved with the time, what it was, how confident the model was, and which way the camera was pointing.',
       },
     ],
     // 3D viewer of the pan-tilt mount, built from the STL files in /hardware.
@@ -107,13 +107,15 @@ export const content = {
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
-      { label: 'DONE', text: 'Detect, track, and aim loop, working in simulation, 70 automated tests' },
+      { label: 'DONE', text: 'Detection + tracking loop, working in simulation, 70 automated tests' },
       { label: 'DONE', text: 'Pan-tilt mount designed in CAD, with STEP and STL files' },
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
-      { label: 'IN PROGRESS', text: 'Training the detection model on 28,526 images' },
+      { label: 'IN PROGRESS', text: 'Detection model training: v3 with drone and aircraft classes' },
       { label: 'NEXT', text: 'Build the physical hardware. Nothing has run on real hardware yet.' },
+      { label: 'NEXT', text: 'Sighting logger' },
+      { label: 'NEXT', text: 'Live dashboard' },
       { label: 'NEXT', text: 'Test against real flight data (ADS-B) and publish accuracy results' },
-      { label: 'NEXT', text: 'Run it outdoors on solar power' },
+      { label: 'NEXT', text: 'Pi 4 + solar deployment' },
     ],
   },
 
@@ -153,12 +155,12 @@ export const content = {
       {
         phase: 'PHASE 3',
         title: 'Autonomous drones',
-        body: 'For inspection, search and rescue, and drone defense and attack systems, built on the same sensing and tracking brain.',
+        body: 'For inspection, search and rescue, and drone detection and defense systems, built on the same sensing and tracking brain.',
       },
       {
         phase: 'PHASE 4',
         title: 'A company',
-        body: `An aerospace and defense company building autonomy for missile and drone defense and attack systems, once I'm old enough to start one.`,
+        body: `An aerospace and defense company building autonomy for missile and drone detection and defense systems, once I'm old enough to start one.`,
       },
     ],
     closing:
