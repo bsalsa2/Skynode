@@ -132,13 +132,21 @@ def parse_label_lines(lines):
     return parsed
 
 
-def remap_labels(lines, source_names, classes):
+def remap_labels(lines, source_names, classes, aliases=None):
     """Translate label lines from another dataset's class numbering to ours, by NAME.
 
-    Two datasets rarely number their classes the same way. Returns
-    (new_lines, dropped): a line is dropped when its class isn't one of ours.
+    Two datasets rarely number their classes the same way. `aliases` lets several
+    of their names fold into one of ours, e.g. {"multi-rotor": "drone",
+    "military helicopter": "aircraft", "civilian car": None} (None = drop).
+    Returns (new_lines, dropped): a line is dropped when its class isn't one of ours.
     """
     ours = {name.lower(): i for i, name in enumerate(classes)}
+    for source, target in (aliases or {}).items():
+        if target is None:
+            ours.pop(source.lower(), None)
+        else:
+            ours[source.lower()] = classes.index(target)
+    dropped_names = {s.lower() for s, t in (aliases or {}).items() if t is None}
     new_lines, dropped = [], 0
     for line in lines:
         parts = line.split()
@@ -150,7 +158,7 @@ def remap_labels(lines, source_names, classes):
             dropped += 1
             continue
         name = source_names[source_id].lower() if 0 <= source_id < len(source_names) else None
-        if name in ours:
+        if name in ours and name not in dropped_names:
             new_lines.append(" ".join([str(ours[name])] + parts[1:]))
         else:
             dropped += 1
@@ -233,28 +241,39 @@ class DatasetBuilder:
         label = self.root / "labels" / split / (Path(name).stem + ".txt")
         label.write_text("".join(line + "\n" for line in lines))
 
-    def add_existing(self, existing_root, source_names, prefix="ext"):
-        """Merge an older YOLO dataset (images/ + labels/ folders), matching classes by name.
+    def add_existing(self, existing_root, source_names, prefix="ext", aliases=None,
+                     limits=None, seed=0, layout="images-first"):
+        """Merge an older YOLO dataset, matching classes by name (see remap_labels for aliases).
 
+        `limits` caps how many images to take per split, e.g. {"train": 4000, "val": 500};
+        a random but repeatable sample is taken. `layout` is "images-first"
+        (root/images/train, root/labels/train) or "split-first" (root/train/images,
+        root/train/labels: what Roboflow exports).
         Returns (images_added, labels_dropped). Images are renamed with `prefix`
         so they can't collide with your own frames.
         """
         existing_root = Path(existing_root)
         added = dropped_total = 0
         for split in self.SPLITS:
+            found = []
             for alias in self.SPLIT_ALIASES[split]:
-                image_dir = existing_root / "images" / alias
-                if not image_dir.is_dir():
-                    continue
-                for image in sorted(image_dir.iterdir()):
-                    if image.suffix.lower() not in IMAGE_EXTS:
-                        continue
-                    label_file = existing_root / "labels" / alias / (image.stem + ".txt")
-                    lines = label_file.read_text().splitlines() if label_file.exists() else []
-                    new_lines, dropped = remap_labels(lines, source_names, self.classes)
-                    self.add(split, image, new_lines, name=f"{prefix}{SEPARATOR}{alias}-{image.name}")
-                    added += 1
-                    dropped_total += dropped
+                if layout == "split-first":
+                    image_dir, label_dir = existing_root / alias / "images", existing_root / alias / "labels"
+                else:
+                    image_dir, label_dir = existing_root / "images" / alias, existing_root / "labels" / alias
+                if image_dir.is_dir():
+                    found += [(alias, image, label_dir) for image in sorted(image_dir.iterdir())
+                              if image.suffix.lower() in IMAGE_EXTS]
+            limit = (limits or {}).get(split)
+            if limit is not None and len(found) > limit:
+                found = sorted(random.Random(seed).sample(found, limit), key=lambda item: item[1].name)
+            for alias, image, label_dir in found:
+                label_file = label_dir / (image.stem + ".txt")
+                lines = label_file.read_text().splitlines() if label_file.exists() else []
+                new_lines, dropped = remap_labels(lines, source_names, self.classes, aliases)
+                self.add(split, image, new_lines, name=f"{prefix}{SEPARATOR}{alias}-{image.name}")
+                added += 1
+                dropped_total += dropped
         return added, dropped_total
 
     def write_yaml(self):
