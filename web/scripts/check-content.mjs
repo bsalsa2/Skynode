@@ -112,6 +112,7 @@ function list(path, { min = 1 } = {}) {
 
 const sectionIds = new Set(['top', 'math', 'how', 'mount', 'status', 'build', 'roadmap']);
 if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
+if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
 
 function link(path, value = get(path)) {
   if (!text(path, value)) return;
@@ -154,7 +155,12 @@ link('hero.primary.href');
 text('hero.secondary.label');
 link('hero.secondary.href');
 list('hero.facts').forEach((f, i) => text(`hero.facts.${i}`, f));
-if (get('hero.goal') !== undefined) text('hero.goal');
+if (get('hero.cost') !== undefined) {
+  text('hero.cost');
+  // The cost claim must keep saying what it leaves out.
+  if (!/before the computer/i.test(get('hero.cost') || ''))
+    err('hero.cost must say the price is "before the computer that runs the model".', lineOf('cost:'));
+}
 
 const footage = get('hero.footage');
 if (footage && footage.video) {
@@ -166,6 +172,13 @@ if (footage && footage.video) {
 
 text('math.heading');
 text('math.body');
+if (get('math.stats') && !get('math.statsNote'))
+  err('math.stats compares prices, so math.statsNote must say it is a price comparison only, not a capability comparison.', lineOf('stats:'));
+if (get('math.statsNote') !== undefined) text('math.statsNote');
+if (get('math.useCases')) {
+  text('math.useCases.tag');
+  text('math.useCases.text');
+}
 if (get('math.statement') !== undefined) {
   if (text('math.statement') && (get('math.statement').match(/\[/g) || []).length !== (get('math.statement').match(/\]/g) || []).length)
     err('math.statement has an unmatched [ or ]. Put [square brackets] around the words to light up.', lineOf('statement:'));
@@ -192,6 +205,14 @@ if (get('how.mount')) {
   list('how.mount.parts').forEach((p, i) => {
     text(`how.mount.parts.${i}.name`, p?.name);
     text(`how.mount.parts.${i}.text`, p?.text);
+  });
+}
+
+if (get('limits')) {
+  text('limits.heading');
+  list('limits.items').forEach((it, i) => {
+    text(`limits.items.${i}.tag`, it?.tag);
+    text(`limits.items.${i}.text`, it?.text);
   });
 }
 
@@ -233,6 +254,7 @@ if (get('privacy')) {
 }
 
 text('roadmap.heading');
+if (get('roadmap.intro') !== undefined) text('roadmap.intro');
 list('roadmap.phases').forEach((p, i) => {
   ['phase', 'title', 'body'].forEach((k) => text(`roadmap.phases.${i}.${k}`, p?.[k]));
 });

@@ -6,9 +6,9 @@
 
 **Website: [skynode-si.netlify.app](https://skynode-si.netlify.app)** (source in [`web/`](web/))
 
-AI sky tracker: a YOLO model detects aircraft and drones, a Pico-driven pan-tilt camera follows them, and every sighting is logged.
+**A low-cost visual sensing platform, starting with one passive sky-tracking node.**
 
-Skynode is layer one of a larger project: sense and track, built toward drone and aerospace systems.
+A camera, a model and a pan-tilt mount that watch the sky, follow what they see and log every sighting. A YOLO model detects aircraft and drones, and a Pico-driven pan-tilt camera follows them.
 
 > **Scope:** passive sensing and tracking only. No payloads, no effectors, and nothing that interacts with or interferes with aircraft.
 > No jamming, no spoofing, and no transmitting on aviation or drone-control frequencies. Ordinary Wi-Fi and USB networking between Skynode's own parts is fine.
@@ -85,9 +85,10 @@ Also in [`bom.csv`](bom.csv). Costs are rough USD estimates for the whole line (
 | 470-1000uF 16V+ electrolytic capacitor | 1 | Absorbs servo current spikes across the servo power rails | $0.95 | [link](https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html) |
 | Jumper wires (male/male) | 1 | Breadboard and servo connections | $3.95 | [link](https://www.adafruit.com/product/758) |
 | M2/M3 screw assortment | 1 | Servo tabs and horns (M2) and tilt pivot + base mounting (M3) | $8.00 |  |
+| Computer that runs the model | 1 | Laptop now, Raspberry Pi 4 later (not in the total) | not included |  |
 | **Total to buy** | | | **$113.20** | |
 
-The total covers the camera, servos, mount, power and wiring. It doesn't include the Pico WH and breadboard (already owned) or the computer that runs the model (a laptop now, a Raspberry Pi 4 later).
+About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model. The total leaves out the Pico WH and breadboard (already owned) and the computer (a laptop now, a Raspberry Pi 4 later). The line items above add up to $113.20.
 
 The servo link is Adafruit's SG92R, a drop-in SG90 equivalent. The webcam link is a full-size C920s; for the printed mount, a smaller 1080p webcam or camera board is lighter on the servos. Set its size in `hardware/pantilt.scad`.
 
@@ -139,7 +140,16 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 1. **Pico firmware:** flash, test, and calibrate the servos. See [`pico/README.md`](pico/README.md).
 2. **Brain:** install, export a model, and run detection with just the webcam. Then connect the Pico over Wi-Fi or USB. See [`brain/README.md`](brain/README.md).
 
+## Known limits
+
+- **Range (estimate, not yet measured).** A wide-lens webcam detects small drones only at short range, likely tens of meters. Aircraft are detectable much farther.
+- **Conditions.** Visual sensing is weaker in darkness, fog and rain.
+- **Not a replacement for Remote ID or RF sensors.** It can see drones that broadcast nothing, which Remote ID can't, but it doesn't replace either.
+- **Not built yet.** Nothing has run on real hardware yet.
+
 ## Roadmap
+
+**Vision.** This is Phase 1: one passive sky-tracking node. The long-term goal is autonomy for missile and drone detection and defense systems.
 
 The website's Status section lists these same items. Update both together.
 

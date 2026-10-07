@@ -547,9 +547,6 @@ svg {
     grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
     gap: 64px;
   }
-  .hero-title .line {
-    white-space: nowrap;
-  }
 }
 .hero-copy {
   display: flex;
@@ -565,8 +562,9 @@ svg {
 .hero-title {
   font-family: var(--f-display);
   font-weight: 300;
-  font-size: clamp(40px, 4.4vw, 76px);
-  font-size: clamp(36px, 11cqi, 76px); /* the longer line just fits the column */
+  font-size: clamp(30px, 3.4vw, 48px);
+  font-size: clamp(30px, 6.6cqi, 48px); /* a full sentence: wraps within the column */
+  text-wrap: balance;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--white);
@@ -594,7 +592,7 @@ svg {
   flex-wrap: wrap;
   gap: 12px;
 }
-.hero-goal {
+.hero-note {
   max-width: 32rem;
   padding-left: 16px;
   border-left: 1px solid rgba(255, 255, 255, 0.4);
@@ -1387,6 +1385,48 @@ svg {
   line-height: 1;
   color: var(--white);
 }
+.stats-note {
+  margin-top: -32px;
+  max-width: 52rem;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  color: var(--ink-3);
+  text-transform: none;
+}
+
+/* ---- Known limits ------------------------------------------------------ */
+.limits .wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.limits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 16px;
+}
+.limit {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 28px;
+}
+.limit-tag {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  color: var(--halo);
+}
+.limit p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--halo);
+  text-wrap: pretty;
+}
 .result-note {
   font-size: 14px;
 }
@@ -1844,6 +1884,8 @@ svg {
     padding: 24px;
   }
   .note {
+    flex-direction: column;
+    gap: 14px;
     padding: 22px;
   }
   .note p {
