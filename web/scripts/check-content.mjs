@@ -292,6 +292,13 @@ if (text('footer.email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('footer.email
   }
 })(content, '');
 
+// ---- 4. Site settings: the contact address must be a real one --------------
+// Only a warning: the site still builds, but the footer and privacy page
+// would show the placeholder address.
+const configFile = join(webRoot, 'src', 'config.js');
+if (existsSync(configFile) && /CONTACT_EMAIL\s*=\s*['"][^'"]*@example\.(com|org|net)['"]/.test(readFileSync(configFile, 'utf8')))
+  warn('web/src/config.js still has the placeholder CONTACT_EMAIL; set your real contact address.');
+
 finish();
 console.log(
   `content.js OK: ${counts.DONE} done, ${counts['IN PROGRESS']} in progress, ${counts.NEXT} next` +
