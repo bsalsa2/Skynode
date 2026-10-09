@@ -247,7 +247,8 @@ def main(argv=None, environ=None):
               "Delete last_failure.json from the training-state release to retry now.")
         return 0
     if args.dry_run:
-        print("Dry run: stopping here. Nothing was copied or started.")
+        print("Look-only run: stopping here. Nothing was copied or started. "
+              "To train for real, run the workflow again with 'train_for_real' ticked.")
         return 0
 
     try:
