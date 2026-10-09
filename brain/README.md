@@ -15,7 +15,7 @@ Runs on the laptop now and on a Raspberry Pi 4 later. Every camera frame goes th
 | `config.py` + `config.toml` | Settings: defaults in code, your changes in the TOML file |
 | `run.py` | The main loop that wires it all together |
 
-Next up: comparing the sighting log with real flight data (ADS-B), to measure how accurate the detector is.
+An ADS-B logger and comparison tool are written (see "Compare with real flights" below) but have not yet been run against a real feed.
 
 ## Setup
 
@@ -146,6 +146,21 @@ id,kind,category,class_name,start_iso,end_iso,duration_s,confidence,pan,tilt,fra
 ```
 
 `start_iso` and `end_iso` are your local time with its offset from UTC, like `2026-10-07T14:02:17+02:00`. ADS-B flight data is usually in UTC, and the offset makes the conversion exact. Line the times up, then use `pan` and `tilt` to check that the aircraft was where the camera pointed. The export covers what the dashboard shows (the last 7 days, up to 10,000 rows); for anything older, query `logs/skynode.db`.
+
+### Compare with real flights (ADS-B)
+
+Planes broadcast their position, and free public feeds (adsb.lol, airplanes.live) share it with no account. The feeds only show what is flying *now*, so a small logger has to run next to the brain and write it down:
+
+```
+python -m brain.adsb             # leave it running while the brain runs
+python -m brain.adsb_compare     # afterwards: which sightings does the flight record explain?
+```
+
+**Tell it where the camera is, without putting your home on GitHub.** Set `SKYNODE_LAT`, `SKYNODE_LON` (and optionally `SKYNODE_ALT_M`), or create `brain/location.local.toml` with `lat = ...`, `lon = ...`, `alt_m = ...`. Git ignores that file, and the location is never read from `config.toml`. By default the request to the feed uses your position rounded to about 1 km, with a slightly larger radius, and the exact distances are worked out on your computer. Add `--exact` to send the precise position instead.
+
+It writes `logs/adsb_log.csv` (every aircraft within 25 km, with its azimuth and elevation in your sky) and `logs/adsb_polls.csv` (each time the feed answered). The second file is what tells "no aircraft overhead" from "the logger wasn't running". Those sightings are reported as `no_data` and left out of every percentage.
+
+`adsb_compare` reports how many aircraft sightings had a real flight nearby, and how many drone sightings did (possible misclassifications). Two honest limits: it means an aircraft was *nearby*, not that the camera was pointed at it, and planes without a transponder, such as gliders and most drones, never show up. It measures agreement with the public flight record, not accuracy. Treat each mismatch as a lead to check in the snapshot.
 
 ### Open it from your phone
 
