@@ -1,0 +1,157 @@
+/* The phone upload page. Uses the shared brand tokens (graphite.css) and the site fonts. */
+@import './fonts.css';
+@import '../../brain/dashboard/graphite.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  background: var(--void);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--ink-2);
+  font-family: var(--f-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: max(24px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+}
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--label);
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0 0 12px;
+  color: var(--white);
+  font-family: var(--f-display);
+  font-weight: 300;
+  font-size: clamp(1.7rem, 7vw, 2.3rem);
+  line-height: 1.15;
+}
+h2 {
+  margin: 0 0 6px;
+  color: var(--halo);
+  font-size: 1.05rem;
+}
+.lede {
+  margin: 0 0 20px;
+}
+#status {
+  min-height: 1.6em;
+  margin: 0 0 16px;
+  color: var(--ink-1);
+}
+code {
+  font-family: var(--f-mono);
+  font-size: 0.9em;
+  color: var(--halo);
+}
+#setup {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: var(--carbon-3);
+}
+#setup p {
+  margin: 0;
+}
+
+/* Buttons are big because they are pressed with a thumb, outdoors. */
+button,
+label.primary,
+label.secondary {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  margin: 0 0 12px;
+  padding: 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.primary {
+  background: var(--halo);
+  color: var(--void);
+  border-color: var(--halo);
+}
+.secondary {
+  background: var(--carbon-3);
+  color: var(--halo);
+}
+.quiet {
+  background: none;
+  color: var(--ink-3);
+  min-height: 44px;
+  margin-top: 8px;
+}
+:focus-visible {
+  outline: 2px solid var(--aircraft);
+  outline-offset: 2px;
+}
+[hidden] {
+  display: none !important;
+}
+
+#uploads {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+#uploads li {
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--carbon-3);
+}
+#uploads .name {
+  display: block;
+  color: var(--ink-1);
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+#uploads progress {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin: 8px 0 6px;
+  accent-color: var(--aircraft);
+}
+#uploads .note {
+  color: var(--ink-3);
+  font-size: 0.9rem;
+}
+#uploads li.done .note {
+  color: var(--clear-ink);
+}
+#uploads li.failed {
+  border-color: var(--drone);
+}
+#uploads li.failed .note {
+  color: var(--drone-ink);
+}
+.fine {
+  margin: 28px 0 0;
+  color: var(--ink-3);
+  font-size: 0.875rem;
+}

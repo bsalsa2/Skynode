@@ -43,6 +43,46 @@ class ClipBookkeepingTest(TempProject):
         self.assertEqual(at.new_clips(self.project), [])
 
 
+class PhoneInboxTest(unittest.TestCase):
+    """The phone upload page puts clips in My Drive/skynode_phone_uploads, next to skynode/."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.project = self.root / "skynode"
+        (self.project / "phone_videos").mkdir(parents=True)
+        self.inbox = self.root / at.INBOX_NAME
+
+    def test_no_inbox_changes_nothing(self):
+        (self.project / "phone_videos" / "a.mp4").write_bytes(b"x")
+        self.assertEqual([c.name for c in at.new_clips(self.project)], ["a.mp4"])
+        self.assertIsNone(at.inbox_folder(self.project))
+
+    def test_the_folder_beside_the_project_is_found_by_itself(self):
+        self.inbox.mkdir()
+        (self.inbox / "skynode-20261009-141500.mp4").write_bytes(b"x")
+        (self.project / "phone_videos" / "a.mp4").write_bytes(b"x")
+        names = [c.name for c in at.new_clips(self.project)]
+        self.assertEqual(names, ["a.mp4", "skynode-20261009-141500.mp4"])
+
+    def test_used_clips_are_skipped_in_the_inbox_too(self):
+        self.inbox.mkdir()
+        (self.inbox / "b.mp4").write_bytes(b"x")
+        at.save_used(self.project, {"b.mp4"})
+        self.assertEqual(at.new_clips(self.project), [])
+
+    def test_an_explicit_inbox_wins_and_ignores_other_files(self):
+        other = self.root / "elsewhere"
+        other.mkdir()
+        (other / "c.mov").write_bytes(b"x")
+        (other / "notes.txt").write_bytes(b"x")
+        self.assertEqual([c.name for c in at.new_clips(self.project, other)], ["c.mov"])
+
+    def test_a_missing_inbox_is_fine(self):
+        self.assertEqual(at.new_clips(self.project, self.root / "nope"), [])
+
+
 class StartingModelTest(TempProject):
     def test_uses_the_newest_model_in_models(self):
         old = self.project / "models" / "a.pt"

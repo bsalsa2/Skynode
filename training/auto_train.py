@@ -50,13 +50,26 @@ def save_used(project, used):
     path.write_text(json.dumps({"used": sorted(used)}, indent=1))
 
 
-def new_clips(project):
-    """Clips in phone_videos that haven't been used yet, sorted by name."""
-    folder = Path(project) / "phone_videos"
-    if not folder.is_dir():
-        return []
+INBOX_NAME = "skynode_phone_uploads"    # the phone upload page (web/field.html) creates this in My Drive
+
+
+def inbox_folder(project, inbox=None):
+    """Where the phone page drops clips: --inbox if given, else <project>/../skynode_phone_uploads
+    when that folder exists (in Drive that is My Drive, next to the skynode folder)."""
+    if inbox:
+        return Path(inbox)
+    beside = Path(project).resolve().parent / INBOX_NAME
+    return beside if beside.is_dir() else None
+
+
+def new_clips(project, inbox=None):
+    """Clips that haven't been used yet, sorted by name: those in phone_videos, plus
+    those in the phone upload folder (see inbox_folder)."""
+    folders = [Path(project) / "phone_videos", inbox_folder(project, inbox)]
     used = load_used(project)
-    return [p for p in sd.list_videos(folder) if p.name not in used]
+    found = [p for folder in folders if folder is not None and folder.is_dir()
+             for p in sd.list_videos(folder) if p.name not in used]
+    return sorted(found, key=lambda p: p.name)
 
 
 def current_weights(project):
@@ -196,9 +209,11 @@ def main(argv=None):
     parser.add_argument("--project", required=True, help="your skynode folder (in Drive)")
     parser.add_argument("--review", action="store_true", help="stop after labelling and wait for you")
     parser.add_argument("--epochs", type=int, default=25)
+    parser.add_argument("--inbox", help="extra folder of clips (default: the phone upload folder "
+                                        "next to your skynode folder, if there is one)")
     args = parser.parse_args(argv)
 
-    clips = new_clips(args.project)
+    clips = new_clips(args.project, args.inbox)
     plan = run_plan(args.project, clips)
     print(json.dumps(plan, indent=1))
     if len(clips) < MIN_NEW_CLIPS:
