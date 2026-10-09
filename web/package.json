@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "check": "node scripts/check-content.mjs",
+    "test": "node --test test/",
     "models": "node scripts/build-models.mjs",
     "prebuild": "npm run check && npm run models",
     "build": "vite build",

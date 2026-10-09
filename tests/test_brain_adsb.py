@@ -52,7 +52,8 @@ class Parsing(unittest.TestCase):
         self.assertEqual(row["speed_ms"], round(400 * adsb.KNOTS_TO_MS, 1))
         self.assertAlmostEqual(row["azimuth_deg"], 90, delta=0.5)
         self.assertGreater(row["distance_km"], 8)
-        self.assertGreater(row["elevation_deg"], 50)
+        # about 8.5 km away and 9.1 km up (minus the camera's 10 m): atan(9134 / 8500) = 47 degrees
+        self.assertAlmostEqual(row["elevation_deg"], 47, delta=1)
 
     def test_geometric_altitude_is_preferred(self):
         (row,) = adsb.parse_aircraft({"ac": [aircraft(alt_geom=10000)]}, CAMERA)

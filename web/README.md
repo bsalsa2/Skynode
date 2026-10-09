@@ -125,6 +125,25 @@ The counter loads on both pages, and the privacy page automatically
 switches to wording that explains the counter. To turn it off, set the code
 back to `''`.
 
+## Phone upload page
+
+`field.html` lets you record or pick a video on your phone and send it to your own Google Drive, from any browser. Nothing is installed, and the clips never pass through Skynode's servers. They land in **My Drive ▸ skynode_phone_uploads**, and `training/auto_train.py` reads that folder next time it runs. (The page is hidden from search engines, but it is not secret: anyone can open it. Only people you list as test users can sign in and use it, and they upload to their own Drive, not yours.)
+
+It asks Google for the narrow `drive.file` permission, which only covers files the page creates itself. That is why it has its own folder: it can't see or touch the rest of your Drive.
+
+**One-time setup, about 5 minutes, in a browser (nothing on your computer):**
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project named `skynode` (top bar ▸ project picker ▸ New project).
+2. **APIs & Services ▸ Library**, search **Google Drive API**, click **Enable**.
+3. **APIs & Services ▸ OAuth consent screen** (called **Google Auth Platform** in newer consoles). Choose **External**. App name `Skynode`, your email for support and developer contact. On the scopes step add `.../auth/drive.file` (the non-sensitive one). Leave publishing status on **Testing**. Under **Test users**, add your own Google address. Only addresses on that list can sign in.
+4. **APIs & Services ▸ Credentials ▸ Create credentials ▸ OAuth client ID**. Type **Web application**. Under **Authorised JavaScript origins** add your site address exactly (for example `https://skynode-si.netlify.app`) and, to try it before publishing, the Netlify preview address. Leave redirect URIs empty. Click Create.
+5. Copy the **Client ID** (it ends in `.apps.googleusercontent.com`) into `web/src/field-config.js`. **Do not copy the client secret anywhere.** The page doesn't use one.
+6. Commit that one-line change, let Netlify deploy, and open `/field.html` on your phone.
+
+Good to know while the app is in Testing: Google may show an "unverified app" warning (tap Advanced ▸ continue, it's your own app), and your sign-in lasts about an hour, so a long upload may ask you to sign in again. Both are normal. Don't click "Publish app" unless you want strangers to be able to sign in.
+
+Check it with `npm test` (the upload logic, against a fake Drive).
+
 ## The Sunnode card
 
 The card above the footer links to Sunnode. To add a one-sentence

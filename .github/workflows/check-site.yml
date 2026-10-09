@@ -33,5 +33,7 @@ jobs:
       - run: npm ci
       - name: Check content.js
         run: npm run check
+      - name: Test the phone upload logic
+        run: npm test
       - name: Build
         run: npm run build
