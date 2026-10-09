@@ -11,4 +11,4 @@
 //  "client secret" or an API key here.
 // ---------------------------------------------------------------------------
 
-export const CLIENT_ID = ''; // TODO: paste your OAuth client ID
+export const CLIENT_ID = '244537810085-k6ls48qu6n7c908u1r2imn0o4f55kt1v.apps.googleusercontent.com';
