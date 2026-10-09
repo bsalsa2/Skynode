@@ -46,10 +46,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           # Scheduled runs always train for real; a manual run only if "train_for_real" is ticked.
           TRAIN_FOR_REAL: ${{ github.event_name != 'workflow_dispatch' || inputs.train_for_real }}
+          EVENT: ${{ github.event_name }}
         run: |
           if [ "$TRAIN_FOR_REAL" = "true" ]; then
             echo "MODE: REAL RUN. Clips will be copied and Kaggle will train."
-            python training/automation/run_pipeline.py
+            # A run started by hand ignores the one-day pause after a failure; scheduled runs respect it.
+            if [ "$EVENT" = "workflow_dispatch" ]; then
+              python training/automation/run_pipeline.py --force
+            else
+              python training/automation/run_pipeline.py
+            fi
           else
             echo "MODE: LOOK ONLY. Nothing will be copied or trained."
             python training/automation/run_pipeline.py --dry-run

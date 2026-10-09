@@ -165,14 +165,20 @@ def upload(tag, title, notes, files):
     gh(["release", "upload", tag, *[str(f) for f in files], "--clobber"])
 
 
+def dataset_exists(user):
+    """Does our private Kaggle dataset exist yet? Asked before uploading, because a missing one can
+    come back as 404 or as 403, and by then a gigabyte would already have been sent."""
+    reply = sh(["kaggle", "datasets", "status", f"{user}/{DATASET_SLUG}"], check=False).lower()
+    missing = any(word in reply for word in ("404", "403", "forbidden", "not found"))
+    return bool(reply.strip()) and not missing
+
+
 def publish_dataset(user, folder):
     """Create the private Kaggle dataset the first time, add a new version afterwards."""
     (Path(folder) / "dataset-metadata.json").write_text(json.dumps(dataset_metadata(user)))
-    try:
+    if dataset_exists(user):
         sh(["kaggle", "datasets", "version", "-p", str(folder), "-m", "new clips", "--dir-mode", "zip"])
-    except RuntimeError as error:
-        if "404" not in str(error) and "not found" not in str(error).lower():
-            raise
+    else:
         sh(["kaggle", "datasets", "create", "-p", str(folder), "--dir-mode", "zip"])
 
 
@@ -223,6 +229,8 @@ def run_kernel(user, folder):
 def main(argv=None, environ=None):
     parser = argparse.ArgumentParser(description="Train on Kaggle when there are new Drive clips.")
     parser.add_argument("--dry-run", action="store_true", help="look and report; change nothing")
+    parser.add_argument("--force", action="store_true",
+                        help="go ahead even if a run failed less than a day ago (for runs started by hand)")
     args = parser.parse_args(argv)
     environ = os.environ if environ is None else environ
     try:
@@ -242,7 +250,8 @@ def main(argv=None, environ=None):
         print(f"  new: {clip['name']} ({clip['size'] / 1e6:.1f} MB)")
     if not batch:
         return 0
-    if recently_failed(read_state_file(STATE_TAG, FAILURE_FILE, state), datetime.now(timezone.utc)):
+    if not args.force and recently_failed(read_state_file(STATE_TAG, FAILURE_FILE, state),
+                                          datetime.now(timezone.utc)):
         print("A run failed less than a day ago, so it is not retrying yet. "
               "Delete last_failure.json from the training-state release to retry now.")
         return 0
