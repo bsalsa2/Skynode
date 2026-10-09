@@ -9,10 +9,10 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: Look and report only (nothing is copied or trained)
+      train_for_real:
+        description: TICK THIS to really copy clips and train on Kaggle (left empty it only looks and reports)
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write    # to publish the trained model as a GitHub release
@@ -44,10 +44,13 @@ jobs:
           DRIVE_CLIP_FOLDER_IDS: ${{ vars.DRIVE_CLIP_FOLDER_IDS }}
           DRIVE_START_WEIGHTS_FILE_ID: ${{ vars.DRIVE_START_WEIGHTS_FILE_ID }}
           GH_TOKEN: ${{ github.token }}
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          # Scheduled runs always train for real; a manual run only if "train_for_real" is ticked.
+          TRAIN_FOR_REAL: ${{ github.event_name != 'workflow_dispatch' || inputs.train_for_real }}
         run: |
-          if [ "$DRY_RUN" = "true" ]; then
-            python training/automation/run_pipeline.py --dry-run
-          else
+          if [ "$TRAIN_FOR_REAL" = "true" ]; then
+            echo "MODE: REAL RUN. Clips will be copied and Kaggle will train."
             python training/automation/run_pipeline.py
+          else
+            echo "MODE: LOOK ONLY. Nothing will be copied or trained."
+            python training/automation/run_pipeline.py --dry-run
           fi

@@ -170,7 +170,8 @@ class DryRun(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("1 new now", text)
         self.assertIn("new.mp4", text)
-        self.assertIn("Dry run", text)
+        self.assertIn("Look-only run", text)
+        self.assertIn("train_for_real", text)
 
     def test_nothing_new_stops_early(self):
         code, text = self.run_main(used='{"used": ["old.mp4", "new.mp4"]}', argv=())

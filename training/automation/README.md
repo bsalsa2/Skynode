@@ -50,12 +50,12 @@ GitHub pre-release  ◀── model + report ◀── Kaggle free GPU trains �
 |---|---|
 | `DRIVE_CLIP_FOLDER_IDS` | the Drive folder ids, comma separated (the id is the end of the folder's address) |
 | `DRIVE_START_WEIGHTS_FILE_ID` | the id of `best.pt`, used for the very first run |
-| `AUTO_TRAIN_ENABLED` | leave unset until the dry run looks right, then `true` |
+| `AUTO_TRAIN_ENABLED` | leave unset until a real run by hand works, then `true` |
 
 ## Trying it
 
-1. **Actions ▸ Auto train ▸ Run workflow**, leave *dry run* ticked. It lists your Drive clips and says which are new. Nothing is copied or started.
-2. Untick *dry run* and run again to do one real run by hand. Watch the log: Kaggle can take a while to start.
+1. **Actions ▸ Auto train ▸ Run workflow** with the *train_for_real* box left empty. It lists your Drive clips and says which are new (the log says `MODE: LOOK ONLY`). Nothing is copied or started, so it takes about 15 seconds.
+2. Run it again with *train_for_real* **ticked** to do one real run by hand (the log says `MODE: REAL RUN`). Watch the log: Kaggle can take a while to start, and a real run lasts an hour or more.
 3. When you're happy, set `AUTO_TRAIN_ENABLED` to `true`. After that it checks every 30 minutes by itself. (Scheduled runs only start once this workflow is on the default branch.)
 
 ## Good to know
