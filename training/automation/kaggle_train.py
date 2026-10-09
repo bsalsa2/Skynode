@@ -53,10 +53,12 @@ def prepare_project(dataset, project):
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     try:
-        subprocess.run([sys.executable, "-m", "pip", "        try:
+        try:
             import ultralytics  # noqa: F401  Kaggle images usually include it
         except ImportError:
             subprocess.run([sys.executable, "-m", "pip", "install", "-q", "ultralytics"], check=True)
+        subprocess.run(["git", "clone", "-q", "--depth", "1", REPO, str(WORK / "Skynode")], check=True)
+        sys.path.insert(0, str(WORK / "Skynode" / "training"))
         import auto_train as at
 
         project = WORK / "project"
