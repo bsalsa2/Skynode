@@ -1,0 +1,53 @@
+# Notices new phone clips in your Google Drive and trains on Kaggle's free GPU.
+# Does nothing until you set it up (training/automation/README.md). Scheduled runs
+# also need the repository variable AUTO_TRAIN_ENABLED set to true, so you can try
+# it by hand with "Run workflow" (a dry run by default) before letting it run itself.
+name: Auto train
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Look and report only (nothing is copied or trained)
+        type: boolean
+        default: true
+
+permissions:
+  contents: write    # to publish the trained model as a GitHub release
+
+concurrency:
+  group: auto-train
+  cancel-in-progress: false
+
+jobs:
+  train:
+    if: github.event_name == 'workflow_dispatch' || vars.AUTO_TRAIN_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -q google-auth google-api-python-client kaggle
+
+      - name: Look for new clips and train
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          DRIVE_CLIP_FOLDER_IDS: ${{ vars.DRIVE_CLIP_FOLDER_IDS }}
+          DRIVE_START_WEIGHTS_FILE_ID: ${{ vars.DRIVE_START_WEIGHTS_FILE_ID }}
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python training/automation/run_pipeline.py --dry-run
+          else
+            python training/automation/run_pipeline.py
+          fi
