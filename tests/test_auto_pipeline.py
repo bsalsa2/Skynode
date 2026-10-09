@@ -122,6 +122,38 @@ class Planning(unittest.TestCase):
         self.assertEqual(rp.run_summary({}), "unknown")
 
 
+class KaggleDataset(unittest.TestCase):
+    def test_a_missing_dataset_can_look_like_404_or_403(self):
+        for reply, exists in (("ready", True), ("pending", True),
+                              ("404 Client Error: Not Found for url: x", False),
+                              ("403 Client Error: Forbidden for url: x", False),
+                              ("", False)):
+            with mock.patch.object(rp, "sh", return_value=reply):
+                self.assertEqual(rp.dataset_exists("someone"), exists, reply)
+
+    def publish(self, status_reply):
+        commands = []
+
+        def fake_sh(command, cwd=None, check=True):
+            commands.append(command)
+            return status_reply if "status" in command else ""
+        with tempfile.TemporaryDirectory() as folder, mock.patch.object(rp, "sh", side_effect=fake_sh):
+            rp.publish_dataset("someone", folder)
+            written = json.loads((Path(folder) / "dataset-metadata.json").read_text())
+        return commands, written
+
+    def test_the_first_time_it_creates_without_trying_a_version_first(self):
+        commands, written = self.publish("403 Client Error: Forbidden")
+        verbs = [c[2] for c in commands if c[:2] == ["kaggle", "datasets"]]
+        self.assertEqual(verbs, ["status", "create"])
+        self.assertEqual(written["id"], f"someone/{rp.DATASET_SLUG}")
+
+    def test_afterwards_it_adds_a_version(self):
+        commands, _ = self.publish("ready")
+        verbs = [c[2] for c in commands if c[:2] == ["kaggle", "datasets"]]
+        self.assertEqual(verbs, ["status", "version"])
+
+
 class DriveListing(unittest.TestCase):
     def test_videos_only_across_pages_and_folders(self):
         pages = {
@@ -177,6 +209,13 @@ class DryRun(unittest.TestCase):
         code, text = self.run_main(used='{"used": ["old.mp4", "new.mp4"]}', argv=())
         self.assertEqual(code, 0)
         self.assertIn("0 new now", text)
+
+    def test_a_run_started_by_hand_can_ignore_the_pause_after_a_failure(self):
+        failure = json.dumps({"time": datetime.now(timezone.utc).isoformat()})
+        code, text = self.run_main(failure=failure, argv=("--dry-run", "--force"))
+        self.assertEqual(code, 0)
+        self.assertNotIn("not retrying", text)
+        self.assertIn("Look-only run", text)
 
     def test_a_recent_failure_stops_a_real_run(self):
         failure = json.dumps({"time": datetime.now(timezone.utc).isoformat()})
