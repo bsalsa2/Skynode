@@ -26,7 +26,7 @@ A webcam on a pan-tilt mount watches the sky, a YOLO model finds aircraft and bi
 | Detection model v2 | Tested on video | 43 real-world clips (see Results) |
 | Detection model v3 (drone and aircraft classes) | In training | Not yet scored |
 | Physical build | **Not built yet** | Nothing has run on real hardware |
-| Accuracy against ADS-B flight data | **Not built yet** | |
+| Accuracy against ADS-B flight data | Written, not yet run | Logger and comparison tool exist; tested only on made-up data. No results yet |
 
 ## How it works
 

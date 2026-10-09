@@ -226,6 +226,8 @@ datasets/
 logs/
 # Wi-Fi password for the Pico (copy pico/wifi_secrets_example.py to create it)
 wifi_secrets.py
+# Where the camera is, for the ADS-B logger. It points at your home: never commit it.
+brain/location.local.toml
 
 # Local test videos for `python -m brain.demo`. Never commit these.
 /demo_videos/
