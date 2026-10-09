@@ -2060,3 +2060,434 @@ code {
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   Range-console skin
+   Flat graphite plates, hairline borders and corner brackets instead of
+   rounded liquid glass; mono caps for every label. Colour still only means
+   something the sensor sees. This block comes last so it wins over the
+   rounded defaults above; delete it to get the old look back.
+   ========================================================================== */
+:root {
+  --plate: rgba(10, 10, 11, 0.78);
+  --plate-2: rgba(255, 255, 255, 0.035);
+  --hair: rgba(255, 255, 255, 0.12);
+  --hair-2: rgba(255, 255, 255, 0.28);
+  --bracket: rgba(244, 244, 242, 0.7);
+  --r: 2px;
+}
+
+/* ---- Backdrop: a range graticule instead of a lit horizon -------------------- */
+.sky {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(150, 165, 190, 0.1), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px) 0 0 / 48px 48px,
+    var(--void);
+}
+.sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
+}
+.sky-horizon {
+  top: 100%;
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  left: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.sky-glow {
+  display: none;
+}
+
+/* ---- Plates ------------------------------------------------------------------ */
+.glass,
+.glass--bar,
+.glass--tile,
+.glass--flat {
+  --g-fill: var(--plate);
+  --g-frost: blur(10px) saturate(120%);
+  --g-liquid: blur(10px) saturate(120%);
+  --g-shadow: inset 0 0 0 1px var(--hair), 0 24px 48px -28px rgba(0, 0, 0, 0.9);
+}
+.has-refraction .glass {
+  backdrop-filter: blur(10px) saturate(120%);
+}
+.card,
+.tile,
+.topbar {
+  border-radius: var(--r);
+}
+/* Corner brackets on every plate. */
+.card::after,
+.tile::after,
+.topbar::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 3;
+  pointer-events: none;
+  --b: var(--bracket);
+  background:
+    linear-gradient(var(--b), var(--b)) 0 0 / 12px 1px,
+    linear-gradient(var(--b), var(--b)) 0 0 / 1px 12px,
+    linear-gradient(var(--b), var(--b)) 100% 0 / 12px 1px,
+    linear-gradient(var(--b), var(--b)) 100% 0 / 1px 12px,
+    linear-gradient(var(--b), var(--b)) 0 100% / 12px 1px,
+    linear-gradient(var(--b), var(--b)) 0 100% / 1px 12px,
+    linear-gradient(var(--b), var(--b)) 100% 100% / 12px 1px,
+    linear-gradient(var(--b), var(--b)) 100% 100% / 1px 12px;
+  background-repeat: no-repeat;
+}
+
+/* ---- Header ------------------------------------------------------------------ */
+.topbar {
+  min-height: 52px;
+  padding: 4px 8px 4px 18px;
+}
+.wordmark {
+  font-weight: 500;
+  letter-spacing: 0.42em;
+}
+.tabs {
+  gap: 0;
+  align-self: stretch;
+}
+.tab {
+  position: relative;
+  padding: 0 16px;
+  border-radius: 0;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -5px;
+  height: 2px;
+  background: var(--halo);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--ease-expo);
+}
+.tab[aria-selected='true'] {
+  background: var(--plate-2);
+  box-shadow: none;
+}
+.tab[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+.pill {
+  height: 30px;
+  border-radius: var(--r);
+  border: 1px solid var(--hair);
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.pill[data-state='online'] {
+  border-color: rgba(155, 232, 155, 0.45);
+  color: var(--clear-ink);
+}
+.pill-dot {
+  border-radius: 0;
+}
+.pill[data-state='online'] .pill-dot {
+  box-shadow: 0 0 8px var(--clear);
+}
+
+/* ---- Card heads and labels ----------------------------------------------------- */
+.card-title {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--halo);
+}
+.card-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  vertical-align: 1px;
+  background: var(--halo);
+}
+.card-meta,
+.tile-label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.tile {
+  gap: 10px;
+  border-left: 0;
+}
+.tile-value {
+  font-size: 46px;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+}
+.tile-note {
+  padding-top: 8px;
+  border-top: 1px solid var(--hair);
+  letter-spacing: 0.04em;
+}
+
+/* ---- Camera ------------------------------------------------------------------ */
+.frame {
+  border-radius: var(--r);
+  background: #0b0c0e;
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+/* Scanlines and a vignette over the picture and its boxes. */
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.55) 100%);
+}
+.frame-grid {
+  background-size: 10% 11.11%;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+}
+.frame-ring {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 0;
+  border: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 50% 0 / 1px 9px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 50% 100% / 1px 9px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 0 50% / 9px 1px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 100% 50% / 9px 1px no-repeat;
+}
+.frame-msg {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.live-pill {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+.live-dot {
+  border-radius: 0;
+}
+.box,
+.box--locked .box-label {
+  border-radius: 0;
+}
+.box-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.hud {
+  z-index: 3;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  min-height: 38px;
+  padding: 6px 14px;
+  border-radius: var(--r);
+  background: rgba(0, 0, 0, 0.62);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 0 1px var(--hair), inset 2px 0 0 var(--halo);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- Lists and badges ------------------------------------------------------------ */
+.badge {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.badge--box {
+  height: 22px;
+  border-radius: var(--r);
+}
+.row {
+  border-radius: var(--r);
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0 0 1px var(--hair), inset 2px 0 0 var(--c, var(--smoke));
+  transition: background-color 0.2s, box-shadow 0.2s, transform 0.25s var(--ease);
+}
+.row:hover {
+  background: var(--plate-2);
+  box-shadow: inset 0 0 0 1px var(--hair-2), inset 2px 0 0 var(--c, var(--smoke));
+  transform: translateX(2px);
+}
+.row .thumb,
+.thumb,
+.thumb-box,
+.thumb-img,
+.scard {
+  border-radius: var(--r);
+}
+.meter,
+.meter-fill {
+  border-radius: 0;
+}
+.scard {
+  box-shadow: inset 0 0 0 1px var(--hair), inset 2px 0 0 var(--c, var(--smoke));
+}
+
+/* ---- Chart ------------------------------------------------------------------------ */
+.chart,
+.table-wrap,
+.tip,
+.col,
+.col::before {
+  border-radius: var(--r);
+}
+.chart {
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.col-seg.is-top {
+  border-radius: 0;
+}
+.tip {
+  background: rgba(8, 8, 9, 0.96);
+  box-shadow: inset 0 0 0 1px var(--hair-2), 0 18px 36px -14px rgba(0, 0, 0, 0.95);
+}
+.tip-hour,
+.legend li,
+.chart-x,
+.chart-tick {
+  letter-spacing: 0.1em;
+}
+.swatch {
+  border-radius: 0;
+}
+
+/* ---- Controls --------------------------------------------------------------------- */
+.toggle,
+.seg,
+.seg-btn,
+.chip,
+.export,
+.btn-glass,
+.icon-btn {
+  border-radius: var(--r);
+}
+.toggle,
+.seg,
+.chip,
+.export,
+.btn-glass {
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.seg-btn,
+.chip,
+.export,
+.btn-glass {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.toggle:hover,
+.chip:hover,
+.export:hover,
+.btn-glass:hover {
+  background: var(--plate-2);
+  box-shadow: inset 0 0 0 1px var(--hair-2);
+}
+.toggle[aria-pressed='true'],
+.seg-btn[aria-pressed='true'],
+.chip[aria-pressed='true'] {
+  background: var(--halo);
+  color: var(--carbon);
+  box-shadow: none;
+}
+
+/* ---- Node, settings, detail --------------------------------------------------------- */
+.note,
+.set-card,
+.fact,
+.detail-media,
+.detail-media .thumb-box {
+  border-radius: var(--r);
+}
+.node-id,
+.note-tag,
+.set-title,
+.fact dt {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.detail {
+  border-radius: var(--r);
+  background: rgba(10, 10, 11, 0.97);
+  box-shadow: inset 0 0 0 1px var(--hair-2), 0 40px 80px -20px rgba(0, 0, 0, 0.95);
+}
+.detail::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+@media (max-width: 559px) {
+  .tab {
+    padding: 0 9px;
+    letter-spacing: 0.1em;
+  }
+}
+
+.filters,
+.facts,
+.scard .thumb,
+.note-tag,
+.node-beacon,
+.set-card {
+  border-radius: var(--r);
+}
+.node-beacon {
+  border-radius: 50%;
+}
+
+/* ---- Entrance: plates settle in, one after another -------------------------------------- */
+@keyframes sn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.topbar,
+.panel > * {
+  animation: sn-rise 0.6s var(--ease-expo) backwards;
+}
+.panel > :nth-child(2) {
+  animation-delay: 0.08s;
+}
+.panel > :nth-child(3) {
+  animation-delay: 0.16s;
+}
+.panel > :nth-child(4) {
+  animation-delay: 0.24s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar,
+  .panel > *,
+  .row,
+  .tab::after {
+    animation: none;
+    transition: none;
+  }
+}
