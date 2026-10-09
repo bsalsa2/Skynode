@@ -52,10 +52,12 @@ def prepare_project(dataset, project):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-        try:
-        import ultralytics  # noqa: F401  Kaggle images usually include it
-    except ImportError:
-        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "ultralytics"], check=True)
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "        try:
+            import ultralytics  # noqa: F401  Kaggle images usually include it
+        except ImportError:
+            subprocess.run([sys.executable, "-m", "pip", "install", "-q", "ultralytics"], check=True)
+        import auto_train as at
 
         project = WORK / "project"
         prepare_project(find_dataset(), project)
