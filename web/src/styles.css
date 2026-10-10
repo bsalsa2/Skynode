@@ -1878,3 +1878,361 @@ svg {
     transform: none !important;
   }
 }
+
+/* ==========================================================================
+   Prime-contractor skin
+   Black field, full-width bar, giant uppercase headlines, hairline rules and
+   square plates in place of liquid glass. This block comes last so it wins
+   over the rounded defaults above; delete it to get the old look back.
+   The brand tokens in graphite.css are unchanged.
+   ========================================================================== */
+:root {
+  --nav-h: 56px;
+  --hair: rgba(255, 255, 255, 0.14);
+  --hair-2: rgba(255, 255, 255, 0.34);
+  --plate: rgba(8, 8, 9, 0.82);
+  --r: 2px;
+}
+
+/* ---- Plates ------------------------------------------------------------ */
+.glass,
+.glass--deep,
+.has-refraction .glass {
+  border-radius: var(--r);
+  background: var(--plate);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.glass-sheen {
+  display: none;
+}
+
+/* ---- Bar --------------------------------------------------------------- */
+.site-header {
+  top: 0;
+  left: 0;
+  width: 100%;
+  transform: none;
+}
+.site-header.is-hidden {
+  transform: translateY(-100%);
+}
+.nav,
+.has-refraction .nav {
+  height: var(--nav-h);
+  padding: 0 max(var(--gutter), calc((100% - 1280px) / 2 + var(--gutter)));
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.55));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 -1px 0 var(--hair);
+}
+.wordmark {
+  font-weight: 500;
+  letter-spacing: 0.42em;
+}
+.nav-link {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ---- Buttons ----------------------------------------------------------- */
+.btn,
+.btn--sm,
+.btn--glass,
+.has-refraction .btn--glass {
+  border-radius: 0;
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.btn--primary {
+  background: var(--halo);
+  color: var(--carbon);
+  box-shadow: none;
+}
+.btn--primary:hover {
+  background: var(--white);
+}
+.btn--glass,
+.has-refraction .btn--glass {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--hair-2);
+}
+.btn--glass:hover {
+  background: var(--halo);
+  color: var(--carbon);
+}
+
+/* ---- Hero -------------------------------------------------------------- */
+/* The lit planet and stars are swapped for a range graticule. */
+.moon,
+.planet,
+.stars {
+  display: none;
+}
+.hero {
+  min-height: max(100vh, 760px);
+  justify-content: flex-end;
+}
+.hero-sky {
+  background:
+    radial-gradient(ellipse 90% 70% at 70% 30%, rgba(150, 165, 190, 0.1), transparent 70%),
+    linear-gradient(180deg, #000 0%, #060607 100%);
+}
+.hero-grid {
+  background-size: 64px 64px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+}
+.hero-inner {
+  grid-template-columns: 1fr;
+  gap: 40px;
+  align-items: end;
+  padding-block: 112px 40px;
+}
+@media (min-width: 1000px) {
+  .hero-inner {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 40px 64px;
+  }
+  .hero-copy {
+    grid-column: 1 / -1;
+  }
+  .hud,
+  .footage {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  letter-spacing: 0.3em;
+  color: var(--halo);
+}
+.eyebrow::before {
+  content: '';
+  width: 36px;
+  height: 1px;
+  background: var(--halo);
+}
+.hero-title {
+  max-width: 20ch;
+  font-weight: 500;
+  font-size: clamp(34px, 7.2cqi, 92px);
+  line-height: 0.96;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.hero-title .line--dim {
+  color: var(--dim);
+}
+.hero-sub {
+  max-width: 38rem;
+  font-size: 18px;
+}
+.hero-note {
+  border-left: 2px solid var(--halo);
+  font-size: 14px;
+}
+.hero-facts {
+  border-top: 1px solid var(--hair);
+  padding-block: 18px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* ---- Readout ----------------------------------------------------------- */
+.hud {
+  border-top: 2px solid var(--halo);
+}
+.hud-label,
+.hud-grid dt {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+.state-pill,
+.chip,
+.pill,
+.badge,
+.note-tag {
+  border-radius: 0;
+}
+
+/* ---- Sections ---------------------------------------------------------- */
+.section {
+  border-top: 1px solid var(--hair);
+}
+.kicker {
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--halo);
+}
+.kicker-n {
+  padding: 3px 7px;
+  background: var(--halo);
+  color: var(--carbon);
+  letter-spacing: 0.1em;
+}
+.kicker-sep {
+  width: 48px;
+  opacity: 0.4;
+}
+.h-section {
+  font-weight: 500;
+  font-size: clamp(40px, 7vw, 104px);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+}
+.math-statement {
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Number strip: bordered columns, giant figures. */
+.stats {
+  gap: 0;
+  border: 1px solid var(--hair);
+  border-radius: 0;
+  background: none;
+}
+.stat {
+  border-radius: 0;
+  border-right: 1px solid var(--hair);
+}
+.stat:last-child {
+  border-right: 0;
+}
+.stat dt {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+.stat-value {
+  font-weight: 500;
+  font-size: clamp(30px, 4.6vw, 66px);
+  letter-spacing: -0.02em;
+}
+.stat--hi {
+  background: var(--halo);
+}
+.stat--hi::before {
+  display: none;
+}
+.stat--hi dt,
+.stat--hi .stat-value {
+  color: var(--carbon);
+}
+
+/* Steps, results, limits: square, ruled, numbered. */
+.step,
+.result,
+.limit,
+.note,
+.sensor,
+.mount,
+.build-card,
+.sister,
+.status-row {
+  border-radius: var(--r);
+}
+.step-title,
+.phase-title,
+.result-value {
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.step-num {
+  font-size: 13px;
+  color: var(--halo);
+}
+.step {
+  border-top: 2px solid var(--halo);
+}
+.mono,
+.limit-tag,
+.phase-label,
+.footer-k,
+.mount-part-name {
+  letter-spacing: 0.2em;
+}
+.limit-tag,
+.phase-label,
+.pill {
+  text-transform: uppercase;
+}
+.status-row {
+  border-top: 1px solid var(--hair);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.sensor .frame,
+.mount-stage {
+  border-radius: var(--r);
+}
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px);
+}
+.det,
+.det-label {
+  border-radius: 0;
+}
+
+/* ---- Footer ------------------------------------------------------------ */
+.site-footer {
+  border-top: 1px solid var(--hair);
+}
+.footer-giant {
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.footer-links a {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+/* Decorative orbs and glows belong to the old look. */
+.outro-planet,
+.build-orb,
+.halo {
+  display: none;
+}
+html {
+  overflow-x: clip;
+}
+.limit-tag,
+.chip {
+  border-radius: 0;
+}
+.outro {
+  height: auto;
+  margin-top: 0;
+  padding-block: 80px 120px;
+  overflow: visible;
+}
+.outro::after {
+  display: none;
+}
+.closing {
+  max-width: 24ch;
+  font-weight: 500;
+  font-size: clamp(24px, 3.4vw, 46px);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
