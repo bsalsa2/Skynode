@@ -38,13 +38,12 @@ from brain.config import load_config
 from brain.controller import PanTiltController
 from brain.detector import Detector
 from brain.link import NullLink
-from brain.run import (DEFAULT_CONFIG, REPO, check_target_classes, make_dashboard, make_logger,
-                       port_number, report, run_loop)
+from brain.run import (DEFAULT_CONFIG, REPO, VideoClock, check_target_classes,
+                       frame_interval, make_dashboard, make_logger, port_number, report, run_loop)
 from brain.tracker import Tracker
 
 VIDEO_SUFFIXES = {".mp4", ".m4v", ".mov", ".avi", ".mkv", ".webm"}
 DEMO_LOGS = REPO / "logs" / "demo"      # inside logs/, which git ignores
-DEFAULT_FPS = 25.0                      # for videos that don't say how fast they play
 CUT_SECONDS = 1.0                       # demo time that passes between one video and the next
 
 
@@ -107,33 +106,6 @@ def refuse_unignored_repo_folder(folder):
             "or into demo_videos/ (which git ignores), and run the demo again.")
 
 
-class VideoClock:
-    """The demo's clock, for the logger and the dashboard. Call it for the time.
-
-    It starts at the real time, then moves forward only when the videos do
-    (advance(), once per frame), until run_free() lets it follow the real
-    clock again.
-    """
-
-    def __init__(self, wall=time.time):
-        self._wall = wall
-        self.t = wall()
-        self._free_since = None         # the real time at which run_free() was called
-
-    def __call__(self):
-        if self._free_since is None:
-            return self.t
-        return self.t + (self._wall() - self._free_since)
-
-    def advance(self, seconds):
-        if self._free_since is None:
-            self.t += seconds
-
-    def run_free(self):
-        if self._free_since is None:
-            self._free_since = self._wall()
-
-
 class VideoFile:
     """One video file with the camera interface run_loop() uses: read() and release().
 
@@ -147,8 +119,7 @@ class VideoFile:
         self.capture = cv2.VideoCapture(str(path))
         if not self.capture.isOpened():
             raise OSError(f"can't open {path}")
-        fps = self.capture.get(cv2.CAP_PROP_FPS)
-        self.interval = 1.0 / (fps if fps and 1.0 <= fps <= 240.0 else DEFAULT_FPS)
+        self.interval = frame_interval(self.capture)
         self.realtime = realtime
         self.demo_clock = demo_clock
         self._clock, self._sleep = clock, sleep

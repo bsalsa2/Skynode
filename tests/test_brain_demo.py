@@ -141,6 +141,12 @@ class VideoClockTest(unittest.TestCase):
         clock.advance(0.04)
         self.assertAlmostEqual(clock(), 1000.08)
 
+    def test_it_can_start_at_a_given_time_instead_of_now(self):
+        clock = demo.VideoClock(wall=lambda: 1000.0, start=500.0)
+        self.assertEqual(clock(), 500.0)
+        clock.advance(2)
+        self.assertEqual(clock(), 502.0)
+
     def test_after_run_free_it_follows_the_real_clock_again(self):
         wall = [1000.0]
         clock = demo.VideoClock(wall=lambda: wall[0])

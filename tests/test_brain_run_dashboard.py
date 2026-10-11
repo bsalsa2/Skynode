@@ -19,7 +19,7 @@ import sqlite3
 import tempfile
 import threading
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest import mock
 
@@ -35,8 +35,8 @@ from brain.controller import PanTiltController              # noqa: E402
 from brain.detector import Detection                        # noqa: E402
 from brain.link import NullLink                             # noqa: E402
 from brain.logger import COLUMNS, Sighting, row_to_dict     # noqa: E402
-from brain.run import (codespaces_host, dashboard_info, main, make_dashboard,  # noqa: E402
-                       make_logger, parse_args, run_loop)
+from brain.run import (RecordedVideo, VideoClock, codespaces_host, dashboard_info,  # noqa: E402
+                       frame_interval, main, make_dashboard, make_logger, parse_args, run_loop)
 from brain.tracker import Tracker                           # noqa: E402
 
 WIDTH, HEIGHT = 320, 240
@@ -479,6 +479,91 @@ class CommandLineTest(unittest.TestCase):
                 self.assertEqual(cfg.camera.source, source)     # the real setting is untouched
 
 
+RECORDED = datetime(2026, 10, 11, 14, 3, 27, tzinfo=timezone(timedelta(hours=-4)))
+
+
+class StartTimeFlagTest(unittest.TestCase):
+    def parse(self, text):
+        return parse_args(["--start-time", text]).start_time
+
+    def test_no_flag_means_no_start_time(self):
+        self.assertIsNone(parse_args([]).start_time)
+
+    def test_an_offset_pins_down_the_exact_moment(self):
+        self.assertEqual(self.parse("2026-10-11T14:03:27-04:00"), RECORDED.timestamp())
+        self.assertEqual(self.parse("2026-10-11T18:03:27Z"), RECORDED.timestamp())     # same moment
+        self.assertEqual(self.parse("2026-10-11T18:03:27+00:00"), RECORDED.timestamp())
+        self.assertEqual(self.parse("2026-10-11 14:03:27.500-04:00"), RECORDED.timestamp() + 0.5)
+
+    def test_a_time_without_an_offset_is_refused_because_the_hour_could_be_wrong(self):
+        for naive in ("2026-10-11T14:03:27", "2026-10-11 14:03:27", "2026-10-11"):
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()) as err:
+                self.parse(naive)
+            self.assertIn("UTC offset", err.getvalue())
+
+    def test_text_that_is_not_a_time_is_refused(self):
+        for bad in ("", "noon", "14:03", "2026-13-45T00:00:00Z"):
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                self.parse(bad)
+
+
+class FakeCapture:
+    """The bits of cv2.VideoCapture that RecordedVideo uses: `frames` frames, then ok=False."""
+
+    def __init__(self, frames, fps):
+        self.frames, self.fps = frames, fps
+        self.released = False
+        self.set_calls = []
+
+    def get(self, prop):
+        return self.fps if prop == cv2.CAP_PROP_FPS else 0.0
+
+    def read(self):
+        if self.frames == 0:
+            return False, None
+        self.frames -= 1
+        return True, np.zeros((HEIGHT, WIDTH, 3), np.uint8)
+
+    def set(self, prop, value):
+        self.set_calls.append((prop, value))
+        return True
+
+    def release(self):
+        self.released = True
+
+
+class RecordedVideoTest(unittest.TestCase):
+    def test_the_first_frame_is_at_the_start_time_and_each_one_after_is_one_interval_later(self):
+        clock = VideoClock(wall=lambda: 5.0, start=1000.0)
+        video = RecordedVideo(FakeCapture(frames=4, fps=10), clock)
+        seen = []
+        while video.read()[0]:
+            seen.append(clock())
+        self.assertEqual(len(seen), 4)
+        for got, want in zip(seen, (1000.0, 1000.1, 1000.2, 1000.3)):
+            self.assertAlmostEqual(got, want)
+
+    def test_the_end_of_the_video_does_not_move_the_clock(self):
+        clock = VideoClock(start=1000.0)
+        video = RecordedVideo(FakeCapture(frames=1, fps=10), clock)
+        video.read()
+        self.assertEqual(video.read(), (False, None))
+        self.assertEqual(clock(), 1000.0)
+
+    def test_the_frame_rate_comes_from_the_video_with_a_fallback_for_nonsense(self):
+        self.assertAlmostEqual(frame_interval(FakeCapture(1, fps=30)), 1 / 30)
+        for unknown in (0.0, float("nan"), 0.5, 1000.0):
+            self.assertAlmostEqual(frame_interval(FakeCapture(1, fps=unknown)), 1 / 25)
+
+    def test_rewind_and_release_go_to_the_real_video(self):
+        capture = FakeCapture(frames=1, fps=10)
+        video = RecordedVideo(capture, VideoClock(start=0.0))
+        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        video.release()
+        self.assertEqual(capture.set_calls, [(cv2.CAP_PROP_POS_FRAMES, 0)])
+        self.assertTrue(capture.released)
+
+
 class AlwaysAPlane:
     """Stands in for brain.detector.Detector: sees one airplane in the middle of every frame."""
     class_names = ["airplane", "bird"]
@@ -529,6 +614,31 @@ class MainTest(unittest.TestCase):
         self.assertEqual([(r["category"], r["frames"]) for r in self.logged()], [("aircraft", 5)])
         # ...and stopped the dashboard: its server thread is gone
         self.assertNotIn("dashboard", [thread.name for thread in threading.enumerate()])
+
+    def test_start_time_stamps_the_sighting_with_the_recording_time_not_today(self):
+        interval = frame_interval(cv2.VideoCapture(str(self.root / "frame%03d.png")))
+        printed = self.main("--start-time", RECORDED.isoformat())
+        self.assertIn("Recording started 2026-10-11 18:03:27 UTC", printed)
+        (record,) = self.logged()
+        self.assertAlmostEqual(record["start"], RECORDED.timestamp(), places=2)   # first frame
+        self.assertAlmostEqual(record["end"], RECORDED.timestamp() + 4 * interval, places=2)
+        self.assertAlmostEqual(record["duration_s"], 4 * interval, delta=0.05)    # (logged to 0.1 s)
+
+    def test_without_start_time_the_sighting_is_stamped_with_the_time_it_was_processed(self):
+        before = datetime.now().timestamp()
+        self.main()
+        (record,) = self.logged()
+        self.assertGreaterEqual(record["start"], before - 1)
+
+    def test_start_time_needs_a_video_file_and_no_loop(self):
+        argv = ["--config", str(self.root / "config.toml"), "--headless",
+                "--start-time", RECORDED.isoformat()]
+        for extra, words in ((["--source", "0"], "video file"),
+                             (["--source", str(self.root / "frame%03d.png"), "--loop"], "--loop")):
+            with self.assertRaises(SystemExit) as stopped:
+                main(argv + extra)
+            self.assertIn(words, str(stopped.exception))
+        self.assertFalse((self.root / "logs").exists())     # refused before anything started
 
     def test_no_dashboard_flag(self):
         printed = self.main("--no-dashboard")

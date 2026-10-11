@@ -233,6 +233,16 @@ brain/location.local.toml
 /demo_videos/
 /test_videos/
 /videos/
+# Phone recordings anywhere in the repo (an upload lands in whatever folder you drop it in)
+# (letters in brackets so IMG_1234.MOV from an iPhone matches too: patterns are case-sensitive)
+*.[mM][pP]4
+*.[mM][oO][vV]
+*.[mM]4[vV]
+*.[aA][vV][iI]
+*.[mM][kK][vV]
+*.[wW][eE][bB][mM]
+# Output of `python -m brain.adsb_compare --csv result.csv`: it holds sighting times
+/result*.csv
 
 # Local developer tool config (Claude Code colab-mcp server), not shared
 .mcp.json
