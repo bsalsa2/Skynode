@@ -4,6 +4,8 @@ Run from the repo root:
     python -m brain.run                        # settings from brain/config.toml
     python -m brain.run --link wifi            # override the link type
     python -m brain.run --source planes.mp4    # a video file instead of the webcam
+    python -m brain.run --source clip.mp4 --start-time 2026-10-11T14:03:27-04:00
+                                               # sightings get the recording's time, not today's
     python -m brain.run --port 8081            # the dashboard on another port
     python -m brain.run --no-dashboard         # no web dashboard this time
 
@@ -16,6 +18,7 @@ import argparse
 import dataclasses
 import os
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -32,6 +35,7 @@ from brain.tracker import Tracker
 
 DEFAULT_CONFIG = Path(__file__).with_name("config.toml")
 REPO = Path(__file__).resolve().parent.parent
+DEFAULT_FPS = 25.0                      # for videos that don't say how fast they play
 
 
 def parse_args(argv=None):
@@ -44,6 +48,10 @@ def parse_args(argv=None):
     parser.add_argument("--headless", action="store_true", help="no preview window")
     parser.add_argument("--loop", action="store_true",
                         help="when a video file ends, start it again (for demos)")
+    parser.add_argument("--start-time", type=start_time, metavar="ISO_TIME",
+                        help="when the video file was recorded, with its UTC offset, like "
+                             "2026-10-11T14:03:27-04:00 (or ...Z for UTC). Sightings are then "
+                             "stamped with the recording's time instead of today's")
     parser.add_argument("--port", type=port_number,
                         help="dashboard port (overrides [dashboard] port, normally 8080)")
     parser.add_argument("--no-dashboard", action="store_true",
@@ -60,6 +68,27 @@ def port_number(text):
     if not 1 <= port <= 65535:
         raise argparse.ArgumentTypeError(f"{text!r} isn't a port number (1-65535)")
     return port
+
+
+def start_time(text):
+    """--start-time: an ISO 8601 date and time WITH its UTC offset, as unix seconds.
+
+    The offset is required on purpose. Without one, the same text means a different
+    moment on a phone, a laptop and a cloud computer, and the ADS-B comparison
+    (which works in UTC) would be an hour or more off without any warning.
+    """
+    try:
+        moment = datetime.fromisoformat(text.strip())
+    except ValueError:
+        moment = None
+    if moment is None:
+        raise argparse.ArgumentTypeError(
+            f"{text!r} isn't a date and time. Use a form like 2026-10-11T14:03:27-04:00")
+    if moment.utcoffset() is None:
+        raise argparse.ArgumentTypeError(
+            f"{text!r} has no UTC offset. Add one, like 2026-10-11T14:03:27-04:00 "
+            "(or 2026-10-11T18:03:27Z for UTC)")
+    return moment.timestamp()
 
 
 def main(argv=None):
@@ -79,6 +108,13 @@ def main(argv=None):
         cfg.dashboard.port = args.port
     if args.no_dashboard:
         cfg.dashboard.enabled = False
+    if args.start_time is not None:
+        if isinstance(cfg.camera.source, int):
+            raise SystemExit("--start-time is for a video file (--source clip.mp4). "
+                             "A webcam already reports the real time.")
+        if cfg.camera.loop:
+            raise SystemExit("--start-time can't be used with --loop: a video played "
+                             "again and again has no single recording time.")
 
     if not Path(cfg.model.path).exists():
         raise SystemExit(f"Model not found: {cfg.model.path}\n"
@@ -96,9 +132,17 @@ def main(argv=None):
     print(f"Link: {link.description}")
     sync_with_pico(link, controller)
 
-    logger = make_logger(cfg)
     camera = open_camera(cfg.camera)
-    dashboard = make_dashboard(cfg, logger, link)
+    options = {}
+    if args.start_time is not None:
+        # Time runs on the video's own clock, starting at the recording's start time
+        clock = VideoClock(start=args.start_time)
+        camera = RecordedVideo(camera, clock)
+        options["clock"] = clock
+        print(f"Recording started {datetime.fromtimestamp(args.start_time, timezone.utc):%Y-%m-%d %H:%M:%S} UTC "
+              f"(frame time = this + video time, {camera.interval * 1000:.1f} ms per frame)")
+    logger = make_logger(cfg, **options)
+    dashboard = make_dashboard(cfg, logger, link, **options)
     try:
         run_loop(camera, detector, tracker, controller, link, cfg, logger=logger,
                  dashboard=dashboard)
@@ -113,6 +157,69 @@ def main(argv=None):
             dashboard.stop()
         if cfg.display.show:
             cv2.destroyAllWindows()     # (headless OpenCV has no windows, and errors here)
+
+
+class VideoClock:
+    """A clock for the logger and the dashboard that follows a video, not the wall. Call it for the time.
+
+    It starts at `start` (default: the real time now), then moves forward only when
+    the video does (advance(), once per frame), until run_free() lets it follow the
+    real clock again.
+    """
+
+    def __init__(self, wall=time.time, start=None):
+        self._wall = wall
+        self.t = wall() if start is None else start
+        self._free_since = None         # the real time at which run_free() was called
+
+    def __call__(self):
+        if self._free_since is None:
+            return self.t
+        return self.t + (self._wall() - self._free_since)
+
+    def advance(self, seconds):
+        if self._free_since is None:
+            self.t += seconds
+
+    def run_free(self):
+        if self._free_since is None:
+            self._free_since = self._wall()
+
+
+def frame_interval(capture):
+    """Seconds between two frames of an opened video (25 fps if it doesn't say)."""
+    fps = capture.get(cv2.CAP_PROP_FPS)
+    return 1.0 / (fps if fps and 1.0 <= fps <= 240.0 else DEFAULT_FPS)
+
+
+class RecordedVideo:
+    """An opened video file that keeps a VideoClock on the recording's time.
+
+    The first frame is at the clock's start time, and every frame after it is one
+    frame interval later. It has the same read(), set() and release() as the capture
+    it wraps, so run_loop() doesn't know the difference. The interval is the video's
+    average frame rate, so a phone clip with a varying frame rate drifts a little.
+    """
+
+    def __init__(self, capture, clock):
+        self.capture = capture
+        self.clock = clock
+        self.interval = frame_interval(capture)
+        self._seen_one = False
+
+    def read(self):
+        ok, frame = self.capture.read()
+        if ok:
+            if self._seen_one:
+                self.clock.advance(self.interval)
+            self._seen_one = True
+        return ok, frame
+
+    def set(self, prop, value):
+        return self.capture.set(prop, value)
+
+    def release(self):
+        self.capture.release()
 
 
 def run_loop(camera, detector, tracker, controller, link, cfg, logger=None, dashboard=None):
