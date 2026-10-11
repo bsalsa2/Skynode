@@ -72,6 +72,7 @@ All numbers here come from the repo. Nothing has been measured on the physical n
 
 - On real aircraft, v2 wrongly called **7.5% of frames** a drone (**798 of 10,657** frames).
 - That was **0.8%** for civilian planes and **10.8%** for military jets (mostly distant F-35s).
+- On the drone clips, v2 labeled the drone correctly only **14.9%** of the time. v3 is training to fix this.
 
 **Model v3** (merged classes `drone` and `aircraft`, 960 px input, resumed from v2) is in training. Next step: score it against the same 43 clips.
 
@@ -168,7 +169,7 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 
 ## Roadmap
 
-**Vision.** Phase 1 is one passive sky-tracking node. The long-term goal is autonomy for missile and drone detection and defense systems. Open work is tracked as [GitHub issues](https://github.com/bsalsa2/Skynode/issues) under the *Phase 1: one working node* milestone.
+**Vision.** Phase 1 is one passive sky-tracking node. The long-term goal is autonomy for drone detection and defense systems. Open work is tracked as [GitHub issues](https://github.com/bsalsa2/Skynode/issues) under the *Phase 1: one working node* milestone.
 
 - [x] Pico servo firmware: smooth motion, calibration, command protocol (tested in software)
 - [x] Detection and tracking loop, working in simulation, covered by automated tests

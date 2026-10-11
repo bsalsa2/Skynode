@@ -141,7 +141,7 @@ export const content = {
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
-      { label: 'DONE', text: 'Detection and tracking loop, working in simulation, 226 automated tests' },
+      { label: 'DONE', text: 'Detection and tracking loop, working in simulation, 243 automated tests' },
       { label: 'DONE', text: 'Pan-tilt mount designed in CAD, with STEP and STL files' },
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
       { label: 'DONE', text: 'Sighting logger (built and tested in simulation)' },
@@ -163,6 +163,7 @@ export const content = {
     intro: 'The v2 model, run on 43 real-world videos of planes, military jets and drones. This tests the model on recorded video. It is not a hardware test.',
     items: [
       { value: '7.5%', label: 'False-drone rate on real aircraft', note: '798 of 10,657 frames were called a drone' },
+      { value: '14.9%', label: 'Drone clips labeled correctly', note: 'v2 is weak at drones. v3 is training to fix this.' },
       { value: '0.8%', label: 'Civilian planes called drones' },
       { value: '10.8%', label: 'Military jets called drones', note: 'Mostly distant F-35s' },
     ],
@@ -196,16 +197,13 @@ export const content = {
   build: {
     heading: 'About me',
     body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Skynode was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Skynode is where I'm starting.`,
-    // Personal quote, shown under the text and signed with your first name.
-    quote: 'You only live once so go out there and make the most of every moment by chasing your dreams and living without regret',
-    signature: 'Braden',
   },
 
   roadmap: {
     kicker: 'Roadmap',
     heading: 'From one node to a company',
     // The long-term vision lives here, not in the hero.
-    intro: 'This is Phase 1. The long-term goal is autonomy for missile and drone detection and defense systems.',
+    intro: 'This is Phase 1. The long-term goal is autonomy for drone detection and defense systems.',
     phases: [
       {
         phase: 'PHASE 1 · NOW',
@@ -219,13 +217,8 @@ export const content = {
       },
       {
         phase: 'PHASE 3',
-        title: 'Autonomous drones',
-        body: 'For inspection, search and rescue, and drone detection and defense systems, built on the same sensing and tracking brain.',
-      },
-      {
-        phase: 'PHASE 4',
         title: 'A company',
-        body: `An aerospace and defense company building autonomy for missile and drone detection and defense systems, once I'm old enough to start one.`,
+        body: `An aerospace and defense company building autonomy for drone detection and defense systems, once I'm old enough to start one.`,
       },
     ],
     closing:
