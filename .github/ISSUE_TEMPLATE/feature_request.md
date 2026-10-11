@@ -10,6 +10,6 @@ labels: enhancement
 
 **Scope check**
 
-Skynode is passive sensing and tracking only. Ideas that transmit on aviation or drone-control frequencies, jam, spoof, or act on aircraft are out of scope and will be closed.
+Talo is passive sensing and tracking only. Ideas that transmit on aviation or drone-control frequencies, jam, spoof, or act on aircraft are out of scope and will be closed.
 
 **Anything already tried or considered**

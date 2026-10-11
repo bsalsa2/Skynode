@@ -18,7 +18,7 @@ Your location. The camera's latitude and longitude are needed to work out where 
 aircraft is in your sky, and they point at your home. They are NEVER read from
 brain/config.toml (this is a public repo). Put them in one of:
 
-    environment:   SKYNODE_LAT, SKYNODE_LON, SKYNODE_ALT_M (altitude is optional)
+    environment:   TALO_LAT, TALO_LON, TALO_ALT_M (altitude is optional)
     file:          brain/location.local.toml   (git ignores it)
                        lat = 40.1234
                        lon = -73.5678
@@ -54,7 +54,7 @@ FEEDS = {
     "adsb.lol": "https://api.adsb.lol/v2/point/{lat}/{lon}/{radius_nm}",
     "airplanes.live": "https://api.airplanes.live/v2/point/{lat}/{lon}/{radius_nm}",
 }
-USER_AGENT = "skynode-adsb-logger (+https://github.com/bsalsa2/skynode)"
+USER_AGENT = "talo-adsb-logger (+https://github.com/bsalsa2/skynode)"
 EARTH_RADIUS_M = 6371000.0
 KM_PER_NM = 1.852
 FT_TO_M = 0.3048
@@ -80,17 +80,17 @@ class LocationError(ValueError):
 def load_location(environ=None, path=LOCATION_FILE):
     """The camera position from the environment, else from brain/location.local.toml."""
     environ = os.environ if environ is None else environ
-    if environ.get("SKYNODE_LAT") or environ.get("SKYNODE_LON"):
-        values = {"lat": environ.get("SKYNODE_LAT"), "lon": environ.get("SKYNODE_LON"),
-                  "alt_m": environ.get("SKYNODE_ALT_M", 0)}
-        origin = "SKYNODE_LAT / SKYNODE_LON"
+    if environ.get("TALO_LAT") or environ.get("TALO_LON"):
+        values = {"lat": environ.get("TALO_LAT"), "lon": environ.get("TALO_LON"),
+                  "alt_m": environ.get("TALO_ALT_M", 0)}
+        origin = "TALO_LAT / TALO_LON"
     elif Path(path).is_file():
         with open(path, "rb") as handle:
             values = tomllib.load(handle)
         origin = str(path)
     else:
         raise LocationError(
-            "No camera location. Set SKYNODE_LAT and SKYNODE_LON, or create "
+            "No camera location. Set TALO_LAT and TALO_LON, or create "
             f"{LOCATION_FILE.name} next to brain/config.toml containing lat = ... and "
             "lon = ... (git ignores that file). It is never read from config.toml.")
     try:

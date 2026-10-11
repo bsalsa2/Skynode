@@ -345,14 +345,14 @@ afterLoad(() => {
     .then(({ createHeroSky }) =>
       createHeroSky({ hero, canvas, card: document.getElementById('hud'), reduceMotion, finePointer })
     )
-    .catch((err) => console.warn('[skynode] hero sky unavailable.', err));
+    .catch((err) => console.warn('[talo] hero sky unavailable.', err));
 });
 
 // Simulated sensor view.
 whenNear(document.getElementById('sensor'), () =>
   import('./sensor.js')
     .then(({ createSensor }) => createSensor({ root: document.getElementById('sensor'), reduceMotion }))
-    .catch((err) => console.warn('[skynode] sensor view unavailable.', err))
+    .catch((err) => console.warn('[talo] sensor view unavailable.', err))
 );
 
 // Pan-tilt mount viewer (three.js). Only hardware-accelerated WebGL 2:
@@ -400,6 +400,6 @@ afterLoad(() => {
           });
         });
       })
-      .catch((err) => console.warn('[skynode] mount viewer unavailable, keeping the still.', err))
+      .catch((err) => console.warn('[talo] mount viewer unavailable, keeping the still.', err))
   );
 });

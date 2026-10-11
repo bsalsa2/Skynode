@@ -140,7 +140,7 @@ class DashboardTestCase(unittest.TestCase):
         self.root = Path(tmp.name)
         self.static = self.root / "static"
         (self.static / "fonts").mkdir(parents=True)
-        (self.static / "index.html").write_text("<!doctype html><title>Skynode</title>")
+        (self.static / "index.html").write_text("<!doctype html><title>Talo</title>")
         (self.static / "dashboard.css").write_text("body { color: white }")
         (self.static / "dashboard.js").write_text("console.log('hi')")
         (self.static / "favicon.svg").write_text("<svg/>")
@@ -342,7 +342,7 @@ class HostCheckTest(DashboardTestCase):
     def test_addresses_and_home_network_names_are_answered(self):
         for host in ("localhost", f"localhost:{self.port}", f"127.0.0.1:{self.port}",
                      f"[::1]:{self.port}", "192.168.1.42:8080", "raspberrypi",
-                     "raspberrypi.local:8080", "skynode.lan", "pi.home.arpa", "LOCALHOST"):
+                     "raspberrypi.local:8080", "talo.lan", "pi.home.arpa", "LOCALHOST"):
             with self.subTest(host=host):
                 status, _, body = self.request("/api/state", headers={"Host": host})
                 self.assertEqual(status, 200)
@@ -723,7 +723,7 @@ class LogEndpointsTest(DashboardTestCase):
         self.assertEqual(status, 200)
         self.assertEqual(headers["Content-Type"], "text/csv; charset=utf-8")
         self.assertEqual(headers["Content-Disposition"],
-                         'attachment; filename="skynode-sightings.csv"')
+                         'attachment; filename="talo-sightings.csv"')
         self.assertEqual(self.last_call(), ("recent", dict(
             limit=10000, before=None, category=None, kind="sighting",
             since=START - 48 * 3600)))

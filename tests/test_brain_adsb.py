@@ -105,8 +105,8 @@ class Privacy(unittest.TestCase):
 
 class Location(unittest.TestCase):
     def test_from_environment(self):
-        camera = adsb.load_location({"SKYNODE_LAT": "40.5", "SKYNODE_LON": "-100.5",
-                                     "SKYNODE_ALT_M": "12"}, path="/nonexistent")
+        camera = adsb.load_location({"TALO_LAT": "40.5", "TALO_LON": "-100.5",
+                                     "TALO_ALT_M": "12"}, path="/nonexistent")
         self.assertEqual((camera.lat, camera.lon, camera.alt_m), (40.5, -100.5, 12.0))
 
     def test_from_file(self):
@@ -120,18 +120,18 @@ class Location(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "location.local.toml"
             path.write_text("lat = 41.0\nlon = -101.0\n")
-            camera = adsb.load_location({"SKYNODE_LAT": "1", "SKYNODE_LON": "2"}, path=path)
+            camera = adsb.load_location({"TALO_LAT": "1", "TALO_LON": "2"}, path=path)
         self.assertEqual(camera.lat, 1.0)
 
     def test_missing_location_explains_what_to_do(self):
         with self.assertRaises(adsb.LocationError) as caught:
             adsb.load_location({}, path="/nonexistent")
-        self.assertIn("SKYNODE_LAT", str(caught.exception))
+        self.assertIn("TALO_LAT", str(caught.exception))
 
     def test_bad_values(self):
-        for environ in ({"SKYNODE_LAT": "north", "SKYNODE_LON": "1"},
-                        {"SKYNODE_LAT": "95", "SKYNODE_LON": "1"},
-                        {"SKYNODE_LAT": "1"}):
+        for environ in ({"TALO_LAT": "north", "TALO_LON": "1"},
+                        {"TALO_LAT": "95", "TALO_LON": "1"},
+                        {"TALO_LAT": "1"}):
             with self.assertRaises(adsb.LocationError):
                 adsb.load_location(environ, path="/nonexistent")
 
@@ -261,7 +261,7 @@ class Comparing(unittest.TestCase):
         self.log_polls([T0 + 5, T0 + 605, T0 + 1205])
         self.log_aircraft([T0 + 5, T0 + 1205])
 
-        sightings = adsb_compare.load_sightings(self.path / "skynode.db")
+        sightings = adsb_compare.load_sightings(self.path / "talo.db")
         self.assertEqual(len(sightings), 4)
         aircraft_rows, polls = adsb_compare.load_adsb(self.path)
         results = adsb_compare.compare(sightings, aircraft_rows, polls)
@@ -293,9 +293,9 @@ class Comparing(unittest.TestCase):
         db = SightingDB(self.path)
         db.insert(make_sighting(T0))
         db.close()
-        before = (self.path / "skynode.db").read_bytes()
-        adsb_compare.load_sightings(self.path / "skynode.db")
-        self.assertEqual((self.path / "skynode.db").read_bytes(), before)
+        before = (self.path / "talo.db").read_bytes()
+        adsb_compare.load_sightings(self.path / "talo.db")
+        self.assertEqual((self.path / "talo.db").read_bytes(), before)
 
 
 def adsb_compare_sighting(started):

@@ -8,7 +8,7 @@ the camera was pointing) plus a small JPEG of that best moment.
 
 Where it all goes ([logger] folder in brain/config.toml, normally logs/):
 
-    logs/skynode.db                          every sighting and sky check (SQLite)
+    logs/talo.db                          every sighting and sky check (SQLite)
     logs/snapshots/20261007-140217-001.jpg   the best frame of that sighting
 
 SQLite is one ordinary file that any tool can open (the `sqlite3` command, Python,
@@ -48,7 +48,7 @@ SNAPSHOT_WIDTH = 640                                 # snapshots are shrunk to a
 SAFE_ID = re.compile(r"[0-9A-Za-z_-]+")              # ids end up in file names and URLs
 SNAPSHOT_NAME = re.compile(r"[0-9A-Za-z_-]+\.jpg")   # the only names snapshot_path() accepts
 MAX_LINE_BYTES = 16 * 1024      # old .jsonl files only: a real record is a few hundred bytes
-DB_NAME = "skynode.db"
+DB_NAME = "talo.db"
 
 
 @dataclass
@@ -140,7 +140,7 @@ def row_to_dict(row):
 
 
 class SightingDB:
-    """The sightings table in <folder>/skynode.db.
+    """The sightings table in <folder>/talo.db.
 
     Only the main loop writes to it, and only the main loop reads it (once, at
     start-up): the dashboard's threads read the logger's in-memory copy, so the
@@ -480,7 +480,7 @@ class SightingLogger:
             self.history_start = max(self.history_start, cutoff)
 
     def _open_database(self):
-        """Open skynode.db (if there is one), bring in old .jsonl files, and note every id."""
+        """Open talo.db (if there is one), bring in old .jsonl files, and note every id."""
         try:
             self._ids = self._db.ids()
         except sqlite3.DatabaseError as error:

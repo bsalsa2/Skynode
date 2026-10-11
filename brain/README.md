@@ -75,7 +75,7 @@ When it connects, the brain reads the Pico's angle limits, home, and current pos
 While the brain runs, open **http://localhost:8080/** in a browser on the same computer. The brain prints the address when it starts:
 
 ```
-Logging sightings to C:\Users\you\Skynode\logs
+Logging sightings to C:\Users\you\Talo\logs
 Dashboard: http://localhost:8080/
 ```
 
@@ -93,7 +93,7 @@ The dashboard's settings are under `[dashboard]` in `config.toml`. For one run o
 No Pico, no camera, no real node yet? Run the whole thing (detector, tracker, logger and dashboard) on a folder of videos:
 
 ```
-python -m brain.demo C:\Users\you\skynode-videos --model models\your-model.onnx --classes drone,aircraft
+python -m brain.demo C:\Users\you\talo-videos --model models\your-model.onnx --classes drone,aircraft
 ```
 
 Then open the dashboard as usual. The videos play one after another, in file-name order, and everything on the dashboard comes from this run:
@@ -123,29 +123,29 @@ While nothing is being tracked, the logger also writes a **sky check** once an h
 ### Where the logs go
 
 ```
-logs/skynode.db                          every sighting and sky check (SQLite)
+logs/talo.db                          every sighting and sky check (SQLite)
 logs/snapshots/20261007-140217-001.jpg   the best frame of that sighting
 ```
 
-`logs/` sits in the repo folder, and git ignores it, so your sightings never end up on GitHub. `skynode.db` is one ordinary SQLite file, and each record is committed the moment a sighting ends, so a crash or a power cut loses nothing that was already logged. The dashboard shows the last 7 days; older sightings stay in the database. To start fresh, delete the folder while the brain isn't running.
+`logs/` sits in the repo folder, and git ignores it, so your sightings never end up on GitHub. `talo.db` is one ordinary SQLite file, and each record is committed the moment a sighting ends, so a crash or a power cut loses nothing that was already logged. The dashboard shows the last 7 days; older sightings stay in the database. To start fresh, delete the folder while the brain isn't running.
 
-To look at it yourself, open it with any SQLite tool (DB Browser for SQLite, or `sqlite3 logs/skynode.db`). One row per sighting or sky check, in a table called `sightings`; `started` and `ended` are unix times in seconds:
+To look at it yourself, open it with any SQLite tool (DB Browser for SQLite, or `sqlite3 logs/talo.db`). One row per sighting or sky check, in a table called `sightings`; `started` and `ended` are unix times in seconds:
 
 ```
-sqlite3 logs/skynode.db "SELECT id, category, class_name, confidence FROM sightings WHERE kind = 'sighting' ORDER BY started DESC LIMIT 5"
+sqlite3 logs/talo.db "SELECT id, category, class_name, confidence FROM sightings WHERE kind = 'sighting' ORDER BY started DESC LIMIT 5"
 ```
 
 Earlier versions wrote one `sightings-YYYY-MM-DD.jsonl` file per day. If you have those, they're imported into the database the first time you start the brain, then renamed to `.jsonl.imported`.
 
 ### Export a spreadsheet (to compare with ADS-B)
 
-On the **Sightings** tab, pick a time range and a category, then click **Export CSV**. You get `skynode-sightings.csv`, one row per sighting, newest first:
+On the **Sightings** tab, pick a time range and a category, then click **Export CSV**. You get `talo-sightings.csv`, one row per sighting, newest first:
 
 ```
 id,kind,category,class_name,start_iso,end_iso,duration_s,confidence,pan,tilt,frames,snapshot
 ```
 
-`start_iso` and `end_iso` are your local time with its offset from UTC, like `2026-10-07T14:02:17+02:00`. ADS-B flight data is usually in UTC, and the offset makes the conversion exact. Line the times up, then use `pan` and `tilt` to check that the aircraft was where the camera pointed. The export covers what the dashboard shows (the last 7 days, up to 10,000 rows); for anything older, query `logs/skynode.db`.
+`start_iso` and `end_iso` are your local time with its offset from UTC, like `2026-10-07T14:02:17+02:00`. ADS-B flight data is usually in UTC, and the offset makes the conversion exact. Line the times up, then use `pan` and `tilt` to check that the aircraft was where the camera pointed. The export covers what the dashboard shows (the last 7 days, up to 10,000 rows); for anything older, query `logs/talo.db`.
 
 ### Compare with real flights (ADS-B)
 
@@ -156,7 +156,7 @@ python -m brain.adsb             # leave it running while the brain runs
 python -m brain.adsb_compare     # afterwards: which sightings does the flight record explain?
 ```
 
-**Tell it where the camera is, without putting your home on GitHub.** Set `SKYNODE_LAT`, `SKYNODE_LON` (and optionally `SKYNODE_ALT_M`), or create `brain/location.local.toml` with `lat = ...`, `lon = ...`, `alt_m = ...`. Git ignores that file, and the location is never read from `config.toml`. By default the request to the feed uses your position rounded to about 1 km, with a slightly larger radius, and the exact distances are worked out on your computer. Add `--exact` to send the precise position instead.
+**Tell it where the camera is, without putting your home on GitHub.** Set `TALO_LAT`, `TALO_LON` (and optionally `TALO_ALT_M`), or create `brain/location.local.toml` with `lat = ...`, `lon = ...`, `alt_m = ...`. Git ignores that file, and the location is never read from `config.toml`. By default the request to the feed uses your position rounded to about 1 km, with a slightly larger radius, and the exact distances are worked out on your computer. Add `--exact` to send the precise position instead.
 
 It writes `logs/adsb_log.csv` (every aircraft within 25 km, with its azimuth and elevation in your sky) and `logs/adsb_polls.csv` (each time the feed answered). The second file is what tells "no aircraft overhead" from "the logger wasn't running". Those sightings are reported as `no_data` and left out of every percentage.
 
@@ -203,7 +203,7 @@ No local GPU? Train in Google Colab with phone videos: see [`training/`](../trai
 2. Copy the `.onnx` file into `brain/models/` and update `config.toml`:
    ```toml
    [model]
-   path = "models/skynode-drone.onnx"
+   path = "models/talo-drone.onnx"
    target_classes = ["drone", "airplane", "helicopter"]
    ```
 3. That's it. The class names are stored inside the `.onnx` file. If a target class isn't in the model, the brain stops and lists the classes the model does know.
@@ -219,7 +219,7 @@ Exports made with `nms=True` work too.
 
 ## License note
 
-Ultralytics YOLO weights and anything exported from them are licensed **AGPL-3.0**. Skynode's code never imports Ultralytics (it runs the exported file with ONNX Runtime), but the model file itself comes under Ultralytics' license. That's fine for a personal or open-source project. For a commercial product, plan on either an Ultralytics Enterprise license or training an Apache-2.0 detector (such as YOLOX or RT-DETR) on your own dataset.
+Ultralytics YOLO weights and anything exported from them are licensed **AGPL-3.0**. Talo's code never imports Ultralytics (it runs the exported file with ONNX Runtime), but the model file itself comes under Ultralytics' license. That's fine for a personal or open-source project. For a commercial product, plan on either an Ultralytics Enterprise license or training an Apache-2.0 detector (such as YOLOX or RT-DETR) on your own dataset.
 
 ## Troubleshooting
 
@@ -236,7 +236,7 @@ Ultralytics YOLO weights and anything exported from them are licensed **AGPL-3.0
 | `WARN the dashboard can't start on 127.0.0.1:8080` | Another program (or a second copy of the brain) is using port 8080. Run with `--port 8081`, or change `port` in `config.toml`. Tracking and logging keep going without the dashboard |
 | The dashboard says OFFLINE | The brain isn't running, or the camera stopped sending frames. Check the terminal |
 | The phone can't open the dashboard | Set `host = "0.0.0.0"`, use the computer's IP address (not `localhost`), and stay on the same Wi-Fi. On Windows, allow Python through the firewall for Private networks |
-| `403`: *Open the dashboard by this computer's address* | You opened it by a name with a real domain, like a custom DNS name `skynode.example.com`. To block a trick called DNS rebinding, the dashboard only answers to `localhost`, an IP address (`http://192.168.1.42:8080/`), the computer's plain name (`raspberrypi`) or a home-network name like `raspberrypi.local`. Use one of those, or list the one exact name you trust in `allowed_hosts` in `config.toml` (GitHub Codespaces addresses are added for you) |
+| `403`: *Open the dashboard by this computer's address* | You opened it by a name with a real domain, like a custom DNS name `talo.example.com`. To block a trick called DNS rebinding, the dashboard only answers to `localhost`, an IP address (`http://192.168.1.42:8080/`), the computer's plain name (`raspberrypi`) or a home-network name like `raspberrypi.local`. Use one of those, or list the one exact name you trust in `allowed_hosts` in `config.toml` (GitHub Codespaces addresses are added for you) |
 | `403`: *Only the dashboard's own page can load this* | Another web site (or another app on this computer) tried to load the camera or the log. That's blocked on purpose. Open the dashboard itself, e.g. `http://localhost:8080/` |
 
 ## Tests

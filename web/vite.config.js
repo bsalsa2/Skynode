@@ -5,21 +5,21 @@ import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody } from './
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
-const skynodeContent = () => ({
-  name: 'skynode-content',
+const taloContent = () => ({
+  name: 'talo-content',
   transformIndexHtml(html) {
     return html
-      .replace('<!--skynode:head-->', renderHead(content))
-      .replace('<!--skynode:body-->', renderBody(content))
-      .replace('<!--skynode:privacy-head-->', renderPrivacyHead(content))
-      .replace('<!--skynode:privacy-body-->', renderPrivacyBody(content));
+      .replace('<!--talo:head-->', renderHead(content))
+      .replace('<!--talo:body-->', renderBody(content))
+      .replace('<!--talo:privacy-head-->', renderPrivacyHead(content))
+      .replace('<!--talo:privacy-body-->', renderPrivacyBody(content));
   },
 });
 
 // Inlines the (small) stylesheet into index.html so the first paint doesn't
 // wait on a second request.
 const inlineCss = () => ({
-  name: 'skynode-inline-css',
+  name: 'talo-inline-css',
   apply: 'build',
   enforce: 'post',
   generateBundle(_, bundle) {
@@ -44,7 +44,7 @@ const inlineCss = () => ({
 
 // Preloads the two fonts the first screen needs (headline + body text).
 const preloadFonts = () => ({
-  name: 'skynode-preload-fonts',
+  name: 'talo-preload-fonts',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
@@ -68,7 +68,7 @@ export default defineConfig({
   base: './',
   // graphite.css (shared brand tokens) lives in ../brain/dashboard
   server: { fs: { allow: ['..'] } },
-  plugins: [skynodeContent(), preloadFonts(), inlineCss()],
+  plugins: [taloContent(), preloadFonts(), inlineCss()],
   build: {
     outDir: 'dist',
     target: 'es2020',
