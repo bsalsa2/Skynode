@@ -137,7 +137,7 @@ function publicFile(path, value = get(path)) {
 
 const gc = get('analytics.goatcounter');
 if (gc && !/^[a-z0-9-]+$/.test(gc))
-  err(`analytics.goatcounter should be just your GoatCounter code, like 'skynode' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
+  err(`analytics.goatcounter should be just your GoatCounter code, like 'talo' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
 
 text('meta.title');
 text('meta.description');

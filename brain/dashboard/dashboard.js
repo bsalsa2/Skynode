@@ -1,5 +1,5 @@
 /*
- * Skynode live dashboard.
+ * Talo live dashboard.
  *
  * The brain (python -m brain.run) serves this page and answers a few
  * questions over HTTP. This script asks them and draws the answers:
@@ -415,7 +415,7 @@
     const name = str(node.name) || 'NODE-01';
     const location = str(node.location).trim();
     setText($('node-label'), location ? `${name} · ${location}` : name);
-    const title = `${name} · Skynode`;
+    const title = `${name} · Talo`;
     if (document.title !== title) document.title = title;
   }
 

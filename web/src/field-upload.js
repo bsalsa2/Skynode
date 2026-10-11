@@ -16,7 +16,7 @@ const FILES = 'https://www.googleapis.com/drive/v3/files';
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable';
 const FOLDER_TYPE = 'application/vnd.google-apps.folder';
 
-// The extensions training/skynode_data.py accepts.
+// The extensions training/talo_data.py accepts.
 const EXTENSIONS = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm',
   'video/x-m4v': 'm4v', 'video/x-matroska': 'mkv', 'video/x-msvideo': 'avi' };
 const KNOWN = new Set(Object.values(EXTENSIONS));
@@ -25,13 +25,13 @@ export class SignInError extends Error {}
 
 const two = (n) => String(n).padStart(2, '0');
 
-/** skynode-20261009-141500.mp4 (local time). `n` > 0 adds -n, for two clips in one second. */
+/** talo-20261009-141500.mp4 (local time). `n` > 0 adds -n, for two clips in one second. */
 export function clipName(file, now = new Date(), n = 0) {
   const stamp = `${now.getFullYear()}${two(now.getMonth() + 1)}${two(now.getDate())}`
     + `-${two(now.getHours())}${two(now.getMinutes())}${two(now.getSeconds())}`;
   const fromName = (file.name || '').split('.').pop().toLowerCase();
   const ext = EXTENSIONS[(file.type || '').split(';')[0]] || (KNOWN.has(fromName) ? fromName : 'mp4');
-  return `skynode-${stamp}${n ? `-${n}` : ''}.${ext}`;
+  return `talo-${stamp}${n ? `-${n}` : ''}.${ext}`;
 }
 
 /** An error message for a file we won't send, or '' if it is fine. */

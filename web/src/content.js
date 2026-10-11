@@ -1,7 +1,7 @@
 import { CONTACT_EMAIL } from './config.js';
 
 // ---------------------------------------------------------------------------
-//  SKYNODE SITE CONTENT
+//  TALO SITE CONTENT
 //
 //  Every word on the page lives in this file. Edit the text between the
 //  quotes, commit, and the site rebuilds itself.
@@ -18,7 +18,7 @@ import { CONTACT_EMAIL } from './config.js';
 
 export const content = {
   meta: {
-    title: 'Skynode | AI sky tracker',
+    title: 'Talo | AI sky tracker',
     description:
       'A low-cost visual sensing platform, starting with one passive sky-tracking node. About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     // Public URL of the live site (used for social share previews).
@@ -27,13 +27,13 @@ export const content = {
 
   // VISIT COUNTER (GoatCounter: free, no cookies, nothing personal stored).
   // Off while empty. Sign up at goatcounter.com, pick a code (for example
-  // 'skynode'), and put that code here. The privacy page updates itself.
+  // 'talo'), and put that code here. The privacy page updates itself.
   analytics: {
     goatcounter: 'bsalsa2',
   },
 
   nav: {
-    brand: 'SKYNODE',
+    brand: 'TALO',
     links: [
       { label: 'How it works', href: '#how' },
       { label: 'Status', href: '#status' },
@@ -82,11 +82,11 @@ export const content = {
     stats: [
       { label: 'A small drone', value: '$100s' },
       { label: 'Typical detection system', value: '$10,000s' },
-      { label: 'Skynode sensing parts, before the computer', value: '~$113', highlight: true },
+      { label: 'Talo sensing parts, before the computer', value: '~$113', highlight: true },
     ],
     // Printed under the numbers so they can't be read as a capability claim.
-    statsNote: 'Price comparison only, not a capability comparison. Skynode is one passive camera node and has not run on real hardware yet.',
-    body: 'Skynode is a first step toward making that sensing layer cheap enough to put anywhere.',
+    statsNote: 'Price comparison only, not a capability comparison. Talo is one passive camera node and has not run on real hardware yet.',
+    body: 'Talo is a first step toward making that sensing layer cheap enough to put anywhere.',
     useCases: {
       tag: 'USE CASES',
       text: `Early use cases I'm exploring: farms, small airports, stadiums, and power substations. First hypothesis to test: small general-aviation airfields.`,
@@ -170,7 +170,7 @@ export const content = {
     source: 'Model v2, 43 real-world videos. v3 (drone and aircraft classes, 960 px input) is in training. There are no v3 results yet.',
   },
 
-  // KNOWN LIMITS: what Skynode can't do, stated plainly.
+  // KNOWN LIMITS: what Talo can't do, stated plainly.
   limits: {
     kicker: 'Honest limits',
     heading: 'Known limits',
@@ -196,7 +196,7 @@ export const content = {
 
   build: {
     heading: 'About me',
-    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Skynode was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Skynode is where I'm starting.`,
+    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Talo was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Talo is where I'm starting.`,
   },
 
   roadmap: {
@@ -235,9 +235,9 @@ export const content = {
   },
 
   footer: {
-    brand: 'SKYNODE',
+    brand: 'TALO LABS',
     links: [
-      { label: 'Skynode on GitHub', href: 'https://github.com/bsalsa2/skynode' },
+      { label: 'Talo on GitHub', href: 'https://github.com/bsalsa2/skynode' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
       { label: 'Privacy', href: './privacy.html' },
     ],

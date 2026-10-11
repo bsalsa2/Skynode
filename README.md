@@ -1,6 +1,8 @@
-<p align="center"><img src="docs/skynode_banner.png" width="1280" alt="Skynode: Drones are cheap. Detecting them isn't."></p>
+<p align="center"><img src="docs/talo_banner.png" width="1280" alt="Talo: Drones are cheap. Detecting them isn't."></p>
 
-# Skynode
+# Talo
+
+By Talo Labs. Formerly Skynode.
 
 [![Tests](https://github.com/bsalsa2/Skynode/actions/workflows/tests.yml/badge.svg)](https://github.com/bsalsa2/Skynode/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-76767A?style=flat)](LICENSE) [![Live site](https://img.shields.io/badge/live%20site-skynode--si.netlify.app-76767A?style=flat)](https://skynode-si.netlify.app)
 
@@ -10,7 +12,7 @@
 
 A webcam on a pan-tilt mount watches the sky, a YOLO model finds aircraft and birds in each frame, the mount turns to follow the target, and every sighting is logged. This is Phase 1: one node, mostly tested in simulation so far. The physical unit is not built yet.
 
-> **Scope:** passive sensing and tracking only. No payloads, no effectors, and nothing that interacts with or interferes with aircraft. No jamming, no spoofing, and no transmitting on aviation or drone-control frequencies. Ordinary Wi-Fi and USB networking between Skynode's own parts is fine.
+> **Scope:** passive sensing and tracking only. No payloads, no effectors, and nothing that interacts with or interferes with aircraft. No jamming, no spoofing, and no transmitting on aviation or drone-control frequencies. Ordinary Wi-Fi and USB networking between Talo's own parts is fine.
 
 ## Status
 
@@ -88,7 +90,7 @@ Training used YOLOv8n on a 28,526-image aircraft and drone dataset. See [Trainin
 ## Repo layout
 
 ```
-skynode/
+talo/
 ├── pico/       MicroPython servo firmware (runs on the Pico WH)
 ├── brain/      detection, tracking, control, logging (runs on laptop / Pi 4)
 ├── hardware/   3D-print files for the pan-tilt mount
@@ -130,7 +132,7 @@ About $113 in new parts for the sensing hardware (camera, servos, mount, power),
 
 ## Wiring
 
-![Skynode wiring diagram](docs/wiring.svg)
+![Talo wiring diagram](docs/wiring.svg)
 
 SG90 wire colors: **brown = GND**, **red = +5 V**, **orange = signal**.
 

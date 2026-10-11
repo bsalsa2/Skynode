@@ -1,18 +1,18 @@
 # training/
 
-Train Skynode's own aircraft and drone detector in **Google Colab**, using videos you film on your phone. Everything heavy happens on Google's computers: nothing is stored or run on your laptop.
+Train Talo's own aircraft and drone detector in **Google Colab**, using videos you film on your phone. Everything heavy happens on Google's computers: nothing is stored or run on your laptop.
 
 | File | What it is |
 |---|---|
-| `skynode_train.ipynb` | The Colab notebook. Open it in Colab and run the cells top to bottom |
-| `skynode_v4_export_and_phone_finetune.ipynb` | Fits the existing `skynode/` Drive folder: export v3, then fine-tune on phone video |
-| `skynode_data.py` | The bookkeeping the notebook uses (frames, labels, the train/validation split, the dataset folder). Tested in `tests/test_training_data.py` |
+| `talo_train.ipynb` | The Colab notebook. Open it in Colab and run the cells top to bottom |
+| `talo_v4_export_and_phone_finetune.ipynb` | Fits the existing `skynode/` Drive folder: export v3, then fine-tune on phone video |
+| `talo_data.py` | The bookkeeping the notebook uses (frames, labels, the train/validation split, the dataset folder). Tested in `tests/test_training_data.py` |
 
-## Automatic: `skynode_auto_train.ipynb` (start here)
+## Automatic: `talo_auto_train.ipynb` (start here)
 
 One notebook, one Run. Put clips in **phone_videos**, run it, and it retrains on only the new clips. It replaces the model only when the new one scores at least as well. Full details are in the notebook. The logic lives in `training/auto_train.py` and is tested in `tests/test_auto_train.py`.
 
-## If you already have a trained model: `skynode_v4_export_and_phone_finetune.ipynb`
+## If you already have a trained model: `talo_v4_export_and_phone_finetune.ipynb`
 
 This is the notebook that matches the existing `skynode/` Drive folder (classes `drone` and `aircraft`, 960 px, `drone_v3/weights/best.pt`). It leaves the v3 notebook and run untouched and:
 
@@ -24,13 +24,13 @@ This is the notebook that matches the existing `skynode/` Drive folder (classes 
 
 Put clips in **Drive ▸ skynode ▸ phone_videos**, named `drone_*.mp4`, `aircraft_*.mp4` or `sky_*.mp4`. Your Roboflow key stays in Colab's Secrets (`ROBOFLOW_API_KEY`), never in a cell.
 
-`skynode_train.ipynb` below is the from-scratch version for a fresh Drive.
+`talo_train.ipynb` below is the from-scratch version for a fresh Drive.
 
 ## Quick start
 
 1. Upload your phone videos to Google Drive in **My Drive ▸ skynode ▸ videos**.
    Name a video after what it shows when it shows only one thing: `drone_garden.mp4`, `airplane_morning.mp4`. The word before the first `_` tells the notebook to keep only that class's boxes. Mixed or empty-sky clips can have any other name (`sky_clear.mp4`).
-2. Open `skynode_train.ipynb` in Colab (on GitHub, open the file and use the Colab link, or go to colab.research.google.com ▸ GitHub and paste the repo address). Set **Runtime ▸ Change runtime type ▸ T4 GPU**.
+2. Open `talo_train.ipynb` in Colab (on GitHub, open the file and use the Colab link, or go to colab.research.google.com ▸ GitHub and paste the repo address). Set **Runtime ▸ Change runtime type ▸ T4 GPU**.
 3. Run the cells in order. At the end you get an `.onnx` file in **Drive ▸ skynode ▸ models** (it also downloads).
 4. Copy it to `brain/models/`, set `[model] path` and `target_classes` in `brain/config.toml` (the last cell prints the exact lines), and test on a video the model never saw: `python -m brain.run --source some_video.mp4`.
 

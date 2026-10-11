@@ -144,7 +144,7 @@ class UsbTest(unittest.TestCase):
             (60, "?\n"),                    # ~1.2 s later: move has finished
         ]).run(ticks=70)
         self.assertEqual(printed, [
-            "READY skynode-pico",
+            "READY talo-pico",
             "POS P90.0 T45.0",
             "ERR unknown command BOGUS",
             "OK",
@@ -153,7 +153,7 @@ class UsbTest(unittest.TestCase):
 
     def test_overlong_line_is_truncated_not_crashing(self):
         printed = Sim(usb=[(0, "P" + "9" * 500 + "\n"), (1, "?\n")]).run(ticks=3)
-        self.assertEqual(printed[0], "READY skynode-pico")
+        self.assertEqual(printed[0], "READY talo-pico")
         self.assertEqual(len(printed), 2)       # no reply to the (silent) move, then POS
         self.assertTrue(printed[1].startswith("POS"))
 
@@ -167,7 +167,7 @@ class WifiTest(unittest.TestCase):
             (60, "?\n"),
         ])
         printed = sim.run(ticks=70)
-        self.assertEqual(printed, ["READY skynode-pico", "WIFI up 192.168.1.50 port 5005"])
+        self.assertEqual(printed, ["READY talo-pico", "WIFI up 192.168.1.50 port 5005"])
         self.assertEqual(sim.sent, [
             ("POS P90.0 T45.0\n", BRAIN),
             ("ERR unknown command BOGUS\n", BRAIN),
@@ -183,7 +183,7 @@ class WifiTest(unittest.TestCase):
         sim = Sim(wifi=5, wifi_down_at=20)
         printed = sim.run(ticks=20 + 15000 // 20 + 10)     # past one 15 s retry window
         self.assertEqual(printed, [
-            "READY skynode-pico",
+            "READY talo-pico",
             "WIFI up 192.168.1.50 port 5005",
             "WIFI down",
             "WIFI retry (last status -2)",
@@ -193,7 +193,7 @@ class WifiTest(unittest.TestCase):
     def test_no_secrets_file_means_usb_only(self):
         sim = Sim(wifi=False, packets=[(1, "?\n")])
         printed = sim.run(ticks=5)
-        self.assertEqual(printed, ["READY skynode-pico"])
+        self.assertEqual(printed, ["READY talo-pico"])
         self.assertEqual(sim.sent, [])
 
 

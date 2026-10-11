@@ -1,6 +1,6 @@
-# Skynode website
+# Talo website
 
-The landing page for Skynode: a single static page built with Vite, vanilla
+The landing page for Talo: a single static page built with Vite, vanilla
 JavaScript, Three.js, and GSAP. Everything below can be done from a web
 browser.
 
@@ -116,8 +116,8 @@ The still image shown before the 3D loads is
 The site can count visits with GoatCounter: free for personal sites, no
 cookies, and nothing that identifies a visitor.
 
-1. Sign up at **goatcounter.com** and pick a code, for example `skynode`.
-   Your dashboard will be at `https://skynode.goatcounter.com`.
+1. Sign up at **goatcounter.com** and pick a code, for example `talo`.
+   Your dashboard will be at `https://talo.goatcounter.com`.
 2. In `web/src/content.js`, set `analytics.goatcounter` to that code and
    commit.
 
@@ -127,7 +127,7 @@ back to `''`.
 
 ## Phone upload page
 
-`field.html` lets you record or pick a video on your phone and send it to your own Google Drive, from any browser. Nothing is installed, and the clips never pass through Skynode's servers. They land in **My Drive ▸ skynode_phone_uploads**, and `training/auto_train.py` reads that folder next time it runs. (The page is hidden from search engines, but it is not secret: anyone can open it. Only people you list as test users can sign in and use it, and they upload to their own Drive, not yours.)
+`field.html` lets you record or pick a video on your phone and send it to your own Google Drive, from any browser. Nothing is installed, and the clips never pass through Talo's servers. They land in **My Drive ▸ skynode_phone_uploads**, and `training/auto_train.py` reads that folder next time it runs. (The page is hidden from search engines, but it is not secret: anyone can open it. Only people you list as test users can sign in and use it, and they upload to their own Drive, not yours.)
 
 It asks Google for the narrow `drive.file` permission, which only covers files the page creates itself. That is why it has its own folder: it can't see or touch the rest of your Drive.
 
@@ -135,7 +135,7 @@ It asks Google for the narrow `drive.file` permission, which only covers files t
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project named `skynode` (top bar ▸ project picker ▸ New project).
 2. **APIs & Services ▸ Library**, search **Google Drive API**, click **Enable**.
-3. **APIs & Services ▸ OAuth consent screen** (called **Google Auth Platform** in newer consoles). Choose **External**. App name `Skynode`, your email for support and developer contact. On the scopes step add `.../auth/drive.file` (the non-sensitive one). Leave publishing status on **Testing**. Under **Test users**, add your own Google address. Only addresses on that list can sign in.
+3. **APIs & Services ▸ OAuth consent screen** (called **Google Auth Platform** in newer consoles). Choose **External**. App name `Talo`, your email for support and developer contact. On the scopes step add `.../auth/drive.file` (the non-sensitive one). Leave publishing status on **Testing**. Under **Test users**, add your own Google address. Only addresses on that list can sign in.
 4. **APIs & Services ▸ Credentials ▸ Create credentials ▸ OAuth client ID**. Type **Web application**. Under **Authorised JavaScript origins** add your site address exactly (for example `https://skynode-si.netlify.app`) and, to try it before publishing, the Netlify preview address. Leave redirect URIs empty. Click Create.
 5. Copy the **Client ID** (it ends in `.apps.googleusercontent.com`) into `web/src/field-config.js`. **Do not copy the client secret anywhere.** The page doesn't use one.
 6. Commit that one-line change, let Netlify deploy, and open `/field.html` on your phone.
@@ -175,7 +175,7 @@ web/
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
 ```
 
-Design: **Liquid Graphite** (the Skynode brand system). Carbon, smoke and
+Design: **Liquid Graphite** (the Talo brand system). Carbon, smoke and
 light; colour appears only for what the sensor sees (drone red, aircraft
 blue, clear green), so a colour on screen always means something. Saira for
 headings, IBM Plex Sans for text, IBM Plex Mono for data.

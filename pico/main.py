@@ -1,4 +1,4 @@
-# main.py — Skynode Pico firmware. MicroPython runs this file at power-up.
+# main.py — Talo Pico firmware. MicroPython runs this file at power-up.
 #
 # The loop, 50 times a second:
 #   1. USB serial: read whatever characters have arrived (never waits);
@@ -38,7 +38,7 @@ usb.register(sys.stdin, select.POLLIN)
 
 line = ""
 last = time.ticks_ms()
-print("READY skynode-pico")
+print("READY talo-pico")
 
 while True:
     # 1: USB serial, one character at a time

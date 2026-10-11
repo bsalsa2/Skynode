@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="Liberation Sans, Arial, Helvetica, sans-serif">
-  <title>Skynode wiring: Pico WH, two SG90 servos, 5 V supply, capacitor, common ground</title>
+  <title>Talo wiring: Pico WH, two SG90 servos, 5 V supply, capacitor, common ground</title>
   <rect width="960" height="560" fill="#ffffff"/>
-  <text x="30" y="38" font-size="22" font-weight="bold" fill="#1a1a1a">Skynode wiring</text>
+  <text x="30" y="38" font-size="22" font-weight="bold" fill="#1a1a1a">Talo wiring</text>
   <text x="30" y="60" font-size="13" fill="#555">Servos run on their own 5 V supply. The Pico's GND ties to the servo GND (common ground).</text>
 
   <!-- 5V supply + USB breakout -->

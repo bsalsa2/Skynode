@@ -1,1 +1,1 @@
-"""Skynode brain: detection, tracking, and control. Run it with `python -m brain.run`."""
+"""Talo brain: detection, tracking, and control. Run it with `python -m brain.run`."""

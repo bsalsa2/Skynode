@@ -130,7 +130,7 @@ const mountBlock = (m) => `
       <figure class="mount glass" id="mount" data-reveal>
         <div class="mount-stage" id="mount-stage">
           <img class="mount-still" src="./models/pantilt-still.webp" width="900" height="760" loading="lazy" decoding="async"
-            alt="3D render of the Skynode pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
+            alt="3D render of the Talo pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
           <span class="mono mount-hint" aria-hidden="true">DRAG TO TURN</span>
         </div>
         <figcaption class="mount-info">
@@ -172,7 +172,7 @@ const resultsSection = (r) => {
   </section>`;
 };
 
-// Known limits: what Skynode can't do, stated plainly. Hidden if empty.
+// Known limits: what Talo can't do, stated plainly. Hidden if empty.
 const limitsSection = (l, next) => {
   if (!l || !Array.isArray(l.items) || l.items.length === 0) return '';
   return `
@@ -260,14 +260,14 @@ export function renderHead(c) {
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${esc(url)}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Skynode" />
+    <meta property="og:site_name" content="Talo Labs" />
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(description)}" />
     <meta property="og:url" content="${esc(url)}" />
     <meta property="og:image" content="${esc(image)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Skynode: Drones are cheap. Detecting them isn't." />
+    <meta property="og:image:alt" content="Talo: Drones are cheap. Detecting them isn't." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
@@ -474,7 +474,7 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
       </ul>
     </div>
   </div>
-  <p class="footer-giant" aria-hidden="true">${esc(footer.brand)}</p>
+  <p class="footer-giant" aria-hidden="true">${esc(c.nav.brand)}</p>
 </footer>`;
 }
 
@@ -482,7 +482,7 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
 export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(c.privacy.title)} | Skynode</title>
+    <title>${esc(c.privacy.title)} | Talo</title>
     <meta name="description" content="${esc(c.privacy.intro)}" />
     <link rel="canonical" href="${esc(url)}" />`;
 }

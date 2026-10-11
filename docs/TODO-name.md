@@ -1,17 +1,19 @@
-# TODO: name decision pending
+# Name: renamed from Skynode to Talo
 
-**Status: open. Do not rename anything yet.**
+**Status: renamed in the repo. The checks below are still open for the new name.**
 
 Outside reviewers pointed out that "Skynode" is already used by unrelated
-businesses. That has not been independently checked yet.
+businesses. The project is now called Talo, and the organization Talo Labs.
 
-To decide:
+To do:
 
-- [ ] Search trademark databases and the web for "Skynode" in the US and in
+- [ ] Search trademark databases and the web for "Talo" in the US and in
       the countries this project could reach (aerospace, defense, drones,
-      software).
+      software). Not checked yet.
 - [ ] Check that the domain, GitHub, and social handles are still free for
-      the alternatives.
-- [ ] Decide: keep the name, or pick a new one.
-- [ ] If renaming, one pass over the repo, the website (`web/src/content.js`),
-      the Netlify project, and the banner/social images.
+      "Talo".
+- [x] Decide: keep the name, or pick a new one (Talo).
+- [x] One pass over the repo, the website (`web/src/content.js`), and the
+      banner/social images.
+- [ ] Rename the GitHub repo and the Netlify project, which still use the old
+      name, then update the links that point at them.

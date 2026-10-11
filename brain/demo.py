@@ -1,9 +1,9 @@
-"""Skynode demo: detection, the sighting logger and the dashboard, on a folder of test videos.
+"""Talo demo: detection, the sighting logger and the dashboard, on a folder of test videos.
 
 Run from the repo root:
-    python -m brain.demo ~/skynode-videos --model models/skynode-v2.onnx --classes drone,aircraft
-    python -m brain.demo ~/skynode-videos --model m.onnx --fast          # don't wait for real time
-    python -m brain.demo ~/skynode-videos --model m.onnx --loop          # play the folder forever
+    python -m brain.demo ~/talo-videos --model models/talo-v2.onnx --classes drone,aircraft
+    python -m brain.demo ~/talo-videos --model m.onnx --fast          # don't wait for real time
+    python -m brain.demo ~/talo-videos --model m.onnx --loop          # play the folder forever
 
 Then open the dashboard: http://localhost:8080/
 
@@ -102,7 +102,7 @@ def refuse_unignored_repo_folder(folder):
     if result.returncode == 1:          # 0 = ignored, 1 = NOT ignored, anything else = couldn't ask
         raise SystemExit(
             f"{folder} is inside the repo and git does NOT ignore it, so these videos could be\n"
-            "committed by accident. Move them outside the repo (for example ~/skynode-videos),\n"
+            "committed by accident. Move them outside the repo (for example ~/talo-videos),\n"
             "or into demo_videos/ (which git ignores), and run the demo again.")
 
 
@@ -147,7 +147,7 @@ class VideoFile:
 def start_afresh(folder):
     """Remove the previous demo's database and snapshots (only those, and only in the demo folder)."""
     folder = Path(folder)
-    for name in ("skynode.db", "skynode.db-journal", "skynode.db-wal", "skynode.db-shm"):
+    for name in ("talo.db", "talo.db-journal", "talo.db-wal", "talo.db-shm"):
         (folder / name).unlink(missing_ok=True)
     shutil.rmtree(folder / "snapshots", ignore_errors=True)
 
@@ -187,7 +187,7 @@ def main(argv=None):
         cfg.model.target_classes = [name.strip() for name in args.classes.split(",") if name.strip()]
     if not Path(cfg.model.path).exists():
         raise SystemExit(f"Model not found: {cfg.model.path}\n"
-                         "Give one with --model, for example --model models/skynode-v2.onnx")
+                         "Give one with --model, for example --model models/talo-v2.onnx")
     cfg.link.type = "none"                      # no Pico: the pan and tilt are simulated
     cfg.camera.source = str(videos[0])          # (the dashboard shows just the file name)
     cfg.display.show = args.show

@@ -66,7 +66,7 @@ class ConfigTest(unittest.TestCase):
                          os.path.normpath(path.parent.parent / "logs"))
 
     def test_absolute_log_folder_is_kept(self):
-        absolute = os.path.abspath(os.sep + "data" + os.sep + "skynode-logs")
+        absolute = os.path.abspath(os.sep + "data" + os.sep + "talo-logs")
         cfg = load_config(self.write(f"[logger]\nfolder = '{absolute}'\n"))
         self.assertEqual(cfg.logger.folder, absolute)
 
