@@ -658,6 +658,17 @@ svg {
   font-weight: 500;
   letter-spacing: 0.1em;
 }
+/* The counterpart to SAMPLE: marks a real asset (CAD files, bom.csv, the real
+   schema). Same metrics, outlined instead of filled. */
+.real-tag {
+  padding: 3px 7px;
+  border-radius: var(--talo-r-tag);
+  border: 1px solid var(--talo-text);
+  color: var(--talo-text);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
 
 /* Status pill: colour + shape + word, never colour alone.
    circle = confirmed aircraft, square = possible drone, ring = no ADS-B match. */

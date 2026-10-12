@@ -1,0 +1,4 @@
+// Example section check (rename to <name>.mjs to activate; .txt files are ignored).
+// export default function ({ get, text, err }) {
+//   if (get('mySection')) text('mySection.heading');
+// }

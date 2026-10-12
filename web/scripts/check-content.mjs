@@ -5,7 +5,7 @@
 // On GitHub, messages also appear as annotations on the pull request.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -110,7 +110,17 @@ function list(path, { min = 1 } = {}) {
   return value;
 }
 
+// Section ids that in-page links may point at. Read from the rendered page
+// itself, so a new section is linkable without editing this file; the list
+// below is the fallback when the page can't be rendered yet (the problems
+// reported further down say why).
 const sectionIds = new Set(['top', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
+try {
+  const { renderBody } = await import(pathToFileURL(join(webRoot, 'src', 'render.js')).href);
+  for (const m of renderBody(content).matchAll(/\sid="([^"]+)"/g)) sectionIds.add(m[1]);
+} catch {
+  // keep the fallback list
+}
 if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
 if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
 
@@ -300,6 +310,23 @@ list('footer.links').forEach((l, i) => {
 text('footer.contactLabel');
 if (text('footer.email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('footer.email')))
   err(`footer.email doesn't look like an email address.`, lineOf(get('footer.email')));
+
+// ---- Section checks: every file in web/scripts/checks/ ----------------------
+// A section that needs its own rules adds web/scripts/checks/<name>.mjs with
+// `export default function ({ content, get, text, list, link, err, warn,
+// lineOf, lineAfter, webRoot, sectionIds })`. Files run in name order.
+{
+  const dir = join(here, 'checks');
+  const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.mjs')).sort() : [];
+  for (const f of files) {
+    try {
+      const mod = await import(pathToFileURL(join(dir, f)).href);
+      await mod.default?.({ content, get, text, list, link, err, warn, lineOf, lineAfter, webRoot, sectionIds, lines, file });
+    } catch (e) {
+      err(`The check in web/scripts/checks/${f} stopped with an error: ${e.message}`);
+    }
+  }
+}
 
 // ---- 3. House rules: no placeholders, no emoji ----------------------------
 (function walk(value, path) {
