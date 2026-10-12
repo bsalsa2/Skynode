@@ -74,33 +74,37 @@ const headline = (h) => {
 // ---- Hero ---------------------------------------------------------------------
 
 // Frosted sighting card. Placeholder values, so it always carries SAMPLE.
+// hero-lens.js cycles it through the three statuses along with the lens.
 const sightingCard = (hero) => {
   const c = hero.card || {};
   const kind = STATUS[c.status] ? c.status : 'aircraft';
   return `
-      <aside class="sighting glass" aria-label="Sample sighting card" data-hero>
+      <aside class="sighting glass" id="sighting" aria-label="Sample sighting card" data-hero>
         <div class="sighting-top">
-          ${statusPill(kind)}
+          <span class="status-pill status-pill--${kind} mono" data-card="pill"><span class="shape shape--${kind}" aria-hidden="true"></span><span data-card="pill-text">${esc(STATUS[kind])}</span></span>
           <span class="sample-tag mono">${esc(c.label || 'SAMPLE')}</span>
         </div>
         <div class="sighting-head">
           <span class="sighting-title">Sighting</span>
-          <span class="mono sighting-time">${esc(c.time || '')}</span>
+          <span class="mono sighting-time" data-card="time">${esc(c.time || '')}</span>
         </div>
         <dl class="sighting-grid mono">
-          <div><dt>CLASS</dt><dd>${esc(c.class || '')}</dd></div>
-          <div><dt>CONF</dt><dd>${esc(c.conf || '')}</dd></div>
-          <div><dt>ADS-B</dt><dd class="sighting-adsb sighting-adsb--${kind}">${esc(c.adsb || '')}</dd></div>
+          <div><dt>CLASS</dt><dd data-card="class">${esc(c.class || '')}</dd></div>
+          <div><dt>CONF</dt><dd data-card="conf">${esc(c.conf || '')}</dd></div>
+          <div><dt>ADS-B</dt><dd class="sighting-adsb sighting-adsb--${kind}" data-card="adsb">${esc(c.adsb || '')}</dd></div>
         </dl>
         <p class="sighting-caption">${esc(hero.caption)}</p>
       </aside>`;
 };
 
-// The glass lens: the Split mark seen through a disc of frosted glass.
+// The glass lens: a simulated sky view (hero-lens.js draws into the canvas).
+// Without JavaScript it is simply the Split mark behind glass.
 const heroLens = () => `
-      <div class="lens" aria-hidden="true">
-        <span class="lens-sweep"></span>
+      <div class="lens" id="lens">
+        <span class="lens-sweep" aria-hidden="true"></span>
         ${mark(250, 'mark lens-mark')}
+        <canvas class="lens-canvas" id="lens-canvas" aria-hidden="true"></canvas>
+        <span class="lens-tag mono">SAMPLE · SIMULATED SKY</span>
       </div>`;
 
 // Real footage, once it exists (see hero.footage in content.js). main.js
@@ -219,6 +223,142 @@ const limitsSection = (l, next) => {
   </section>`;
 };
 
+// ---- Story (pinned, scroll-driven) ----------------------------------------------
+
+// One animated scene per stage. They are pure markup + CSS animation: the
+// active scene is switched by main.js while you scroll. All values are SAMPLE.
+const SCENES = [
+  // 01 SEE: range rings, a slow sweep, light arriving. Nothing leaves.
+  () => `
+        <svg class="sc sc-see" viewBox="0 0 400 300" aria-hidden="true">
+          <g class="sc-rings"><circle cx="200" cy="170" r="40"/><circle cx="200" cy="170" r="80"/><circle cx="200" cy="170" r="120"/><circle cx="200" cy="170" r="160"/></g>
+          <path class="sc-horizon" d="M0 232H400"/>
+          <g class="sc-sweep"><path d="M200 170L200 10" /></g>
+          <g class="sc-rays"><path d="M60 24L170 150"/><path d="M200 8L200 138"/><path d="M340 24L230 150"/></g>
+          <circle class="sc-eye" cx="200" cy="170" r="9"/>
+          <circle class="sc-eye-dot" cx="204" cy="166" r="2.6"/>
+          <text class="sc-text" x="200" y="266" text-anchor="middle">RECEIVES LIGHT ONLY</text>
+        </svg>`,
+  // 02 DETECT: boxes snap onto things, each with class + confidence.
+  () => `
+        <div class="sc sc-detect" aria-hidden="true">
+          <div class="sc-sky"></div>
+          <div class="sc-box sc-box--aircraft" style="--x:24%;--y:30%;--d:0.2s"><span class="sc-chip mono"><i class="shape shape--aircraft"></i>AIRCRAFT 0.91</span></div>
+          <div class="sc-box sc-box--drone" style="--x:62%;--y:56%;--d:0.7s"><span class="sc-chip mono"><i class="shape shape--drone"></i>DRONE 0.64</span></div>
+          <div class="sc-box sc-box--noadsb" style="--x:76%;--y:22%;--d:1.2s"><span class="sc-chip mono"><i class="shape shape--no-adsb"></i>AIRCRAFT 0.78</span></div>
+          <div class="sc-scan"></div>
+        </div>`,
+  // 03 TRACK: the target drifts, the mount follows, the ring settles on it.
+  () => `
+        <div class="sc sc-track" aria-hidden="true">
+          <div class="sc-sky sc-sky--pan"></div>
+          <div class="sc-ring"></div>
+          <div class="sc-box sc-box--drone sc-box--follow"><span class="sc-chip mono"><i class="shape shape--drone"></i>LOCKED</span></div>
+          <div class="sc-readout mono"><span>PAN <b>092.5°</b></span><span>TILT <b>47.0°</b></span><span>CMD <b>P92.5 T47.0</b></span></div>
+        </div>`,
+  // 04 LOG: rows arrive one by one.
+  () => `
+        <div class="sc sc-log" aria-hidden="true">
+          <div class="sc-row sc-row--head mono"><span>TIME</span><span>CLASS</span><span>CONF</span><span>PAN/TILT</span></div>
+          <div class="sc-row mono" style="--d:0.1s"><span>14:32:07Z</span><span><i class="shape shape--aircraft"></i>aircraft</span><span>0.91</span><span>092/47</span></div>
+          <div class="sc-row mono" style="--d:0.5s"><span>13:58:41Z</span><span><i class="shape shape--drone"></i>drone</span><span>0.64</span><span>140/31</span></div>
+          <div class="sc-row mono" style="--d:0.9s"><span>13:12:19Z</span><span><i class="shape shape--no-adsb"></i>aircraft</span><span>0.78</span><span>061/52</span></div>
+          <div class="sc-row sc-row--clear mono" style="--d:1.3s"><span>13:00:00Z</span><span>sky clear</span><span>·</span><span>·</span></div>
+        </div>`,
+  // 05 CHECK: what the camera saw lines up against what ADS-B says.
+  () => `
+        <div class="sc sc-check" aria-hidden="true">
+          <div class="sc-col"><p class="sc-col-h mono">CAMERA SAW</p>
+            <span class="sc-pill status-pill status-pill--aircraft mono" style="--d:0.1s"><i class="shape shape--aircraft"></i>aircraft</span>
+            <span class="sc-pill status-pill status-pill--aircraft mono" style="--d:0.5s"><i class="shape shape--aircraft"></i>aircraft</span>
+            <span class="sc-pill status-pill status-pill--drone mono" style="--d:0.9s"><i class="shape shape--drone"></i>drone</span></div>
+          <svg class="sc-links" viewBox="0 0 80 200" preserveAspectRatio="none"><path d="M0 30C40 30 40 30 80 30" style="--d:0.5s"/><path d="M0 100C40 100 40 100 80 100" style="--d:0.9s;stroke-dasharray:3 5"/></svg>
+          <div class="sc-col"><p class="sc-col-h mono">ADS-B SAID</p>
+            <span class="sc-pill sc-pill--plain mono" style="--d:0.4s">flight overhead</span>
+            <span class="sc-pill sc-pill--plain sc-pill--none mono" style="--d:0.8s">no flight</span>
+            <span class="sc-pill sc-pill--plain sc-pill--none mono" style="--d:1.2s">n/a</span></div>
+          <div class="sc-result"><span class="status-pill status-pill--aircraft mono"><i class="shape shape--aircraft"></i>Confirmed aircraft</span><span class="status-pill status-pill--no-adsb mono"><i class="shape shape--no-adsb"></i>No ADS-B match</span></div>
+        </div>`,
+];
+
+const storySection = (st, n) => `
+  <section class="story" id="story" aria-labelledby="story-title">
+    <div class="story-pin">
+      <div class="wrap story-inner">
+        <header class="story-head">
+          ${kicker(n, st.kicker)}
+          <h2 class="h-section" id="story-title">${esc(st.heading)}</h2>
+          <p class="lede">${esc(st.intro)}</p>
+        </header>
+        <div class="story-body">
+          <ol class="story-steps">
+            ${st.stages
+              .map(
+                (s, i) => `
+            <li class="story-step${i === 0 ? ' is-active' : ''}" data-stage="${i}">
+              <div class="story-step-top"><span class="mono story-num">${esc(s.number)}</span><h3 class="story-title">${esc(s.title)}</h3></div>
+              <p class="story-text">${esc(s.body)}</p>
+              <span class="mono chip story-fact">${esc(s.fact)}</span>
+            </li>`
+              )
+              .join('')}
+          </ol>
+          <figure class="story-device glass" aria-label="Simulated detection pipeline">
+            <span class="glass-sheen" aria-hidden="true"></span>
+            <div class="device-head">
+              <span class="mono device-label"><span class="live-dot" aria-hidden="true"></span>${esc(st.device)}</span>
+              <span class="mono device-step" id="story-step">01 / 0${st.stages.length}</span>
+            </div>
+            <div class="device-screen">
+              ${SCENES.slice(0, st.stages.length)
+                .map((fn, i) => `<div class="scene${i === 0 ? ' is-active' : ''}" data-scene="${i}">${fn()}</div>`)
+                .join('')}
+            </div>
+            <div class="device-rail" aria-hidden="true">${st.stages
+              .map((s, i) => `<span class="rail-dot${i === 0 ? ' is-active' : ''}" data-rail="${i}"><b class="mono">${esc(s.title)}</b></span>`)
+              .join('<span class="rail-line"><span></span></span>')}</div>
+            <figcaption class="device-note">${esc(st.note)}</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
+const labelsSection = (l, n) => `
+  <section class="labels section" id="labels" aria-labelledby="labels-title">
+    ${stage('how-stage labels-stage')}
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(n, l.kicker)}
+        <h2 class="h-section" id="labels-title">${esc(l.heading)}</h2>
+        <p class="lede" data-reveal>${esc(l.intro)}</p>
+      </header>
+      <ul class="label-grid">
+        ${l.items
+          .map(
+            (it) => `
+        <li class="label-card glass tilt">
+          <span class="glass-sheen" aria-hidden="true"></span>
+          <span class="label-shape label-shape--${it.kind}" aria-hidden="true"><i class="shape shape--${it.kind}"></i></span>
+          ${statusPill(it.kind)}
+          <p class="mono label-shapename">${esc(it.shape)}</p>
+          <p class="label-rule">${esc(it.rule)}</p>
+        </li>`
+          )
+          .join('')}
+      </ul>
+      <p class="mono label-note" data-reveal>${esc(l.note)}</p>
+    </div>
+  </section>`;
+
+const tickerStrip = (items) => {
+  const row = items.map((t) => `<li>${esc(t)}</li>`).join('');
+  return `
+  <div class="ticker" aria-label="Key facts">
+    <ul class="ticker-track mono">${row}${row.replace(/<li>/g, '<li aria-hidden="true">')}</ul>
+  </div>`;
+};
+
 const SUN =
   '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l2.8 2.8M21.7 21.7l2.8 2.8M7.5 24.5l2.8-2.8M21.7 10.3l2.8-2.8"/></svg>';
 
@@ -319,21 +459,6 @@ export function renderBody(c) {
     )
     .join('');
 
-  const steps = how.steps
-    .map(
-      (s) => `
-        <li class="step glass glass--deep tilt" data-reveal>
-          <span class="glass-sheen" aria-hidden="true"></span>
-          <div class="step-top">
-            <span class="mono step-num">${esc(s.number)}</span>
-            ${s.metric ? `<span class="mono chip">${esc(s.metric)}</span>` : ''}
-          </div>
-          <h3 class="step-title">${esc(s.title)}</h3>
-          <p>${esc(s.body)}</p>
-        </li>`
-    )
-    .join('');
-
   const statusRows = status.items
     .map((it) => {
       const kind = STATUS_KINDS[String(it.label).trim().toUpperCase()] || 'next';
@@ -362,6 +487,7 @@ export function renderBody(c) {
   return `
 <a class="skip-link" href="#main">Skip to content</a>
 ${LIQUID_FILTER}
+<div class="progress" id="progress" aria-hidden="true"><span></span></div>
 ${siteNav(c)}
 
 <main id="main" tabindex="-1">
@@ -383,7 +509,7 @@ ${siteNav(c)}
         </div>
         ${hero.cost ? `<p class="hero-note" data-hero>${esc(hero.cost)}</p>` : ''}
       </div>
-      <div class="hero-visual">
+      <div class="hero-visual" id="hero-visual">
         ${footage ? heroFootage(footage) : `${heroLens()}${sightingCard(hero)}`}
       </div>
     </div>
@@ -393,6 +519,8 @@ ${siteNav(c)}
       <span class="mono hero-labs">${esc(footer.brand)}</span>
     </div>
   </section>
+
+  ${tickerStrip(c.ticker)}
 
   <section class="math section" id="math" aria-labelledby="math-title">
     <div class="wrap math-inner">
@@ -416,6 +544,9 @@ ${siteNav(c)}
     </div>
   </section>
 
+  ${storySection(c.story, ++n)}
+  ${labelsSection(c.labels, ++n)}
+
   <section class="how section" id="how" aria-labelledby="how-title">
     ${stage('how-stage')}
     <div class="wrap how-inner">
@@ -423,7 +554,6 @@ ${siteNav(c)}
         ${kicker(++n, how.kicker || 'System')}
         <h2 class="h-section" id="how-title">${esc(how.heading)}</h2>
       </header>
-      <ol class="steps">${steps}</ol>
       ${how.sensor ? sensorBlock(how.sensor) : ''}
       ${how.mount ? mountBlock(how.mount) : ''}
       <div class="note" data-reveal>

@@ -110,7 +110,7 @@ function list(path, { min = 1 } = {}) {
   return value;
 }
 
-const sectionIds = new Set(['top', 'math', 'how', 'mount', 'status', 'build', 'roadmap']);
+const sectionIds = new Set(['top', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
 if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
 if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
 
@@ -191,8 +191,21 @@ if (get('math.stats') !== undefined) {
 }
 
 text('how.heading');
-list('how.steps').forEach((s, i) => {
-  ['number', 'title', 'body'].forEach((k) => text(`how.steps.${i}.${k}`, s?.[k]));
+text('story.heading');
+text('story.intro');
+list('story.stages').forEach((st, i) => {
+  ['number', 'title', 'fact', 'body'].forEach((k) => text(`story.stages.${i}.${k}`, st?.[k]));
+});
+for (const path of ['story.device', 'story.note']) {
+  const v = get(path);
+  if (typeof v !== 'string' || !/\bSAMPLE\b/.test(v)) err(`${path} must contain the word SAMPLE: the story panel is a simulation.`, lineOf('story:'));
+}
+list('ticker').forEach((t, i) => text(`ticker.${i}`, t));
+text('labels.heading');
+text('labels.note');
+list('labels.items').forEach((it, i) => {
+  if (!['aircraft', 'drone', 'no-adsb'].includes(it?.kind)) err(`labels.items.${i}.kind must be 'aircraft', 'drone' or 'no-adsb'.`, lineOf('labels:'));
+  ['title', 'shape', 'rule'].forEach((k) => text(`labels.items.${i}.${k}`, it?.[k]));
 });
 text('how.note');
 // Sample and preview content must say so.

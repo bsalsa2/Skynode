@@ -168,7 +168,8 @@ web/
                           The live dashboard loads the same file, so a colour changes in both
   src/fonts.css           self-hosted Michroma, Geist, Geist Mono
   src/main.js             scroll story, nav, buttons, glass tilt, lazy loading
-  src/sensor.js           the simulated sensor view in "How it works"
+  src/hero-lens.js        the hero lens: a simulated sky (SAMPLE) that drives the sighting card
+  src/sensor.js           the simulated sensor view in "Under the hood"
   src/mount.js            the Three.js pan-tilt mount viewer
   src/three-env.js        studio lighting for the mount viewer
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
@@ -184,10 +185,14 @@ text, Geist Mono for data, labels and timestamps. Every simulated visual
 carries a SAMPLE tag.
 
 How it behaves:
-- **Hero:** all CSS, so it is there on first paint: a glass lens holding the
-  Split mark, and a frosted sighting card. The card's values are placeholders
-  (`hero.card` in `content.js`) and it is tagged SAMPLE. A very slow light
-  sweep crosses the lens unless motion is reduced.
+- **Hero:** the headline types in letter by letter. The glass lens is a
+  simulated sky drawn on a canvas (an aircraft crosses, a drone hovers, an
+  aircraft with no broadcast passes), and the frosted sighting card changes
+  with it. All of it is tagged SAMPLE. It only runs while on screen, and is a
+  single still frame under reduced motion.
+- **Story:** "From sky to sighting" pins to the screen and steps through five
+  stages (see, detect, track, log, check) as you scroll. Edit the words in
+  `story` in `content.js`; the scenes live in `render.js`.
 - **Sensor view:** a simulation of the overlay from `brain/overlay.py`. The
   camera pans to keep the locked drone in the centre ring. Labelled as
   simulated on the page; it only runs while on screen.
