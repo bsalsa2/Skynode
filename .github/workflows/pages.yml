@@ -1,0 +1,70 @@
+# Publishes the website (web/) to GitHub Pages on every push to main.
+#
+# One-time setup in the repo: Settings > Pages > Build and deployment >
+# Source: "GitHub Actions". Nothing else is needed.
+#
+# The site is built with a relative base path (see web/vite.config.js), so the
+# same build works at https://<user>.github.io/<repo>/ and on Netlify without
+# any per-host settings. SITE_URL only changes the canonical and share-image
+# addresses in the page <head> to the Pages URL; Netlify builds don't set it
+# and keep their own address.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; let a running deploy finish rather than cancel it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      # prebuild checks web/src/content.js and packs the 3D mount model, then
+      # vite builds into web/dist.
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}/
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
