@@ -35,7 +35,7 @@ export const content = {
   nav: {
     brand: 'TALO',
     links: [
-      { label: 'How it works', href: '#how' },
+      { label: 'How it works', href: '#story' },
       { label: 'Status', href: '#status' },
       { label: 'Roadmap', href: '#roadmap' },
     ],
@@ -80,6 +80,88 @@ export const content = {
     },
   },
 
+  // The scrolling facts strip under the hero. Plain facts only.
+  ticker: [
+    'Detection only',
+    'Passive sensing',
+    'No jamming, no payloads',
+    '~$113 in sensing parts',
+    'Tested in simulation and on recorded video',
+    'Not yet on real hardware',
+    'MIT licensed',
+  ],
+
+  // The pinned scroll story. Each stage has its own animated scene in the
+  // panel (see storyScene in render.js). Everything in the panel is a
+  // simulation and is labelled SAMPLE.
+  story: {
+    kicker: 'How it works',
+    heading: 'From sky to sighting',
+    intro: 'Five steps turn a patch of sky into a logged record. Keep scrolling and watch one happen.',
+    device: 'SAMPLE · NODE-01 · SIMULATED',
+    note: 'SAMPLE: everything in this panel is a simulation, not footage.',
+    stages: [
+      {
+        number: '01',
+        title: 'SEE',
+        fact: 'Passive · receives light only',
+        body: 'A webcam on a pan-tilt mount looks at the sky. Talo is passive: it only receives light. It never jams, never transmits on aircraft or drone frequencies, and carries no payload.',
+      },
+      {
+        number: '02',
+        title: 'DETECT',
+        fact: 'YOLO · ONNX model',
+        body: 'Every frame goes through a YOLO object-detection model. For each thing it finds, it returns a class (drone or aircraft), a confidence score and a box. Today that is model v2, which is weak at drones. Model v3 is in training.',
+      },
+      {
+        number: '03',
+        title: 'TRACK',
+        fact: 'Pico · two servos',
+        body: 'The tracker picks one target and stays locked on it from frame to frame. A small controller turns how far off-centre the target is into new pan and tilt angles, and a Raspberry Pi Pico drives the two servos.',
+      },
+      {
+        number: '04',
+        title: 'LOG',
+        fact: 'Time · class · confidence · direction',
+        body: 'Every sighting is saved with its time, what it was, how confident the model was and which way the camera was pointing, plus a snapshot of its best moment. An hourly sky-clear check records the quiet too.',
+      },
+      {
+        number: '05',
+        title: 'CHECK',
+        fact: 'ADS-B · built, not yet run on a real feed',
+        body: 'Planes publicly broadcast their positions (ADS-B). Talo can line its sightings up with a log of the real flights overhead, which is how real accuracy numbers will be measured. That comparison is written but has not run against a real feed yet.',
+      },
+    ],
+  },
+
+  // How to read the three status labels.
+  labels: {
+    kicker: 'Reading the screen',
+    heading: 'Three labels, three shapes',
+    intro: 'Colour is never the only signal. Every label pairs a colour with a shape and a word, so it reads the same in greyscale and for colour-blind eyes.',
+    items: [
+      {
+        kind: 'aircraft',
+        title: 'Confirmed aircraft',
+        shape: 'Filled circle',
+        rule: 'The model sees an aircraft and a matching ADS-B broadcast is nearby.',
+      },
+      {
+        kind: 'drone',
+        title: 'Possible drone',
+        shape: 'Filled square',
+        rule: 'The model says drone. It is always only possible: a model can be wrong, and Talo says so.',
+      },
+      {
+        kind: 'no-adsb',
+        title: 'No ADS-B match',
+        shape: 'Hollow ring',
+        rule: 'Looks like an aircraft, but no matching broadcast was found. It may be a plane that does not broadcast, or a misread.',
+      },
+    ],
+    note: 'The ADS-B comparison is written but has not yet been run against a real feed, so these labels are shown here as a design, not as measured results.',
+  },
+
   math: {
     heading: 'The math is backwards',
     // Words inside [square brackets] light up white; the rest stay grey.
@@ -99,28 +181,8 @@ export const content = {
   },
 
   how: {
-    kicker: 'System',
-    heading: 'How it works',
-    steps: [
-      {
-        number: '01',
-        title: 'SENSE',
-        metric: '28,526 IMAGES',
-        body: 'A YOLO object-detection model looks at the camera feed and picks out aircraft and drones. It is training now on a dataset of 28,526 labeled images.',
-      },
-      {
-        number: '02',
-        title: 'TRACK',
-        metric: 'P92.5 T47.0',
-        body: 'A Raspberry Pi Pico drives two small servos on a pan-tilt mount, turning the camera to keep the target centered.',
-      },
-      {
-        number: '03',
-        title: 'LOG',
-        metric: 'TIME · CLASS · CONF',
-        body: 'Every sighting will be saved with the time, what it was, how confident the model was, and which way the camera was pointing.',
-      },
-    ],
+    kicker: 'Under the hood',
+    heading: 'The hardware and the view',
     // 3D viewer of the pan-tilt mount, built from the STL files in /hardware.
     mount: {
       label: 'PAN-TILT MOUNT',

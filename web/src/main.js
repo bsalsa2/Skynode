@@ -8,6 +8,67 @@ const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matc
 if (!reduceMotion) root.classList.add('js-motion');
 
 // ---------------------------------------------------------------------------
+// Scroll progress bar (cheap: one custom property per frame).
+// ---------------------------------------------------------------------------
+{
+  const bar = document.getElementById('progress');
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar?.style.setProperty('--p', max > 0 ? Math.min(1, window.scrollY / max).toFixed(4) : '0');
+  };
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    },
+    { passive: true }
+  );
+  update();
+}
+
+// Split text for reveals. The element keeps its text for screen readers via
+// aria-label; the pieces are hidden from them.
+function splitChars(el) {
+  const text = el.textContent;
+  el.setAttribute('aria-label', text);
+  el.textContent = '';
+  const out = [];
+  for (const ch of text) {
+    const span = document.createElement('span');
+    span.className = 'ch';
+    span.setAttribute('aria-hidden', 'true');
+    span.textContent = ch === ' ' ? '\u00a0' : ch;
+    el.append(span);
+    out.push(span);
+  }
+  return out;
+}
+function splitWords(el) {
+  const text = el.textContent.trim();
+  el.setAttribute('aria-label', text);
+  el.textContent = '';
+  const out = [];
+  text.split(/\s+/).forEach((word, i, all) => {
+    const wrap = document.createElement('span');
+    wrap.className = 'sw';
+    wrap.setAttribute('aria-hidden', 'true');
+    const inner = document.createElement('span');
+    inner.className = 'sw-in';
+    inner.textContent = word;
+    wrap.append(inner);
+    el.append(wrap);
+    if (i < all.length - 1) el.append(' ');
+    out.push(inner);
+  });
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Liquid-glass refraction: only Chromium renders SVG filters inside
 // backdrop-filter. Safari and Firefox parse the rule but drop the whole
 // backdrop, so gate it on a Chromium-only API and keep plain blur elsewhere.
@@ -153,7 +214,8 @@ if (!reduceMotion) {
 
   // ---- Hero entrance. Opacity starts just above zero so the browser still
   // counts the headline as painted immediately (keeps LCP fast).
-  gsap.from('.hero-title .line-in', { yPercent: 70, opacity: 0.01, duration: 1.8, ease, stagger: 0.12, delay: 0.25 });
+  const heroChars = [...document.querySelectorAll('.hero-title .line-in')].flatMap(splitChars);
+  gsap.from(heroChars, { yPercent: 110, rotate: 6, opacity: 0.01, duration: 1.5, ease, stagger: 0.035, delay: 0.2 });
   gsap.from('[data-hero]', { y: 28, opacity: 0.01, duration: 1.6, ease, stagger: 0.08, delay: 0.45, clearProps: 'transform' });
 
   // ---- Hero exit: the copy and the lens recede.
@@ -188,18 +250,16 @@ if (!reduceMotion) {
 
   // ---- Section headings rise in.
   gsap.utils.toArray('.section-head').forEach((head) => {
-    gsap.from(head.children, {
-      y: 40,
-      opacity: 0,
-      duration: 1.5,
-      ease,
-      stagger: 0.08,
-      scrollTrigger: { trigger: head, start: 'top 88%' },
-    });
+    const h = head.querySelector('.h-section');
+    const words = h ? splitWords(h) : [];
+    const others = [...head.children].filter((c) => c !== h && !c.hasAttribute('data-reveal'));
+    const tl = gsap.timeline({ scrollTrigger: { trigger: head, start: 'top 86%' } });
+    tl.from(others, { y: 30, opacity: 0, duration: 1.2, ease, stagger: 0.08 }, 0);
+    if (words.length) tl.from(words, { yPercent: 115, duration: 1.4, ease, stagger: 0.07 }, 0.1);
   });
 
   // ---- Generic float-up reveals.
-  gsap.utils.toArray('[data-reveal]:not(.step)').forEach((el) => {
+  gsap.utils.toArray('[data-reveal]').forEach((el) => {
     gsap.from(el, {
       y: 56,
       opacity: 0,
@@ -210,25 +270,81 @@ if (!reduceMotion) {
     });
   });
 
-  // ---- 02 How it works: the three glass panels float up in sequence.
-  gsap.from('.step', {
-    y: 100,
-    rotationX: 14,
-    opacity: 0,
-    duration: 1.8,
-    ease,
-    stagger: 0.14,
-    transformPerspective: 1100,
-    clearProps: 'transform',
-    scrollTrigger: { trigger: '.steps', start: 'top 86%' },
-  });
   gsap.to('.how-stage .stage-bronze', {
     yPercent: 30,
     ease: 'none',
     scrollTrigger: { trigger: '.how', start: 'top bottom', end: 'bottom top', scrub: true },
   });
 
-  // ---- 03 Status: rows reveal one after another.
+  // ---- Story: pinned. Scrolling steps through the five stages; the scene,
+  // rail and text follow. Below 900 px the same thing runs with a shorter pin.
+  const story = document.getElementById('story');
+  if (story) {
+    const steps = [...story.querySelectorAll('.story-step')];
+    const scenes = [...story.querySelectorAll('.scene')];
+    const dots = [...story.querySelectorAll('.rail-dot')];
+    const lines = [...story.querySelectorAll('.rail-line')];
+    const counter = document.getElementById('story-step');
+    const n = steps.length;
+    let current = -1;
+    const show = (i) => {
+      if (i === current) return;
+      current = i;
+      steps.forEach((el, k) => el.classList.toggle('is-active', k === i));
+      scenes.forEach((el, k) => {
+        // Re-trigger the scene's CSS animation each time it becomes active.
+        if (k === i) {
+          el.classList.remove('is-active');
+          void el.offsetWidth;
+        }
+        el.classList.toggle('is-active', k === i);
+      });
+      dots.forEach((el, k) => {
+        el.classList.toggle('is-active', k === i);
+        el.classList.toggle('is-done', k < i);
+      });
+      if (counter) counter.textContent = `0${i + 1} / 0${n}`;
+    };
+    ScrollTrigger.create({
+      trigger: '.story-pin',
+      start: 'top top',
+      end: () => `+=${Math.round(window.innerHeight * 0.75 * n)}`,
+      pin: true,
+      anticipatePin: 1,
+      onUpdate: (self) => {
+        const p = self.progress;
+        show(Math.min(n - 1, Math.floor(p * n * 0.9999)));
+        lines.forEach((line, k) => {
+          const f = Math.min(1, Math.max(0, p * n - (k + 0.5)));
+          line.firstElementChild.style.setProperty('--fill', f.toFixed(3));
+        });
+      },
+    });
+    // The device floats in as the section arrives.
+    gsap.from('.story-device', {
+      y: 80,
+      opacity: 0,
+      rotationX: 10,
+      transformPerspective: 1100,
+      duration: 1.6,
+      ease,
+      clearProps: 'transform',
+      scrollTrigger: { trigger: '.story', start: 'top 70%' },
+    });
+  }
+
+  // ---- Label cards float up in sequence.
+  gsap.from('.label-card', {
+    y: 80,
+    opacity: 0,
+    duration: 1.5,
+    ease,
+    stagger: 0.14,
+    clearProps: 'transform',
+    scrollTrigger: { trigger: '.label-grid', start: 'top 85%' },
+  });
+
+  // ---- Status: rows reveal one after another.
   ScrollTrigger.batch('.status-row', {
     start: 'top 92%',
     once: true,
@@ -327,6 +443,16 @@ const whenNear = (el, load) => {
   );
   io.observe(el);
 };
+
+// Hero lens: the simulated sky, and the card that follows it.
+afterLoad(() => {
+  const lens = document.getElementById('lens');
+  const canvas = document.getElementById('lens-canvas');
+  if (!lens || !canvas) return;
+  import('./hero-lens.js')
+    .then(({ createLens }) => createLens({ lens, canvas, card: document.getElementById('sighting'), reduceMotion }))
+    .catch((err) => console.warn('[talo] hero lens unavailable.', err));
+});
 
 // Simulated sensor view.
 whenNear(document.getElementById('sensor'), () =>
