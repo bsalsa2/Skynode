@@ -5,6 +5,8 @@
 // October 2026). Charcoal and smoke, frosted glass, one bronze point of
 // light. Status colours appear only for what the sensor sees.
 
+import { SLOTS } from './sections/index.js';
+
 const esc = (s) =>
   String(s)
     .replace(/&/g, '&amp;')
@@ -487,6 +489,8 @@ export function renderBody(c) {
     .join('');
 
   let n = 0; // section numbers follow the order on the page
+  // Extra sections (sections/index.js), rendered in page order.
+  const slot = (name) => (SLOTS[name] || []).map((fn) => fn(c, () => ++n)).join('');
   return `
 <a class="skip-link" href="#main">Skip to content</a>
 ${LIQUID_FILTER}
@@ -523,6 +527,7 @@ ${siteNav(c)}
     </div>
   </section>
 
+  ${slot('afterHero')}
   ${tickerStrip(c.ticker)}
 
   <section class="math section" id="math" aria-labelledby="math-title">
@@ -547,8 +552,11 @@ ${siteNav(c)}
     </div>
   </section>
 
+  ${slot('afterMath')}
   ${storySection(c.story, ++n)}
+  ${slot('afterStory')}
   ${labelsSection(c.labels, ++n)}
+  ${slot('afterLabels')}
 
   <section class="how section" id="how" aria-labelledby="how-title">
     ${stage('how-stage')}
@@ -566,6 +574,7 @@ ${siteNav(c)}
     </div>
   </section>
 
+  ${slot('afterHow')}
   <section class="status section" id="status" aria-labelledby="status-title">
     <div class="wrap wrap--mid">
       <header class="section-head">
@@ -575,8 +584,10 @@ ${siteNav(c)}
       <ol class="status-list">${statusRows}</ol>
     </div>
   </section>
+  ${slot('afterStatus')}
   ${resultsSection(results, () => ++n)}
   ${limitsSection(limits, () => ++n)}
+  ${slot('afterLimits')}
   <section class="build section" id="build" aria-labelledby="build-title">
     <div class="wrap build-inner">
       <div class="build-orb" aria-hidden="true"></div>
@@ -613,6 +624,7 @@ ${siteNav(c)}
       <p class="closing">${esc(roadmap.closing)}</p>
     </div>
   </section>
+  ${slot('beforeFooter')}
 </main>
 
 ${siteFooter(c, { sister })}`;

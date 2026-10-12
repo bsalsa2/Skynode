@@ -1,11 +1,45 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+
+// Static CSS for extra sections (sections/*.css) and effect modules that need
+// styles at first paint (fx/**/*.css). Bundled into the page's stylesheet.
+import.meta.glob(['./sections/*.css', './fx/**/*.css'], { eager: true });
 
 const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 if (!reduceMotion) root.classList.add('js-motion');
+gsap.registerPlugin(ScrollTrigger);
+
+// ---------------------------------------------------------------------------
+// Smooth scrolling (Lenis) for mouse and trackpad users who haven't turned
+// off motion. Touch keeps native scrolling. Lenis drives the real scroll
+// position, so ScrollTrigger, anchors and the nav keep working as before.
+// ---------------------------------------------------------------------------
+let lenis = null;
+if (!reduceMotion && finePointer) {
+  lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 0.9, anchors: true });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+  root.classList.add('has-lenis');
+}
+
+// ---------------------------------------------------------------------------
+// Effect modules. Every file in fx/early/ is loaded straight away; every file
+// in fx/ is loaded once the page has painted. Each exports a default
+// init(ctx) and decides for itself whether to run (reduced motion, pointer).
+// ---------------------------------------------------------------------------
+const fxCtx = { gsap, ScrollTrigger, reduceMotion, finePointer, lenis, root };
+const runFx = (mods) =>
+  Object.entries(mods).forEach(([path, load]) =>
+    load()
+      .then((m) => m.default && m.default(fxCtx))
+      .catch((err) => console.warn(`[talo] ${path} unavailable.`, err))
+  );
+runFx(import.meta.glob('./fx/early/*.js'));
 
 // ---------------------------------------------------------------------------
 // Scroll progress bar (cheap: one custom property per frame).
@@ -209,7 +243,6 @@ function countUp(el, duration = 1.6) {
 // the page is complete and readable without it.
 // ---------------------------------------------------------------------------
 if (!reduceMotion) {
-  gsap.registerPlugin(ScrollTrigger);
   const ease = 'expo.out';
 
   // ---- Hero entrance. Opacity starts just above zero so the browser still
@@ -443,6 +476,9 @@ const whenNear = (el, load) => {
   );
   io.observe(el);
 };
+
+// Effect modules that can wait for the first paint.
+afterLoad(() => runFx(import.meta.glob('./fx/*.js')));
 
 // Hero lens: the simulated sky, and the card that follows it.
 afterLoad(() => {

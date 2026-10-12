@@ -2735,3 +2735,18 @@ svg {
   right: -10%;
   top: 20%;
 }
+
+/* ---- Smooth scrolling (Lenis) ------------------------------------------- */
+html.has-lenis,
+html.has-lenis body {
+  height: auto;
+}
+html.has-lenis {
+  scroll-behavior: auto;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
