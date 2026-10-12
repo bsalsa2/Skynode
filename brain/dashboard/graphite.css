@@ -1,15 +1,18 @@
 /* ==========================================================================
-   TALO · LIQUID GRAPHITE · SHARED TOKENS
+   TALO · BRAND V6 · CHARCOAL + BRONZE · SHARED TOKENS
    The one place the brand's colours, glass and type stacks are defined.
    The website (web/src/styles.css) and the live dashboard
    (brain/dashboard/dashboard.css) both load this file, so changing a colour
    here changes it in both.
 
-   Carbon, smoke and light. Colour appears only for what the sensor sees, so
-   a colour on screen always means something:
-     drone    coral / red-orange
-     aircraft light blue
-     clear    green (sky clear, node online)
+   Charcoal and smoke keep it calm; bronze is the one point of light (the
+   dot in the Split mark, numerals, primary buttons). Status colours are for
+   data only and always travel with a shape, so colour is never the only
+   signal:
+     confirmed aircraft  green   filled circle
+     possible drone      amber   filled square
+     no ADS-B match      violet  hollow ring
+   The logo dot is always bronze, never a status colour.
    Layout sizes (gutters, section spacing) are not brand tokens: each app
    keeps its own.
    ========================================================================== */
@@ -17,58 +20,142 @@
 :root {
   color-scheme: dark;
 
-  /* Neutrals */
-  --void: #000000;
-  --carbon: #0a0a0b;
-  --carbon-2: #060607;
-  --carbon-3: #0e0e10;
-  --smoke: #2a2a2d;
-  --offline: #6e6e72;
-  --halo: #f4f4f2; /* accent + primary ink */
-  --white: #ffffff;
-  --ink-1: #d4d4d0;
-  --ink-2: #b4b4b0; /* body text */
-  --ink-3: #8c8c88; /* quiet notes */
-  --label: #a0a09c;
-  --dim: #76767a;
+  /* ---- Brand v6 (canonical names) -------------------------------------- */
+  --talo-base: #111213; /* Charcoal */
+  --talo-surface-1: #1a1c1d; /* Basalt */
+  --talo-surface-2: #2a2d2f; /* Graphite */
+  --talo-text: #ecebe8; /* Fog, 15.7:1 on base */
+  --talo-text-2: #9ea0a2; /* Smoke, 7.1:1 */
+  --talo-accent: #cf8a52; /* Bronze, 6.6:1 */
+  --talo-aircraft: #7cd99b; /* 10.9:1 */
+  --talo-drone: #ffc247; /* 11.7:1 */
+  --talo-no-adsb: #c9a0ff; /* 8.9:1 */
 
-  /* Signals: only ever used for what the sensor sees */
-  --drone: #ff4d2e;
-  --drone-ink: #ff7a60;
-  --drone-on: #140402;
-  --aircraft: #8fd3ff;
-  --aircraft-ink: #b5e2ff;
-  --aircraft-on: #04141e;
-  --clear: #9be89b;
-  --clear-ink: #b6f0b6;
-  --other: #f4f4f2; /* a tracked class that is neither drone nor aircraft, e.g. a bird */
-  --other-ink: #d4d4d0;
+  --talo-r-chip: 99px;
+  --talo-r-tag: 7px;
+  --talo-r-btn: 12px;
+  --talo-r-stat: 14px;
+  --talo-r-card: 22px;
+  --talo-r-panel: 28px;
 
-  /* Chart marks. Checked with the dataviz palette validator against the dark
-     card: the pale brand blue is too light to read as a filled bar, so the
-     chart uses this deeper blue for aircraft. Don't change these hexes. */
-  --chart-aircraft: #3a99e3;
-  --chart-other: #76767a;
-  --chart-drone: #ff4d2e;
+  /* Chart marks: deeper steps of the status hues, checked with the dataviz
+     palette validator against the dark card (lightness band, colour-blind
+     separation). The bright status colours are too light to read as fills. */
+  --chart-aircraft: #38a062;
+  --chart-other: #5e6164;
+  --chart-drone: #c2851a;
 
   --line: rgba(255, 255, 255, 0.1);
   --line-2: rgba(255, 255, 255, 0.18);
 
-  /* Liquid glass */
+  /* ---- Liquid glass ---------------------------------------------------- */
+  /* Frosted: the default for cards and panels. */
   --glass-fill: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.09),
-    rgba(255, 255, 255, 0.02) 50%,
-    rgba(255, 255, 255, 0.05)
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.05) 40%,
+    rgba(255, 255, 255, 0.03) 60%,
+    rgba(255, 255, 255, 0.12)
   );
-  --glass-edge: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 24px 24px 48px -30px rgba(255, 255, 255, 0.22), inset -24px -24px 48px -30px rgba(0, 0, 0, 0.6);
-  --glass-drop: 0 40px 80px -30px rgba(0, 0, 0, 0.9);
+  --glass-blur: blur(36px) saturate(180%) brightness(1.08);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-edge: inset 0 1.5px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 18px 18px 40px -28px rgba(255, 255, 255, 0.35), inset -12px -16px 36px -28px rgba(207, 138, 82, 0.3);
+  --glass-drop: 0 36px 70px -30px rgba(0, 0, 0, 0.9);
+  /* Clear: nav, chips, tags. Never behind body text. */
+  --glass-clear-fill: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.08)
+  );
+  --glass-clear-blur: blur(14px) saturate(180%);
+  /* Deep: tables and dense data; the charcoal tint keeps text at 7:1+. */
+  --glass-deep-fill: linear-gradient(135deg, rgba(17, 18, 19, 0.62), rgba(17, 18, 19, 0.45));
+  --glass-deep-blur: blur(44px) saturate(180%);
 
-  --f-display: 'Saira', 'Segoe UI', system-ui, sans-serif;
-  --f-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* The stage glass sits on: smoke and bronze light, fine diagonal hairlines.
+     Glass over flat colour shows nothing, so every glass surface needs it. */
+  --stage-bronze: radial-gradient(circle, rgba(207, 138, 82, 0.55), rgba(207, 138, 82, 0) 62%);
+  --stage-smoke: radial-gradient(circle, rgba(200, 204, 208, 0.22), rgba(200, 204, 208, 0) 62%);
+  --stage-hairlines: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 7px);
+
+  --f-display: 'Michroma', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light variant (Paper): frosted white glass, Ink text, deeper status
+   colours. Tokens only for now; neither app ships a theme switch yet. */
+[data-theme='light'] {
+  color-scheme: light;
+  --talo-base: #f1f1ef; /* Paper */
+  --talo-surface-1: #ffffff;
+  --talo-surface-2: #e6e6e3;
+  --talo-text: #121314; /* Ink, 16.4:1 */
+  --talo-text-2: #55585b; /* Slate, 6.3:1 */
+  --talo-accent: #94521f; /* 5.3:1 */
+  --talo-aircraft: #1f7a45; /* 4.7:1 */
+  --talo-drone: #8a5a00; /* 5.2:1 */
+  --talo-no-adsb: #6b3fb8; /* 6.1:1 */
+  --glass-fill: rgba(255, 255, 255, 0.62);
+  --glass-blur: blur(20px);
+  --glass-border: rgba(20, 17, 13, 0.1);
+  --glass-edge: inset 0 1px 0 #fff;
+  --glass-drop: 0 24px 48px -28px rgba(20, 17, 13, 0.4);
+}
+
+/* Working names used across both apps. Declared on every theme root so they
+   follow a theme switch. */
+:root,
+[data-theme] {
+  --stage: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
+
+  /* Neutrals */
+  --void: var(--talo-base);
+  --carbon: var(--talo-surface-1);
+  --carbon-2: color-mix(in srgb, var(--talo-base) 60%, var(--talo-surface-1));
+  --carbon-3: color-mix(in srgb, var(--talo-surface-1) 70%, var(--talo-surface-2));
+  --smoke: var(--talo-surface-2);
+  --offline: #6e7173;
+  --halo: var(--talo-text); /* primary ink */
+  --white: var(--talo-text);
+  --ink-1: color-mix(in srgb, var(--talo-text) 85%, var(--talo-base));
+  --ink-2: color-mix(in srgb, var(--talo-text) 78%, var(--talo-base)); /* body text */
+  --ink-3: var(--talo-text-2); /* quiet notes */
+  --label: var(--talo-text-2);
+  --dim: color-mix(in srgb, var(--talo-text-2) 62%, var(--talo-base));
+
+  --accent: var(--talo-accent);
+  --accent-on: var(--talo-base);
+
+  /* Signals: only ever used for what the sensor sees */
+  --drone: var(--talo-drone);
+  --drone-ink: var(--talo-drone);
+  --drone-on: var(--talo-base);
+  --aircraft: var(--talo-aircraft);
+  --aircraft-ink: var(--talo-aircraft);
+  --aircraft-on: var(--talo-base);
+  --no-adsb: var(--talo-no-adsb);
+  --no-adsb-on: var(--talo-base);
+  /* Node health (online, sky clear) is not a detection, so it stays neutral. */
+  --clear: var(--talo-text);
+  --clear-ink: var(--talo-text);
+  /* A tracked class that is neither drone nor aircraft, e.g. a bird. */
+  --other: var(--talo-text-2);
+  --other-ink: var(--ink-1);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-fill: var(--talo-surface-2);
+    --glass-clear-fill: var(--talo-surface-2);
+    --glass-deep-fill: var(--talo-surface-1);
+    --glass-blur: none;
+    --glass-clear-blur: none;
+    --glass-deep-blur: none;
+  }
 }

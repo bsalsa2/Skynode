@@ -156,22 +156,22 @@ if (!reduceMotion) {
   gsap.from('.hero-title .line-in', { yPercent: 70, opacity: 0.01, duration: 1.8, ease, stagger: 0.12, delay: 0.25 });
   gsap.from('[data-hero]', { y: 28, opacity: 0.01, duration: 1.6, ease, stagger: 0.08, delay: 0.45, clearProps: 'transform' });
 
-  // ---- Hero exit: the horizon rises to meet you, the moon slips away, and
-  // the copy recedes.
+  // ---- Hero exit: the copy and the lens recede.
   const heroTl = gsap.timeline({
     scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.8 },
   });
   heroTl
-    .to('#planet', { yPercent: -9, scale: 1.08, ease: 'none' }, 0)
-    .to('#moon', { yPercent: -70, ease: 'none' }, 0)
     .to('.hero-inner', { y: -90, opacity: 0, ease: 'power1.in' }, 0)
-    .to('.hero-facts', { opacity: 0, ease: 'none' }, 0);
+    .to('.hero-foot', { opacity: 0, ease: 'none' }, 0);
 
   // ---- 01 The math: words light up as you read; the numbers count.
   const words = gsap.utils.toArray('.math-statement .w');
   if (words.length) {
+    const css = getComputedStyle(root);
+    const lit = css.getPropertyValue('--talo-text').trim();
+    const dim = css.getPropertyValue('--dim').trim();
     gsap.to(words, {
-      color: (_, el) => (el.classList.contains('w--hi') ? '#ffffff' : '#76767a'),
+      color: (_, el) => (el.classList.contains('w--hi') ? lit : dim),
       stagger: 0.1,
       ease: 'none',
       scrollTrigger: { trigger: '.math-statement', start: 'top 82%', end: 'bottom 45%', scrub: 0.6 },
@@ -222,7 +222,7 @@ if (!reduceMotion) {
     clearProps: 'transform',
     scrollTrigger: { trigger: '.steps', start: 'top 86%' },
   });
-  gsap.to('.halo', {
+  gsap.to('.how-stage .stage-bronze', {
     yPercent: 30,
     ease: 'none',
     scrollTrigger: { trigger: '.how', start: 'top bottom', end: 'bottom top', scrub: true },
@@ -277,11 +277,11 @@ if (!reduceMotion) {
     scrollTrigger: { trigger: track, start: 'top 84%' },
   });
 
-  // Closing: a second horizon rises out of the dark under the last line.
+  // Closing: the mark rises out of the dark above the last line.
   gsap.fromTo(
-    '#outro-planet',
-    { y: 260 },
-    { y: 0, ease: 'none', scrollTrigger: { trigger: '.outro', start: 'top bottom', end: 'bottom bottom', scrub: 0.8 } }
+    '#outro-lens',
+    { y: 80, opacity: 0.01 },
+    { y: 0, opacity: 1, ease: 'none', scrollTrigger: { trigger: '.outro', start: 'top bottom', end: 'center bottom', scrub: 0.8 } }
   );
   gsap.from('.closing', {
     y: 40,
@@ -289,14 +289,6 @@ if (!reduceMotion) {
     duration: 1.8,
     ease,
     scrollTrigger: { trigger: '.outro', start: 'top 70%' },
-  });
-
-  // Footer wordmark surfaces as you reach the bottom.
-  gsap.from('.footer-giant', {
-    yPercent: 35,
-    opacity: 0,
-    ease: 'none',
-    scrollTrigger: { trigger: '.site-footer', start: 'top bottom', end: 'bottom bottom', scrub: 0.6 },
   });
 
   // Web fonts change line lengths; re-measure once they are in.
@@ -335,18 +327,6 @@ const whenNear = (el, load) => {
   );
   io.observe(el);
 };
-
-// Hero sky: stars, the aircraft pass, and the live readout.
-afterLoad(() => {
-  const hero = document.getElementById('top');
-  const canvas = document.getElementById('sky-canvas');
-  if (!canvas) return;
-  import('./hero.js')
-    .then(({ createHeroSky }) =>
-      createHeroSky({ hero, canvas, card: document.getElementById('hud'), reduceMotion, finePointer })
-    )
-    .catch((err) => console.warn('[talo] hero sky unavailable.', err));
-});
 
 // Simulated sensor view.
 whenNear(document.getElementById('sensor'), () =>

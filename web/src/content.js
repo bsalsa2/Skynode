@@ -18,7 +18,7 @@ import { CONTACT_EMAIL } from './config.js';
 
 export const content = {
   meta: {
-    title: 'Talo | AI sky tracker',
+    title: 'Talo | Watch the sky',
     description:
       'A low-cost visual sensing platform, starting with one passive sky-tracking node. About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     // Public URL of the live site (used for social share previews).
@@ -42,23 +42,28 @@ export const content = {
   },
 
   hero: {
-    eyebrow: 'PHASE 1 · AI SKY TRACKER',
-    headline: 'A low-cost visual sensing platform, starting with one passive sky-tracking node.',
-    sub: 'A camera, a model and a pan-tilt mount that watch the sky, follow what they see and log every sighting.',
-    primary: { label: 'View the code', href: 'https://github.com/bsalsa2/skynode' },
+    // Shown in [ square brackets ] above the headline.
+    eyebrow: 'A watcher, not a weapon',
+    headline: 'Watch the sky.',
+    sub: 'Passive visual sensing that tells drones from aircraft and logs every sighting.',
+    primary: { label: 'View the code', href: 'https://github.com/bsalsa2/talo' },
     secondary: { label: 'See where it stands', href: '#status' },
     // Cost note, shown under the buttons. Keep the exclusions in the sentence.
     cost: 'About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
-    facts: ['Passive sensing only', 'Solar power planned', 'MIT licensed'],
-    caption:
-      'SAMPLE: concept visualization. Live footage replaces this once the hardware is built.',
+    // The line along the bottom of the hero. Plain facts only.
+    facts: ['Detection only', '~$113 in sensing parts', 'Tested in simulation and on recorded video', 'Not yet on real hardware'],
+    caption: 'SAMPLE: a placeholder sighting, not a real detection. Real sightings replace it once the hardware is built.',
 
-    // The glass readout card in the hero. Its numbers move with the
-    // simulated aircraft crossing the sky behind it.
+    // The glass sighting card beside the lens. Placeholder values only.
+    // status: 'aircraft' (confirmed aircraft), 'drone' (possible drone) or
+    // 'no-adsb' (no ADS-B match). The colour and shape follow automatically.
     card: {
-      label: 'SAMPLE · NODE-01 · CONCEPT',
-      state: 'TRACKING',
-      target: 'AIRCRAFT',
+      label: 'SAMPLE',
+      status: 'aircraft',
+      time: '14:32:07Z',
+      class: 'aircraft',
+      conf: '0.91',
+      adsb: 'match',
     },
 
     // REAL FOOTAGE: leave video empty until real footage exists.
@@ -237,7 +242,7 @@ export const content = {
   footer: {
     brand: 'TALO LABS',
     links: [
-      { label: 'Talo on GitHub', href: 'https://github.com/bsalsa2/skynode' },
+      { label: 'Talo on GitHub', href: 'https://github.com/bsalsa2/talo' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
       { label: 'Privacy', href: './privacy.html' },
     ],

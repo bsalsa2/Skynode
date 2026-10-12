@@ -1,7 +1,7 @@
 /* ==========================================================================
-   TALO · LIQUID GRAPHITE
-   Carbon, smoke and light. Colour appears only when the sensor sees
-   something, so a colour on screen always means something.
+   TALO · BRAND V6 · CHARCOAL + BRONZE
+   Charcoal and smoke, frosted glass, one bronze point of light. Status
+   colours appear only for what the sensor sees, always with a shape.
    ========================================================================== */
 
 @import './fonts.css';
@@ -69,8 +69,8 @@ svg {
   display: block;
 }
 ::selection {
-  background: var(--halo);
-  color: var(--carbon);
+  background: var(--accent);
+  color: var(--accent-on);
 }
 
 /* ---- Utilities --------------------------------------------------------- */
@@ -100,8 +100,8 @@ svg {
   overflow: hidden;
 }
 :focus-visible {
-  outline: 2px solid var(--white);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
   border-radius: 6px;
 }
 #main:focus {
@@ -114,8 +114,8 @@ svg {
   z-index: 100;
   padding: 10px 16px;
   border-radius: 999px;
-  background: var(--halo);
-  color: var(--carbon);
+  background: var(--accent);
+  color: var(--accent-on);
   font-weight: 500;
   transform: translateY(-160%);
   transition: transform 0.2s var(--ease);
@@ -125,29 +125,53 @@ svg {
 }
 
 /* ---- Liquid glass ------------------------------------------------------ */
-/* Glass needs light behind it: always place it over the horizon rim, the
-   moon, or a glow. Refraction (SVG displacement) is Chromium-only and gated
-   by .has-refraction in main.js; everyone else gets frosted blur. */
+/* Frosted by default. Glass needs light behind it: always place it over the
+   .stage (smoke and bronze light). Refraction (SVG displacement) is
+   Chromium-only and gated by .has-refraction in main.js; everyone else gets
+   frosted blur. */
 .glass {
   position: relative;
   isolation: isolate;
   background: var(--glass-fill);
-  -webkit-backdrop-filter: blur(18px) saturate(180%) brightness(1.08);
-  backdrop-filter: blur(18px) saturate(180%) brightness(1.08);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), var(--glass-drop);
 }
 .has-refraction .glass {
-  backdrop-filter: url(#sn-liquid) blur(10px) saturate(180%) brightness(1.08);
+  backdrop-filter: url(#sn-liquid) blur(24px) saturate(180%) brightness(1.08);
 }
+/* Clear: nav, chips, tags. Never behind body text. */
+.glass--clear {
+  background: var(--glass-clear-fill);
+  -webkit-backdrop-filter: var(--glass-clear-blur);
+  backdrop-filter: var(--glass-clear-blur);
+}
+.has-refraction .glass--clear {
+  backdrop-filter: url(#sn-liquid) blur(14px) saturate(180%);
+}
+/* Deep: tables and dense data. The charcoal tint keeps text at 7:1+. */
 .glass--deep {
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), inset 2px 0 0 rgba(255, 255, 255, 0.16),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 24px 24px 48px -30px rgba(255, 255, 255, 0.28), inset -24px -24px 48px -30px rgba(0, 0, 0, 0.6),
-    0 50px 100px -30px rgba(0, 0, 0, 0.95);
+  background: var(--glass-deep-fill);
+  -webkit-backdrop-filter: var(--glass-deep-blur);
+  backdrop-filter: var(--glass-deep-blur);
+}
+.has-refraction .glass--deep {
+  backdrop-filter: var(--glass-deep-blur);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
-    background: rgba(22, 22, 25, 0.92);
+    background: var(--talo-surface-2);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass--clear,
+  .glass--deep,
+  .btn--glass {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--talo-surface-2) !important;
   }
 }
 /* Light that follows the cursor across a glass surface. */
@@ -176,21 +200,93 @@ svg {
   transition: transform 0.15s linear;
 }
 
+/* ---- Stage -------------------------------------------------------------- */
+/* Blurred smoke and bronze light with fine diagonal hairlines. Flat
+   backgrounds kill the glass effect, so every glass surface sits on one. */
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
+}
+.stage-bronze,
+.stage-smoke {
+  position: absolute;
+  border-radius: 50%;
+}
+.stage-bronze {
+  left: 46%;
+  top: -30%;
+  width: 760px;
+  height: 760px;
+  background: var(--stage-bronze);
+}
+.stage-smoke {
+  left: -10%;
+  top: 30%;
+  width: 560px;
+  height: 560px;
+  background: var(--stage-smoke);
+}
+.stage-lines {
+  position: absolute;
+  inset: 0;
+  background-image: var(--stage-hairlines);
+}
+.hero-stage .stage-bronze {
+  left: max(40%, 520px);
+  top: -60px;
+  width: 700px;
+  height: 700px;
+}
+.hero-stage .stage-smoke {
+  left: 60px;
+  top: 240px;
+}
+.how-stage .stage-bronze {
+  top: 10%;
+  width: 640px;
+  height: 640px;
+}
+.stage-fixed {
+  position: fixed;
+}
+/* Fade the hero stage into the page below it. */
+.hero-stage::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28%;
+  background: linear-gradient(180deg, transparent, var(--talo-base));
+}
+.how-stage {
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent);
+}
+
 /* ---- Mark + wordmark --------------------------------------------------- */
 .mark {
   flex: none;
-  color: var(--halo);
 }
-.mark-node {
-  fill: var(--white);
+.mark-ink {
+  fill: var(--talo-text);
+}
+/* The point of light is always bronze, never a status colour. */
+.mark-dot {
+  fill: var(--talo-accent);
 }
 .wordmark {
   font-family: var(--f-display);
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.34em;
-  color: var(--halo);
-  margin-right: -0.34em;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--talo-text);
+  margin-right: -0.22em;
 }
 .brand {
   display: inline-flex;
@@ -206,10 +302,10 @@ svg {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  height: 54px;
-  padding: 0 28px;
-  border-radius: 999px;
-  font-size: 15px;
+  height: 50px;
+  padding: 0 22px;
+  border-radius: var(--talo-r-btn);
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -227,19 +323,17 @@ svg {
   transition: transform 0.4s var(--ease-expo);
 }
 .btn--sm {
-  height: 44px;
-  padding: 0 20px;
-  font-size: 14px;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
 }
 .btn--primary {
-  background: var(--halo);
-  color: var(--carbon);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12), 0 0 0 0 rgba(255, 255, 255, 0);
+  background: var(--accent);
+  color: var(--accent-on);
 }
 .btn--primary:hover {
-  color: var(--carbon);
-  background: var(--white);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12), 0 0 40px 2px rgba(255, 255, 255, 0.28);
+  color: var(--accent-on);
+  background: color-mix(in srgb, var(--accent) 88%, #fff);
 }
 .btn--primary:hover svg {
   transform: translate(2px, -2px);
@@ -247,17 +341,11 @@ svg {
 .btn--glass {
   color: var(--halo);
   isolation: isolate;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
-  -webkit-backdrop-filter: blur(14px) saturate(170%);
-  backdrop-filter: blur(14px) saturate(170%);
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
-}
-.has-refraction .btn--glass {
-  backdrop-filter: url(#sn-liquid) blur(12px) saturate(170%);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 .btn--glass:hover {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  background: rgba(255, 255, 255, 0.12);
 }
 .btn--glass:hover svg {
   transform: translateY(2px);
@@ -289,52 +377,43 @@ svg {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 0 8px 0 22px;
-  border-radius: 999px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.06));
-  -webkit-backdrop-filter: blur(16px) saturate(170%);
-  backdrop-filter: blur(16px) saturate(170%);
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.09), inset 16px 16px 30px -22px rgba(255, 255, 255, 0.25),
-    inset -16px -16px 30px -22px rgba(0, 0, 0, 0.6), 0 20px 50px -20px rgba(0, 0, 0, 0.9);
-}
-.has-refraction .nav {
-  backdrop-filter: url(#sn-liquid) blur(14px) saturate(170%) brightness(1.08);
+  padding: 0 12px 0 24px;
+  border-radius: 20px;
+  background: var(--glass-clear-fill);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-drop);
 }
 .nav-links {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 2.4vw, 30px);
+  gap: clamp(12px, 2.4vw, 28px);
 }
 .nav-link {
   position: relative;
   padding: 6px 2px;
-  font-size: 14px;
-  color: var(--ink-2);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--talo-text);
   transition: color 0.25s;
 }
-.nav-link::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -2px;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 50%;
-  background: var(--white);
-  box-shadow: 0 0 8px var(--white);
-  opacity: 0;
-  transform: scale(0);
-  transition: opacity 0.3s, transform 0.4s var(--ease-expo);
+.nav-n {
+  margin-right: 8px;
+  color: var(--accent);
 }
 .nav-link:hover,
 .nav-link[aria-current='true'] {
-  color: var(--white);
+  color: var(--accent);
 }
 .nav-link[aria-current='true']::after {
-  opacity: 1;
-  transform: none;
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: -2px;
+  height: 1px;
+  background: var(--accent);
 }
 @media (max-width: 680px) {
   .nav-links {
@@ -345,163 +424,27 @@ svg {
   }
 }
 
-/* ---- Star field -------------------------------------------------------- */
-.stars,
-.stars > div {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.stars-a {
-  background-image: radial-gradient(1px 1px at 8% 12%, #fff, transparent),
-    radial-gradient(1px 1px at 22% 30%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.5px 1.5px at 37% 9%, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1px 1px at 51% 24%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1px 1px at 66% 14%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.5px 1.5px at 78% 32%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1px 1px at 91% 8%, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1px 1px at 14% 46%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 86% 48%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 4% 62%, rgba(255, 255, 255, 0.4), transparent);
-}
-.stars-b {
-  background-image: radial-gradient(1px 1px at 30% 18%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1px 1px at 44% 38%, rgba(255, 255, 255, 0.35), transparent),
-    radial-gradient(1px 1px at 59% 6%, rgba(255, 255, 255, 0.55), transparent),
-    radial-gradient(1px 1px at 72% 22%, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(1px 1px at 96% 26%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1px 1px at 18% 4%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 3% 28%, rgba(255, 255, 255, 0.35), transparent);
-}
-.js-motion .stars-b {
-  animation: twinkle 7s ease-in-out infinite alternate;
-}
-@keyframes twinkle {
-  to {
-    opacity: 0.25;
-  }
-}
-
-/* ---- The horizon (planet rim) ------------------------------------------ */
-/* A 2800 px sphere whose top edge is the bright limb of the Earth seen from
-   high up. Its glow is the light every glass surface on the page bends. */
-.planet {
-  position: absolute;
-  left: 50%;
-  top: 68%;
-  width: 2800px;
-  height: 2800px;
-  margin-left: -1200px;
-  pointer-events: none;
-  will-change: transform;
-}
-.planet-body {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 0%, #1a1b1f 0%, #08080a 30%, #000 60%);
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.95), 0 -6px 18px rgba(255, 255, 255, 0.55),
-    0 -30px 80px rgba(220, 226, 240, 0.35), 0 -120px 220px rgba(180, 190, 215, 0.22);
-}
-.js-motion .hero .planet-body {
-  animation: dawn 2.6s var(--ease-expo) 0.15s both;
-}
-@keyframes dawn {
-  from {
-    opacity: 0;
-    transform: translateY(90px);
-  }
-}
-
-.moon {
-  position: absolute;
-  right: 9%;
-  top: 15%;
-  width: clamp(120px, 16vw, 220px);
-  aspect-ratio: 1;
-  pointer-events: none;
-  will-change: transform;
-}
-.moon-body {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff 0%, #d8dae0 30%, #6e7078 70%, #1c1d21 100%);
-  box-shadow: 0 0 80px rgba(255, 255, 255, 0.25);
-}
-.js-motion .moon-body {
-  animation: moonrise 2.4s var(--ease-expo) 0.4s both;
-}
-@keyframes moonrise {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.94);
-  }
-}
-
 /* ---- Hero -------------------------------------------------------------- */
 .hero {
   position: relative;
-  min-height: max(100vh, 820px);
+  min-height: max(100vh, 700px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-}
-.hero-sky {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-/* Let the lit planet fade into the page instead of ending on a hard edge. */
-.hero-sky::after,
-.outro::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 38%;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0), var(--fade-to, #000));
-  pointer-events: none;
-}
-.outro::after {
-  --fade-to: #050506;
-  height: 45%;
-}
-.hero-grid {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 80px 80px;
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 60% 70%, #000, transparent 75%);
-  mask-image: radial-gradient(ellipse 70% 60% at 60% 70%, #000, transparent 75%);
-}
-.sky-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 1.6s var(--ease);
-}
-.sky-canvas.is-ready {
-  opacity: 1;
 }
 .hero-inner {
   position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
   gap: 56px;
-  align-items: end;
-  padding-block: 140px;
+  align-items: center;
+  padding-block: 150px 160px;
 }
 @media (min-width: 1000px) {
   .hero-inner {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
-    gap: 64px;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+    gap: 48px;
   }
 }
 .hero-copy {
@@ -512,18 +455,17 @@ svg {
 }
 .eyebrow {
   font-size: 12px;
-  letter-spacing: 0.22em;
-  color: var(--ink-2);
+  letter-spacing: 0.14em;
+  color: var(--accent);
 }
 .hero-title {
   font-family: var(--f-display);
-  font-weight: 300;
-  font-size: clamp(30px, 3.4vw, 48px);
-  font-size: clamp(30px, 6.6cqi, 48px); /* a full sentence: wraps within the column */
-  text-wrap: balance;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--white);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(34px, 11cqi, 72px);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: var(--talo-text);
 }
 .hero-title .line {
   display: block;
@@ -534,13 +476,11 @@ svg {
 .hero-title .line-in {
   display: inline-block;
 }
-.hero-title .line--dim {
-  color: var(--dim);
-}
 .hero-sub {
-  max-width: 32rem;
-  font-size: 18px;
-  line-height: 1.6;
+  max-width: 460px;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--ink-1);
   text-wrap: pretty;
 }
 .hero-actions {
@@ -551,98 +491,220 @@ svg {
 .hero-note {
   max-width: 32rem;
   padding-left: 16px;
-  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  border-left: 1px solid var(--accent);
   font-size: 15px;
   line-height: 1.6;
-  color: var(--halo);
+  color: var(--ink-1);
   text-wrap: pretty;
 }
-.hero-facts {
+.hero-foot {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 32px;
+  bottom: 28px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px 24px;
   font-size: 11px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.08em;
   color: var(--ink-3);
 }
+.hero-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.hero-facts li + li::before {
+  content: '\00b7';
+  margin-right: 10px;
+}
+.hero-labs {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
 
-/* Hero readout card */
-.hud {
-  justify-self: end;
-  width: min(100%, 440px);
+/* Hero visual: a glass lens with the mark, and a sighting card over it. */
+.hero-visual {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 22px;
-  border-radius: 32px;
+  align-items: center;
+  gap: 24px;
 }
-.hud-top,
-.hud-main {
+.lens {
+  position: relative;
+  width: min(100%, 500px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05) 50%, rgba(207, 138, 82, 0.14));
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.5), inset 0 -50px 90px -40px rgba(17, 18, 19, 0.6),
+    0 60px 120px -40px rgba(0, 0, 0, 0.9);
+}
+.lens-mark {
+  width: 50%;
+  height: 50%;
+}
+/* Optional slow specular sweep; off under reduced motion. */
+.lens-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  opacity: 0;
+}
+.js-motion .lens-sweep {
+  opacity: 1;
+  animation: sweep 60s linear infinite;
+}
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (min-width: 1000px) {
+  .sighting {
+    position: absolute;
+    right: -24px;
+    bottom: -84px;
+  }
+}
+
+/* Sighting card (frosted, SAMPLE-tagged) */
+.sighting {
+  width: min(100%, 380px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 24px;
+}
+.sighting-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
 }
-.hud-main {
+.sighting-head {
+  display: flex;
+  justify-content: space-between;
   align-items: baseline;
 }
-.hud-label {
-  font-size: 11px;
+.sighting-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--talo-text);
+}
+.sighting-time {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: none;
   color: var(--ink-1);
 }
-.hud-conf {
-  font-family: var(--f-display);
-  font-weight: 300;
-  font-size: 56px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--white);
-  font-variant-numeric: tabular-nums;
-}
-.hud-grid {
+.sighting-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
-.hud-grid > div {
+.sighting-grid > div {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.28);
+  gap: 3px;
   min-width: 0;
 }
-.hud-grid dt {
+.sighting-grid dt {
   font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--label);
+  letter-spacing: 0.1em;
+  color: var(--ink-1);
 }
-.hud-grid dd {
-  font-size: 16px;
+.sighting-grid dd {
+  font-size: 14px;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--halo);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  color: var(--talo-text);
 }
-.hud-spark canvas {
-  display: block;
-  width: 100%;
-  height: 40px;
+.sighting-adsb--aircraft {
+  color: var(--aircraft);
 }
-.hud-caption {
+.sighting-adsb--drone {
+  color: var(--drone);
+}
+.sighting-adsb--no-adsb {
+  color: var(--no-adsb);
+}
+.sighting-caption {
   font-size: 12px;
   line-height: 1.5;
   color: var(--ink-3);
 }
+.sample-tag {
+  padding: 4px 8px;
+  border-radius: var(--talo-r-tag);
+  background: var(--talo-text);
+  color: var(--talo-base);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+/* Status pill: colour + shape + word, never colour alone.
+   circle = confirmed aircraft, square = possible drone, ring = no ADS-B match. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: var(--talo-r-chip);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid color-mix(in srgb, var(--c) 33%, transparent);
+  color: var(--c);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.status-pill--aircraft,
+.shape--aircraft {
+  --c: var(--aircraft);
+}
+.status-pill--drone,
+.shape--drone {
+  --c: var(--drone);
+}
+.status-pill--no-adsb,
+.shape--no-adsb {
+  --c: var(--no-adsb);
+}
+.shape {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: var(--c);
+}
+.shape--aircraft {
+  border-radius: 50%;
+}
+.shape--drone {
+  border-radius: 3px;
+}
+.shape--no-adsb {
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid var(--c);
+}
+
 .footage {
   justify-self: end;
   width: min(100%, 520px);
@@ -658,27 +720,16 @@ svg {
   border-radius: 18px;
   background: var(--carbon);
 }
-
-/* Status pill: describes the node. */
-.state-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 26px;
-  padding: 0 12px 0 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--halo);
+.hud-caption {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-3);
 }
 .state-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--white);
-  box-shadow: 0 0 10px var(--white);
+  background: var(--talo-text);
 }
 .js-motion .state-dot {
   animation: pulse 2.4s ease-in-out infinite;
@@ -689,28 +740,6 @@ svg {
   }
 }
 
-/* Detection badge: describes what the node sees. Shape + colour + word:
-   square = drone, circle = aircraft, dash = clear. */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-}
-.badge-shape {
-  width: 7px;
-  height: 7px;
-}
-.badge--aircraft {
-  color: var(--aircraft-ink);
-}
-.badge--aircraft .badge-shape {
-  border-radius: 50%;
-  background: var(--aircraft);
-  box-shadow: 0 0 10px var(--aircraft);
-}
-
 /* ---- Sections ---------------------------------------------------------- */
 .section {
   position: relative;
@@ -718,17 +747,16 @@ svg {
 }
 .kicker {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  font-size: 12px;
-  letter-spacing: 0.22em;
+  padding: 14px 0;
+  border-top: 1px solid rgba(236, 235, 232, 0.2);
+  font-size: 13px;
+  letter-spacing: 0.14em;
   color: var(--ink-3);
 }
-.kicker-sep {
-  width: 24px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.6;
+.kicker-n {
+  color: var(--accent);
 }
 .section-head {
   position: relative;
@@ -738,11 +766,12 @@ svg {
 }
 .h-section {
   font-family: var(--f-display);
-  font-weight: 300;
-  font-size: clamp(40px, 5vw, 72px);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--white);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(26px, 3.6vw, 50px);
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--talo-text);
 }
 .lede {
   max-width: 40rem;
@@ -759,7 +788,7 @@ svg {
 }
 .math-statement {
   max-width: 22ch;
-  font-family: var(--f-display);
+  font-family: var(--f-body);
   font-weight: 300;
   font-size: clamp(30px, 4vw, 56px);
   line-height: 1.15;
@@ -768,19 +797,18 @@ svg {
   text-wrap: pretty;
 }
 .math-statement .w--hi {
-  color: var(--white);
+  color: var(--talo-text);
 }
 .js-motion .math-statement .w {
-  color: #26262a;
+  color: var(--talo-surface-2);
 }
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 1px;
-  border-radius: 24px;
+  border-radius: var(--talo-r-card);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .stat {
   display: flex;
@@ -795,8 +823,8 @@ svg {
 }
 .stat-value {
   font-family: var(--f-display);
-  font-weight: 300;
-  font-size: 44px;
+  font-weight: 400;
+  font-size: 34px;
   line-height: 1;
   color: var(--halo);
   font-variant-numeric: tabular-nums;
@@ -809,32 +837,20 @@ svg {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 90% at 100% 0%, rgba(255, 255, 255, 0.09), transparent 60%);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(207, 138, 82, 0.14), transparent 60%);
   pointer-events: none;
 }
 .stat--hi dt {
   color: var(--halo);
 }
 .stat--hi .stat-value {
-  color: var(--white);
+  color: var(--accent);
 }
 
 /* ---- 02 · How it works ------------------------------------------------- */
 .how {
   padding-top: 40px;
-  overflow-x: clip; /* the halo is wider than a phone */
-}
-.halo {
-  position: absolute;
-  width: 900px;
-  height: 600px;
-  left: 50%;
-  top: 220px;
-  margin-left: -450px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.15), transparent 65%);
-  filter: blur(40px);
-  pointer-events: none;
+  overflow-x: clip; /* the stage glow is wider than a phone */
 }
 .how-inner {
   position: relative;
@@ -993,7 +1009,7 @@ svg {
 }
 .det--drone {
   border: 1.5px solid var(--drone);
-  box-shadow: 0 0 18px rgba(255, 77, 46, 0.35);
+  box-shadow: 0 0 18px rgba(255, 194, 71, 0.3);
 }
 .det--drone .det-label {
   left: -1.5px;
@@ -1005,7 +1021,7 @@ svg {
 }
 .det--aircraft {
   width: 7%;
-  border: 1px solid rgba(143, 211, 255, 0.85);
+  border: 1px solid color-mix(in srgb, var(--aircraft) 85%, transparent);
 }
 .det--aircraft .det-label {
   color: var(--aircraft-ink);
@@ -1409,9 +1425,8 @@ svg {
   right: 0;
   top: -120px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff 0%, #bfc1c8 30%, #4a4c52 70%, #0e0e10 100%);
-  opacity: 0.55;
-  filter: blur(2px);
+  background: var(--stage-bronze);
+  opacity: 0.8;
   pointer-events: none;
   will-change: transform;
 }
@@ -1427,7 +1442,7 @@ svg {
 }
 .build-body p {
   max-width: 48ch;
-  font-family: var(--f-display);
+  font-family: var(--f-body);
   font-weight: 300;
   font-size: clamp(20px, 2.3vw, 30px);
   line-height: 1.45;
@@ -1480,7 +1495,7 @@ svg {
 .roadmap-line-fill {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.35));
+  background: linear-gradient(90deg, var(--accent), rgba(207, 138, 82, 0.3));
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
   transform-origin: 0 50%;
   transform: scaleX(var(--draw));
@@ -1547,7 +1562,7 @@ svg {
     height: auto;
   }
   .roadmap-line-fill {
-    background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.35));
+    background: linear-gradient(180deg, var(--accent), rgba(207, 138, 82, 0.3));
     transform-origin: 50% 0;
     transform: scaleY(var(--draw));
   }
@@ -1566,31 +1581,43 @@ svg {
   height: 560px;
   margin-top: 80px;
 }
-.outro-planet {
+.outro-stage .stage-bronze {
+  left: 50%;
+  top: 10%;
+  margin-left: -380px;
+}
+.outro-lens {
   position: absolute;
   left: 50%;
-  top: 260px;
-  width: 2800px;
-  height: 2800px;
-  margin-left: -1400px;
-  will-change: transform;
+  top: 60px;
+  width: 200px;
+  height: 200px;
+  margin-left: -100px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05) 50%, rgba(207, 138, 82, 0.14));
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.5), 0 40px 80px -30px rgba(0, 0, 0, 0.9);
 }
-.outro-planet .planet-body {
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.9), 0 -6px 18px rgba(255, 255, 255, 0.5),
-    0 -40px 100px rgba(220, 226, 240, 0.3), 0 -160px 260px rgba(180, 190, 215, 0.18);
+.outro-mark {
+  width: 56%;
+  height: 56%;
 }
 .closing {
-  position: relative;
-  max-width: 26ch;
-  margin: 0 auto;
-  padding: 40px 20px 0;
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  width: min(100% - 40px, 26ch);
+  transform: translateX(-50%);
+  padding: 0;
   text-align: center;
-  font-family: var(--f-display);
+  font-family: var(--f-body);
   font-weight: 300;
-  font-size: clamp(26px, 3.2vw, 42px);
+  font-size: clamp(24px, 3vw, 38px);
   line-height: 1.3;
-  letter-spacing: -0.01em;
-  color: var(--white);
+  letter-spacing: 0;
+  color: var(--talo-text);
   text-wrap: balance;
 }
 
@@ -1716,34 +1743,16 @@ svg {
   letter-spacing: 0.14em;
   color: var(--ink-3);
 }
-.footer-giant {
-  margin: 8px 0 -0.2em;
-  padding-left: 0.16em;
-  text-align: center;
-  white-space: nowrap;
-  font-family: var(--f-display);
-  font-weight: 500;
-  font-size: min(16.5vw, 250px);
-  line-height: 1;
-  letter-spacing: 0.16em;
-  color: transparent;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 78%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  user-select: none;
-  pointer-events: none;
+.footer-labs {
+  margin-left: 6px;
+  padding-left: 14px;
+  border-left: 1px solid var(--line-2);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
 }
 
 /* ---- Privacy page ------------------------------------------------------ */
-.legal-sky {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.planet--legal {
-  top: 78vh;
-}
 .legal {
   position: relative;
   padding: 140px 0 120px;
@@ -1789,7 +1798,6 @@ svg {
 
 /* ---- Small screens ----------------------------------------------------- */
 @media (max-width: 1100px) {
-  .hud,
   .footage {
     justify-self: start;
   }
@@ -1799,36 +1807,20 @@ svg {
     min-height: auto;
   }
   .hero-inner {
-    padding-block: 128px 120px;
+    padding-block: 128px 140px;
     gap: 44px;
-  }
-  .planet {
-    top: auto;
-    bottom: -2440px;
-  }
-  .moon {
-    top: 92px;
-    right: 6%;
-    width: 96px;
   }
 }
 @media (max-width: 560px) {
   .hero-inner {
     padding-top: 212px;
   }
-  .hero-facts {
-    justify-content: flex-start;
-    gap: 8px 18px;
+  .hero-foot {
+    position: static;
+    padding-bottom: 28px;
   }
-  .hud {
-    padding: 18px;
-    border-radius: 26px;
-  }
-  .hud-grid > div {
-    padding: 10px;
-  }
-  .hud-grid dd {
-    font-size: 14px;
+  .sighting {
+    padding: 16px;
   }
   .btn--lg {
     flex: 1 1 auto;
@@ -1856,9 +1848,6 @@ svg {
   .outro {
     height: 560px;
   }
-  .outro-planet {
-    top: 360px;
-  }
 }
 
 /* ---- Reduced motion ---------------------------------------------------- */
@@ -1876,5 +1865,8 @@ svg {
   .tilt,
   .btn {
     transform: none !important;
+  }
+  .lens-sweep {
+    display: none;
   }
 }

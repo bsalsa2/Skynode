@@ -1,63 +1,62 @@
 /* ==========================================================================
-   TALO · LIVE DASHBOARD · LIQUID GRAPHITE
+   TALO · LIVE DASHBOARD · BRAND V6
    Shares its tokens with the website through graphite.css, so the two
-   read as one brand. Carbon, smoke and light; colour appears only for what
-   the sensor sees, so a colour on screen always means something.
+   read as one brand. Charcoal, smoke and one bronze point of light; status
+   colours appear only for what the sensor sees, always with a shape.
    ========================================================================== */
 
 /* ---- Fonts --------------------------------------------------------------- */
 /* Self-hosted (SIL Open Font License, licences in fonts/). Latin subset only,
    so the dashboard never asks another server for anything. */
 @font-face {
-  font-family: 'Saira';
+  font-family: 'Michroma';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/michroma-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url('fonts/saira-latin-300-normal.woff2') format('woff2');
+  src: url('fonts/geist-latin-300-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Saira';
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('fonts/saira-latin-400-normal.woff2') format('woff2');
+  src: url('fonts/geist-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Saira';
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('fonts/saira-latin-500-normal.woff2') format('woff2');
+  src: url('fonts/geist-latin-500-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'IBM Plex Sans';
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/geist-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Geist Mono';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2');
+  src: url('fonts/geist-mono-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'IBM Plex Sans';
+  font-family: 'Geist Mono';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2');
+  src: url('fonts/geist-mono-latin-500-normal.woff2') format('woff2');
 }
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
-}
-
 
 /* Tokens (colours, glass, type stacks): see graphite.css, shared with the website. */
 
@@ -122,15 +121,15 @@ code {
   color: var(--white);
 }
 ::selection {
-  background: var(--halo);
-  color: var(--carbon);
+  background: var(--accent);
+  color: var(--accent-on);
 }
 [hidden] {
   display: none !important;
 }
 :focus-visible {
-  outline: 2px solid var(--white);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .sr-only {
   position: absolute;
@@ -164,73 +163,75 @@ code {
    (badges, boxes, bars) reads these variables, so colours live in one place. */
 .c-drone {
   --c: var(--drone);
-  --c-soft: rgba(255, 77, 46, 0.85);
+  --c-soft: color-mix(in srgb, var(--drone) 85%, transparent);
   --c-ink: var(--drone-ink);
   --c-on: var(--drone-on);
-  --c-glow: rgba(255, 77, 46, 0.35);
-  --c-bg: rgba(255, 77, 46, 0.14);
-  --c-ring: rgba(255, 77, 46, 0.55);
+  --c-glow: color-mix(in srgb, var(--drone) 35%, transparent);
+  --c-bg: color-mix(in srgb, var(--drone) 14%, transparent);
+  --c-ring: color-mix(in srgb, var(--drone) 55%, transparent);
 }
 .c-aircraft {
   --c: var(--aircraft);
-  --c-soft: rgba(143, 211, 255, 0.85);
+  --c-soft: color-mix(in srgb, var(--aircraft) 85%, transparent);
   --c-ink: var(--aircraft-ink);
   --c-on: var(--aircraft-on);
-  --c-glow: rgba(143, 211, 255, 0.35);
-  --c-bg: rgba(143, 211, 255, 0.12);
-  --c-ring: rgba(143, 211, 255, 0.5);
+  --c-glow: color-mix(in srgb, var(--aircraft) 35%, transparent);
+  --c-bg: color-mix(in srgb, var(--aircraft) 12%, transparent);
+  --c-ring: color-mix(in srgb, var(--aircraft) 50%, transparent);
 }
 .c-other {
   --c: var(--other);
-  --c-soft: rgba(244, 244, 242, 0.75);
+  --c-soft: color-mix(in srgb, var(--other) 85%, transparent);
   --c-ink: var(--other-ink);
-  --c-on: var(--carbon);
-  --c-glow: rgba(244, 244, 242, 0.28);
+  --c-on: var(--talo-base);
+  --c-glow: color-mix(in srgb, var(--other) 30%, transparent);
   --c-bg: rgba(255, 255, 255, 0.06);
-  --c-ring: rgba(255, 255, 255, 0.3);
+  --c-ring: color-mix(in srgb, var(--other) 55%, transparent);
 }
 .c-clear {
   --c: var(--clear);
-  --c-soft: rgba(155, 232, 155, 0.85);
+  --c-soft: color-mix(in srgb, var(--clear) 85%, transparent);
   --c-ink: var(--clear-ink);
-  --c-on: var(--carbon);
-  --c-glow: rgba(155, 232, 155, 0.3);
-  --c-bg: rgba(155, 232, 155, 0.1);
-  --c-ring: rgba(155, 232, 155, 0.45);
+  --c-on: var(--talo-base);
+  --c-glow: color-mix(in srgb, var(--clear) 30%, transparent);
+  --c-bg: rgba(255, 255, 255, 0.06);
+  --c-ring: color-mix(in srgb, var(--clear) 45%, transparent);
 }
 
-/* ---- The sky -------------------------------------------------------------- */
-/* Pinned to the window, so every tab (and every scroll position) has the lit
-   horizon behind its glass. Geometry is the dashboard design's, exactly. */
+/* ---- The stage ------------------------------------------------------------ */
+/* Pinned to the window, so every tab (and every scroll position) has smoke
+   and bronze light behind its glass. Glass over flat colour shows nothing. */
 .sky {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: var(--void);
+  background: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
 }
-.sky-horizon {
+.sky-bronze,
+.sky-smoke {
   position: absolute;
-  left: 50%;
-  top: 72%;
-  width: 3000px;
-  height: 3000px;
-  margin-left: -1600px;
   border-radius: 50%;
-  background: #050506;
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.9), 0 -6px 18px rgba(255, 255, 255, 0.5),
-    0 -40px 100px rgba(220, 226, 240, 0.3), 0 -160px 260px rgba(180, 190, 215, 0.18);
 }
-.sky-glow {
+.sky-bronze {
+  right: -120px;
+  top: -200px;
+  width: 760px;
+  height: 760px;
+  background: var(--stage-bronze);
+}
+.sky-smoke {
+  left: -160px;
+  top: 30%;
+  width: 600px;
+  height: 600px;
+  background: var(--stage-smoke);
+}
+.sky-lines {
   position: absolute;
-  width: 800px;
-  height: 560px;
-  left: -240px;
-  top: -220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 65%);
-  filter: blur(30px);
+  inset: 0;
+  background-image: var(--stage-hairlines);
 }
 
 /* ---- Liquid glass --------------------------------------------------------- */
@@ -240,11 +241,12 @@ code {
    variant only changes these variables. */
 .glass {
   --g-fill: var(--glass-fill);
-  --g-frost: blur(18px) saturate(180%) brightness(1.08);
-  --g-liquid: url(#sn-liquid) blur(10px) saturate(180%) brightness(1.08);
+  --g-frost: var(--glass-blur);
+  --g-liquid: url(#sn-liquid) blur(24px) saturate(180%) brightness(1.08);
   --g-shadow: var(--glass-edge), var(--glass-drop);
   position: relative;
   isolation: isolate;
+  border: 1px solid var(--glass-border);
   background: var(--g-fill);
   -webkit-backdrop-filter: var(--g-frost);
   backdrop-filter: var(--g-frost);
@@ -253,30 +255,38 @@ code {
 .has-refraction .glass {
   backdrop-filter: var(--g-liquid);
 }
+/* Clear: the top bar. */
 .glass--bar {
-  --g-fill: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025));
-  --g-frost: blur(16px) saturate(170%);
-  --g-liquid: url(#sn-liquid) blur(14px) saturate(170%);
-  --g-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1), 0 20px 40px -20px rgba(0, 0, 0, 0.9);
+  --g-fill: var(--glass-clear-fill);
+  --g-frost: var(--glass-clear-blur);
+  --g-liquid: url(#sn-liquid) blur(14px) saturate(180%);
 }
+/* Tiles: a light tint with a hairline, like the brand board's stat tiles. */
 .glass--tile {
-  --g-fill: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 55%);
+  --g-fill: rgba(255, 255, 255, 0.05);
   --g-frost: blur(16px) saturate(180%);
-  --g-liquid: url(#sn-liquid) blur(12px) saturate(180%) brightness(1.08);
-  --g-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset -16px -16px 30px -22px rgba(0, 0, 0, 0.6), 0 30px 60px -30px rgba(0, 0, 0, 0.9);
+  --g-liquid: url(#sn-liquid) blur(12px) saturate(180%);
+  --g-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
 }
+/* Deep: dense data. The charcoal tint keeps text at 7:1+. */
 .glass--flat {
-  --g-fill: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  --g-frost: blur(16px) saturate(170%);
-  --g-liquid: url(#sn-liquid) blur(12px) saturate(170%);
-  --g-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 30px 60px -30px rgba(0, 0, 0, 0.9);
+  --g-fill: var(--glass-deep-fill);
+  --g-frost: var(--glass-deep-blur);
+  --g-liquid: var(--glass-deep-blur);
+  --g-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 24px 48px -28px rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
-    background: rgba(22, 22, 25, 0.92);
+    background: var(--talo-surface-2);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--talo-surface-2);
   }
 }
 
@@ -307,7 +317,7 @@ code {
   gap: 12px;
   min-height: 58px;
   padding: 6px 10px 6px 22px;
-  border-radius: 999px;
+  border-radius: 20px;
 }
 .topbar-left {
   display: flex;
@@ -334,10 +344,11 @@ code {
 }
 .wordmark {
   font-family: var(--f-display);
-  font-weight: 500;
-  font-size: 13px;
-  letter-spacing: 0.34em;
-  margin-right: -0.34em;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  margin-right: -0.22em;
   color: var(--halo);
 }
 .tabs {
@@ -421,7 +432,7 @@ code {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-radius: 30px;
+  border-radius: var(--talo-r-panel);
 }
 .card-head {
   display: flex;
@@ -463,8 +474,8 @@ code {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  padding: 18px 20px;
-  border-radius: 24px;
+  padding: 12px 14px;
+  border-radius: var(--talo-r-stat);
 }
 .tile-label {
   font-family: var(--f-mono);
@@ -722,11 +733,11 @@ code {
 /* square = drone, circle = aircraft, dash = clear, hollow ring = other. */
 .shape {
   flex: none;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 .shape--drone {
-  border-radius: 1px;
+  border-radius: 3px;
   background: var(--drone);
 }
 .shape--aircraft {
@@ -735,7 +746,7 @@ code {
 }
 .shape--other {
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px var(--ink-2);
+  box-shadow: inset 0 0 0 2px var(--other);
 }
 .shape--clear {
   width: 10px;
@@ -1477,15 +1488,21 @@ code {
   height: 60px;
   border-radius: 50%;
   color: var(--halo);
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 70%);
+  background: radial-gradient(circle, rgba(207, 138, 82, 0.14), transparent 70%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 .node-beacon svg {
   width: 30px;
   height: 30px;
 }
+.node-beacon-ink {
+  fill: var(--talo-text);
+}
+.card--node[data-state='offline'] .node-beacon-ink {
+  fill: var(--offline);
+}
 .node-beacon-dot {
-  fill: var(--white);
+  fill: var(--accent);
 }
 .card--node[data-state='online'] .node-beacon-dot {
   animation: sn-pulse 2.4s ease-in-out infinite;
@@ -2059,407 +2076,6 @@ code {
     animation: none !important;
     transition: none !important;
   }
-}
-
-/* ==========================================================================
-   Range-console skin
-   Flat graphite plates, hairline borders and corner brackets instead of
-   rounded liquid glass; mono caps for every label. Colour still only means
-   something the sensor sees. This block comes last so it wins over the
-   rounded defaults above; delete it to get the old look back.
-   ========================================================================== */
-:root {
-  --plate: rgba(10, 10, 11, 0.78);
-  --plate-2: rgba(255, 255, 255, 0.035);
-  --hair: rgba(255, 255, 255, 0.12);
-  --hair-2: rgba(255, 255, 255, 0.28);
-  --bracket: rgba(244, 244, 242, 0.7);
-  --r: 2px;
-}
-
-/* ---- Backdrop: a range graticule instead of a lit horizon -------------------- */
-.sky {
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(150, 165, 190, 0.1), transparent 70%),
-    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px) 0 0 / 48px 48px,
-    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px) 0 0 / 48px 48px,
-    var(--void);
-}
-.sky::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
-}
-.sky-horizon {
-  top: 100%;
-  width: 100%;
-  height: 1px;
-  margin: 0;
-  left: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-.sky-glow {
-  display: none;
-}
-
-/* ---- Plates ------------------------------------------------------------------ */
-.glass,
-.glass--bar,
-.glass--tile,
-.glass--flat {
-  --g-fill: var(--plate);
-  --g-frost: blur(10px) saturate(120%);
-  --g-liquid: blur(10px) saturate(120%);
-  --g-shadow: inset 0 0 0 1px var(--hair), 0 24px 48px -28px rgba(0, 0, 0, 0.9);
-}
-.has-refraction .glass {
-  backdrop-filter: blur(10px) saturate(120%);
-}
-.card,
-.tile,
-.topbar {
-  border-radius: var(--r);
-}
-/* Corner brackets on every plate. */
-.card::after,
-.tile::after,
-.topbar::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  z-index: 3;
-  pointer-events: none;
-  --b: var(--bracket);
-  background:
-    linear-gradient(var(--b), var(--b)) 0 0 / 12px 1px,
-    linear-gradient(var(--b), var(--b)) 0 0 / 1px 12px,
-    linear-gradient(var(--b), var(--b)) 100% 0 / 12px 1px,
-    linear-gradient(var(--b), var(--b)) 100% 0 / 1px 12px,
-    linear-gradient(var(--b), var(--b)) 0 100% / 12px 1px,
-    linear-gradient(var(--b), var(--b)) 0 100% / 1px 12px,
-    linear-gradient(var(--b), var(--b)) 100% 100% / 12px 1px,
-    linear-gradient(var(--b), var(--b)) 100% 100% / 1px 12px;
-  background-repeat: no-repeat;
-}
-
-/* ---- Header ------------------------------------------------------------------ */
-.topbar {
-  min-height: 52px;
-  padding: 4px 8px 4px 18px;
-}
-.wordmark {
-  font-weight: 500;
-  letter-spacing: 0.42em;
-}
-.tabs {
-  gap: 0;
-  align-self: stretch;
-}
-.tab {
-  position: relative;
-  padding: 0 16px;
-  border-radius: 0;
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.tab::after {
-  content: '';
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: -5px;
-  height: 2px;
-  background: var(--halo);
-  transform: scaleX(0);
-  transition: transform 0.3s var(--ease-expo);
-}
-.tab[aria-selected='true'] {
-  background: var(--plate-2);
-  box-shadow: none;
-}
-.tab[aria-selected='true']::after {
-  transform: scaleX(1);
-}
-.pill {
-  height: 30px;
-  border-radius: var(--r);
-  border: 1px solid var(--hair);
-  box-shadow: none;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-}
-.pill[data-state='online'] {
-  border-color: rgba(155, 232, 155, 0.45);
-  color: var(--clear-ink);
-}
-.pill-dot {
-  border-radius: 0;
-}
-.pill[data-state='online'] .pill-dot {
-  box-shadow: 0 0 8px var(--clear);
-}
-
-/* ---- Card heads and labels ----------------------------------------------------- */
-.card-title {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--halo);
-}
-.card-title::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 10px;
-  vertical-align: 1px;
-  background: var(--halo);
-}
-.card-meta,
-.tile-label {
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-}
-.tile {
-  gap: 10px;
-  border-left: 0;
-}
-.tile-value {
-  font-size: 46px;
-  font-weight: 300;
-  font-variant-numeric: tabular-nums;
-}
-.tile-note {
-  padding-top: 8px;
-  border-top: 1px solid var(--hair);
-  letter-spacing: 0.04em;
-}
-
-/* ---- Camera ------------------------------------------------------------------ */
-.frame {
-  border-radius: var(--r);
-  background: #0b0c0e;
-  box-shadow: inset 0 0 0 1px var(--hair);
-}
-/* Scanlines and a vignette over the picture and its boxes. */
-.frame::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.55) 100%);
-}
-.frame-grid {
-  background-size: 10% 11.11%;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-}
-.frame-ring {
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
-  border-radius: 0;
-  border: 0;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 50% 0 / 1px 9px no-repeat,
-    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 50% 100% / 1px 9px no-repeat,
-    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 0 50% / 9px 1px no-repeat,
-    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) 100% 50% / 9px 1px no-repeat;
-}
-.frame-msg {
-  font-family: var(--f-mono);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.live-pill {
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-}
-.live-dot {
-  border-radius: 0;
-}
-.box,
-.box--locked .box-label {
-  border-radius: 0;
-}
-.box-label {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.hud {
-  z-index: 3;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  min-height: 38px;
-  padding: 6px 14px;
-  border-radius: var(--r);
-  background: rgba(0, 0, 0, 0.62);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  box-shadow: inset 0 0 0 1px var(--hair), inset 2px 0 0 var(--halo);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-/* ---- Lists and badges ------------------------------------------------------------ */
-.badge {
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-}
-.badge--box {
-  height: 22px;
-  border-radius: var(--r);
-}
-.row {
-  border-radius: var(--r);
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow: inset 0 0 0 1px var(--hair), inset 2px 0 0 var(--c, var(--smoke));
-  transition: background-color 0.2s, box-shadow 0.2s, transform 0.25s var(--ease);
-}
-.row:hover {
-  background: var(--plate-2);
-  box-shadow: inset 0 0 0 1px var(--hair-2), inset 2px 0 0 var(--c, var(--smoke));
-  transform: translateX(2px);
-}
-.row .thumb,
-.thumb,
-.thumb-box,
-.thumb-img,
-.scard {
-  border-radius: var(--r);
-}
-.meter,
-.meter-fill {
-  border-radius: 0;
-}
-.scard {
-  box-shadow: inset 0 0 0 1px var(--hair), inset 2px 0 0 var(--c, var(--smoke));
-}
-
-/* ---- Chart ------------------------------------------------------------------------ */
-.chart,
-.table-wrap,
-.tip,
-.col,
-.col::before {
-  border-radius: var(--r);
-}
-.chart {
-  box-shadow: inset 0 0 0 1px var(--hair);
-}
-.col-seg.is-top {
-  border-radius: 0;
-}
-.tip {
-  background: rgba(8, 8, 9, 0.96);
-  box-shadow: inset 0 0 0 1px var(--hair-2), 0 18px 36px -14px rgba(0, 0, 0, 0.95);
-}
-.tip-hour,
-.legend li,
-.chart-x,
-.chart-tick {
-  letter-spacing: 0.1em;
-}
-.swatch {
-  border-radius: 0;
-}
-
-/* ---- Controls --------------------------------------------------------------------- */
-.toggle,
-.seg,
-.seg-btn,
-.chip,
-.export,
-.btn-glass,
-.icon-btn {
-  border-radius: var(--r);
-}
-.toggle,
-.seg,
-.chip,
-.export,
-.btn-glass {
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: inset 0 0 0 1px var(--hair);
-}
-.seg-btn,
-.chip,
-.export,
-.btn-glass {
-  font-family: var(--f-mono);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.toggle:hover,
-.chip:hover,
-.export:hover,
-.btn-glass:hover {
-  background: var(--plate-2);
-  box-shadow: inset 0 0 0 1px var(--hair-2);
-}
-.toggle[aria-pressed='true'],
-.seg-btn[aria-pressed='true'],
-.chip[aria-pressed='true'] {
-  background: var(--halo);
-  color: var(--carbon);
-  box-shadow: none;
-}
-
-/* ---- Node, settings, detail --------------------------------------------------------- */
-.note,
-.set-card,
-.fact,
-.detail-media,
-.detail-media .thumb-box {
-  border-radius: var(--r);
-}
-.node-id,
-.note-tag,
-.set-title,
-.fact dt {
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-}
-.detail {
-  border-radius: var(--r);
-  background: rgba(10, 10, 11, 0.97);
-  box-shadow: inset 0 0 0 1px var(--hair-2), 0 40px 80px -20px rgba(0, 0, 0, 0.95);
-}
-.detail::backdrop {
-  background: rgba(0, 0, 0, 0.72);
-}
-
-@media (max-width: 559px) {
-  .tab {
-    padding: 0 9px;
-    letter-spacing: 0.1em;
-  }
-}
-
-.filters,
-.facts,
-.scard .thumb,
-.note-tag,
-.node-beacon,
-.set-card {
-  border-radius: var(--r);
-}
-.node-beacon {
-  border-radius: 50%;
 }
 
 /* ---- Entrance: plates settle in, one after another -------------------------------------- */

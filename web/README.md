@@ -166,26 +166,28 @@ web/
   src/styles.css          liquid glass and layout (brand tokens come from graphite.css)
   ../brain/dashboard/graphite.css   the shared brand tokens: colours, glass, type stacks.
                           The live dashboard loads the same file, so a colour changes in both
-  src/fonts.css           self-hosted Saira, IBM Plex Sans, IBM Plex Mono
+  src/fonts.css           self-hosted Michroma, Geist, Geist Mono
   src/main.js             scroll story, nav, buttons, glass tilt, lazy loading
-  src/hero.js             hero sky: stars, the aircraft pass, live readout card
   src/sensor.js           the simulated sensor view in "How it works"
   src/mount.js            the Three.js pan-tilt mount viewer
   src/three-env.js        studio lighting for the mount viewer
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
 ```
 
-Design: **Liquid Graphite** (the Talo brand system). Carbon, smoke and
-light; colour appears only for what the sensor sees (drone red, aircraft
-blue, clear green), so a colour on screen always means something. Saira for
-headings, IBM Plex Sans for text, IBM Plex Mono for data.
+Design: **Talo brand v6, Charcoal + Bronze + Split** (assets in `docs/brand/`).
+Charcoal and smoke, frosted liquid glass over a stage of smoke and bronze
+light, and one bronze point of light (the dot in the mark). Status colours
+appear only for what the sensor sees, always with a shape: green circle =
+confirmed aircraft, amber square = possible drone, violet ring = no ADS-B
+match. Michroma (always uppercase) for the wordmark and headings, Geist for
+text, Geist Mono for data, labels and timestamps. Every simulated visual
+carries a SAMPLE tag.
 
 How it behaves:
-- **Hero:** the planet's bright rim and the moon are plain CSS, so they are
-  there on first paint. After load, a small canvas adds twinkling stars and,
-  every so often, an aircraft crossing the sky; a blue lock box closes in on
-  it and the glass card shows the pan/tilt the node would command. It's
-  labelled as a concept, and pauses when scrolled away or the tab is hidden.
+- **Hero:** all CSS, so it is there on first paint: a glass lens holding the
+  Split mark, and a frosted sighting card. The card's values are placeholders
+  (`hero.card` in `content.js`) and it is tagged SAMPLE. A very slow light
+  sweep crosses the lens unless motion is reduced.
 - **Sensor view:** a simulation of the overlay from `brain/overlay.py`. The
   camera pans to keep the locked drone in the centre ring. Labelled as
   simulated on the page; it only runs while on screen.
@@ -193,7 +195,7 @@ How it behaves:
   screen. Drag it to turn it. Hover a part name to highlight that part.
 - **No WebGL, software-only WebGL, or a slow device:** the mount shows a
   still image instead. Add `?gl=any` to the URL to force 3D anyway.
-- **Reduced motion:** no scroll animation and no motion; the hero sky and
+- **Reduced motion:** no scroll animation and no motion; the lens sweep and
   the sensor view are drawn once as stills.
 - **Liquid glass:** frosted blur everywhere. Chrome and Edge also get a
   refraction effect; Safari and Firefox keep the plain blur.
@@ -205,7 +207,7 @@ How it behaves:
 ## Performance
 
 Lighthouse, mobile preset (simulated slow 4G and a 4× slower CPU), measured
-against the production build before the Liquid Graphite redesign (re-run it
+against the production build before the v6 brand redesign (re-run it
 on the live URL to get current numbers):
 
 | Performance | Accessibility | Best practices | SEO |
