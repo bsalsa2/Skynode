@@ -1,8 +1,9 @@
 // Turns src/content.js into static HTML at build time (see vite.config.js).
 // The page ships as plain HTML, so it is readable before any JavaScript runs.
 //
-// Design: "Liquid Graphite" (Claude Design handoff, October 2026). Carbon,
-// smoke and light; colour appears only when the sensor sees something.
+// Design: Talo brand v6, "Charcoal + Bronze + Split" (Claude Design handoff,
+// October 2026). Charcoal and smoke, frosted glass, one bronze point of
+// light. Status colours appear only for what the sensor sees.
 
 const esc = (s) =>
   String(s)
@@ -17,19 +18,32 @@ const linkAttrs = (href) =>
 
 const pad2 = (n) => String(n).padStart(2, '0');
 
-// The Horizon mark: an arc of sky over the ground line, one lit node rising.
-// Stroke weight steps up as the mark gets smaller (brand guide: 1.6 → 3.6).
-const mark = (size, stroke = 1.7, cls = 'mark') =>
-  `<svg class="${cls}" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22A11 11 0 0 1 27 22" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round"/><path d="M2.5 22H29.5" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round"/><circle class="mark-node" cx="23.07" cy="13.57" r="${(1.6 + stroke * 0.65).toFixed(2)}"/></svg>`;
+// The Split mark: a disc cut by the horizon, the lower half shifted like
+// light through glass, one bronze point of light above. Below 24 px it uses
+// the favicon geometry (bigger dot, smaller shift) so it stays crisp.
+const mark = (size, cls = 'mark') => {
+  const small = size < 24;
+  return `<svg class="${cls}" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><path class="mark-ink" d="M4.17 14A12 12 0 0 1 27.83 14Z"${small ? ' transform="translate(0 -0.5)"' : ''}/><path class="mark-ink" d="M5.67 18H29.33A12 12 0 0 1 5.67 18Z"${small ? ' transform="translate(-0.5 0.5)"' : ''}/><circle class="mark-dot" cx="21" cy="8.5" r="${small ? 2.5 : 2.3}"/></svg>`;
+};
 
 const ARROW_UR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5" /></svg>';
 const ARROW_DN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" /></svg>';
 
 const STATUS_KINDS = { DONE: 'done', 'IN PROGRESS': 'progress', NEXT: 'next' };
 
-// Section label, e.g. "02 · SYSTEM".
-const kicker = (n, text, id = '') =>
-  `<p class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n">${pad2(n)}</span><span class="kicker-sep" aria-hidden="true"></span>${esc(text)}</p>`;
+// Section marker row, e.g. "02-00   [ SYSTEM ]   +", over a hairline.
+const kicker = (n, text, id = '', tag = 'p') =>
+  `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n">${pad2(n)}-00</span><span class="kicker-label">[ ${esc(text)} ]</span><span class="kicker-plus" aria-hidden="true">+</span></${tag}>`;
+
+// Status: colour always travels with a shape and a word.
+// circle = confirmed aircraft, square = possible drone, ring = no ADS-B match.
+const STATUS = {
+  aircraft: 'Confirmed aircraft',
+  drone: 'Possible drone',
+  'no-adsb': 'No ADS-B match',
+};
+const statusPill = (kind) =>
+  `<span class="status-pill status-pill--${kind} mono"><span class="shape shape--${kind}" aria-hidden="true"></span>${esc(STATUS[kind] || STATUS.aircraft)}</span>`;
 
 // "A [b c] d" -> words, with the bracketed ones marked bright.
 function litWords(statement) {
@@ -47,44 +61,52 @@ function litWords(statement) {
   return out.join(' ');
 }
 
-// Each sentence (or comma clause) of the headline on its own line; the
-// second one in grey.
-const headline = (h) =>
-  h
-    .split(/(?<=[.!?,])\s+/)
-    .map((line, i) => `<span class="line${i ? ' line--dim' : ''}"><span class="line-in">${esc(line)}</span></span>`)
+// The headline, broken after its first word ("Watch / the sky.") so it sits
+// on two lines like the brand board.
+const headline = (h) => {
+  const [first, ...rest] = String(h).trim().split(/\s+/);
+  return [first, rest.join(' ')]
+    .filter(Boolean)
+    .map((line) => `<span class="line"><span class="line-in">${esc(line)}</span></span>`)
     .join(' ');
+};
 
 // ---- Hero ---------------------------------------------------------------------
 
-// Glass readout: values are filled in live by hero.js (concept only).
-const heroCard = (hero) => {
+// Frosted sighting card. Placeholder values, so it always carries SAMPLE.
+const sightingCard = (hero) => {
   const c = hero.card || {};
+  const kind = STATUS[c.status] ? c.status : 'aircraft';
   return `
-      <aside class="hud glass glass--deep tilt" id="hud" aria-label="${esc(c.label || 'Concept readout')}" data-hero>
-        <span class="glass-sheen" aria-hidden="true"></span>
-        <div class="hud-top">
-          <span class="mono hud-label">${esc(c.label || 'NODE-01 · CONCEPT')}</span>
-          <span class="state-pill mono"><span class="state-dot" aria-hidden="true"></span>${esc(c.state || 'TRACKING')}</span>
+      <aside class="sighting glass" aria-label="Sample sighting card" data-hero>
+        <div class="sighting-top">
+          ${statusPill(kind)}
+          <span class="sample-tag mono">${esc(c.label || 'SAMPLE')}</span>
         </div>
-        <div class="hud-main">
-          <span class="badge badge--aircraft mono"><span class="badge-shape" aria-hidden="true"></span>${esc(c.target || 'AIRCRAFT')}</span>
-          <span class="hud-conf" data-hud="conf">0.97</span>
+        <div class="sighting-head">
+          <span class="sighting-title">Sighting</span>
+          <span class="mono sighting-time">${esc(c.time || '')}</span>
         </div>
-        <dl class="hud-grid">
-          <div><dt class="mono">PAN</dt><dd class="mono" data-hud="pan">092.5°</dd></div>
-          <div><dt class="mono">TILT</dt><dd class="mono" data-hud="tilt">47.0°</dd></div>
-          <div><dt class="mono">CMD</dt><dd class="mono" data-hud="cmd">P92.5 T47</dd></div>
+        <dl class="sighting-grid mono">
+          <div><dt>CLASS</dt><dd>${esc(c.class || '')}</dd></div>
+          <div><dt>CONF</dt><dd>${esc(c.conf || '')}</dd></div>
+          <div><dt>ADS-B</dt><dd class="sighting-adsb sighting-adsb--${kind}">${esc(c.adsb || '')}</dd></div>
         </dl>
-        <div class="hud-spark" aria-hidden="true"><canvas id="hud-spark" width="360" height="40"></canvas></div>
-        <p class="hud-caption">${esc(hero.caption)}</p>
+        <p class="sighting-caption">${esc(hero.caption)}</p>
       </aside>`;
 };
+
+// The glass lens: the Split mark seen through a disc of frosted glass.
+const heroLens = () => `
+      <div class="lens" aria-hidden="true">
+        <span class="lens-sweep"></span>
+        ${mark(250, 'mark lens-mark')}
+      </div>`;
 
 // Real footage, once it exists (see hero.footage in content.js). main.js
 // starts playback only for visitors who haven't turned off motion.
 const heroFootage = (f) => `
-      <figure class="footage glass glass--deep" data-hero>
+      <figure class="footage glass" data-hero>
         <video class="hero-video" muted loop playsinline preload="metadata"${f.poster ? ` poster="${esc(f.poster)}"` : ''} aria-label="${esc(f.caption)}">
           <source src="${esc(f.video)}" />
         </video>
@@ -102,7 +124,7 @@ const sensorBlock = (s) => `
           <span class="mono sensor-label"><span class="live-dot" aria-hidden="true"></span>${esc(s.label)}</span>
           <span class="mono sensor-id">NODE-01</span>
         </div>
-        <div class="frame" id="sensor-frame" role="img" aria-label="Simulated camera view: a drone locked in a bold red box near the centre, and an aircraft in a thin blue box higher up.">
+        <div class="frame" id="sensor-frame" role="img" aria-label="Simulated camera view: a drone locked in a bold amber box near the centre, and an aircraft in a thin green box higher up.">
           <div class="frame-sky" data-sensor="sky"></div>
           <div class="frame-grid" data-sensor="grid"></div>
           <div class="frame-ring" aria-hidden="true"></div>
@@ -231,23 +253,28 @@ const LIQUID_FILTER = `
   </filter>
 </svg>`;
 
-// Star field shared by the hero and the privacy page.
-const STARS = '<div class="stars" aria-hidden="true"><div class="stars-a"></div><div class="stars-b"></div></div>';
+// The stage every glass surface sits on: smoke and bronze light behind fine
+// diagonal hairlines. Glass over flat colour shows nothing.
+const stage = (cls = '') =>
+  `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-bronze"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
 
 function siteNav(c, { home = true } = {}) {
   const pre = home ? '' : './';
   const links = c.nav.links
-    .map((l) => `<li><a class="nav-link" href="${pre}${esc(l.href)}">${esc(l.label)}</a></li>`)
+    .map(
+      (l, i) =>
+        `<li><a class="nav-link mono" href="${pre}${esc(l.href)}"><span class="nav-n">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`
+    )
     .join('');
   return `
 <header class="site-header" id="top-nav">
   <nav class="nav glass" aria-label="Primary">
     <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(c.nav.brand)}, home">
-      ${mark(26, 1.7)}
+      ${mark(28)}
       <span class="wordmark">${esc(c.nav.brand)}</span>
     </a>
     <ul class="nav-links">${links}</ul>
-    <a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>GitHub</a>
+    <a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
   </nav>
 </header>`;
 }
@@ -259,6 +286,8 @@ export function renderHead(c) {
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${esc(url)}" />
+    <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Talo Labs" />
     <meta property="og:title" content="${esc(title)}" />
@@ -267,7 +296,7 @@ export function renderHead(c) {
     <meta property="og:image" content="${esc(image)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Talo: Drones are cheap. Detecting them isn't." />
+    <meta property="og:image:alt" content="Talo: A clear view of your airspace. Passive detection, drones and aircraft." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
@@ -337,17 +366,11 @@ ${siteNav(c)}
 
 <main id="main" tabindex="-1">
   <section class="hero" id="top" aria-labelledby="hero-title">
-    <div class="hero-sky" aria-hidden="true">
-      ${STARS}
-      <div class="hero-grid"></div>
-      <div class="moon" id="moon"><div class="moon-body"></div></div>
-      <canvas class="sky-canvas" id="sky-canvas"></canvas>
-      <div class="planet" id="planet"><div class="planet-body"></div></div>
-    </div>
+    ${stage('hero-stage')}
 
     <div class="hero-inner wrap">
       <div class="hero-copy">
-        <p class="eyebrow mono" data-hero>${esc(hero.eyebrow)}</p>
+        <p class="eyebrow mono" data-hero>[ ${esc(hero.eyebrow)} ]</p>
         <h1 class="hero-title" id="hero-title">${headline(hero.headline)}</h1>
         <p class="hero-sub" data-hero>${esc(hero.sub)}</p>
         <div class="hero-actions" data-hero>
@@ -360,10 +383,15 @@ ${siteNav(c)}
         </div>
         ${hero.cost ? `<p class="hero-note" data-hero>${esc(hero.cost)}</p>` : ''}
       </div>
-      ${footage ? heroFootage(footage) : heroCard(hero)}
+      <div class="hero-visual">
+        ${footage ? heroFootage(footage) : `${heroLens()}${sightingCard(hero)}`}
+      </div>
     </div>
 
-    <ul class="hero-facts mono wrap" data-hero>${facts}</ul>
+    <div class="hero-foot wrap" data-hero>
+      <ul class="hero-facts mono">${facts}</ul>
+      <span class="mono hero-labs">${esc(footer.brand)}</span>
+    </div>
   </section>
 
   <section class="math section" id="math" aria-labelledby="math-title">
@@ -389,7 +417,7 @@ ${siteNav(c)}
   </section>
 
   <section class="how section" id="how" aria-labelledby="how-title">
-    <div class="halo" aria-hidden="true"></div>
+    ${stage('how-stage')}
     <div class="wrap how-inner">
       <header class="section-head">
         ${kicker(++n, how.kicker || 'System')}
@@ -421,7 +449,7 @@ ${siteNav(c)}
       <div class="build-orb" aria-hidden="true"></div>
       <figure class="build-card glass glass--deep" data-reveal>
         <span class="glass-sheen" aria-hidden="true"></span>
-        <h2 class="kicker mono" id="build-title"><span class="kicker-n">${pad2(++n)}</span><span class="kicker-sep" aria-hidden="true"></span>${esc(build.heading)}</h2>
+        ${kicker(++n, build.heading, 'build-title', 'h2')}
         <blockquote class="build-body"><p>${esc(build.body)}</p></blockquote>
         ${
           build.quote
@@ -447,7 +475,8 @@ ${siteNav(c)}
       </div>
     </div>
     <div class="outro">
-      <div class="outro-planet" id="outro-planet" aria-hidden="true"><div class="planet-body"></div></div>
+      ${stage('outro-stage')}
+      <div class="outro-lens" id="outro-lens" aria-hidden="true">${mark(120, 'mark outro-mark')}</div>
       <p class="closing">${esc(roadmap.closing)}</p>
     </div>
   </section>
@@ -467,14 +496,13 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
   <div class="wrap footer-wrap">
     ${sister ? sisterCard(sister) : ''}
     <div class="footer-inner">
-      <p class="brand brand--footer">${mark(22, 2)}<span class="wordmark">${esc(footer.brand)}</span></p>
+      <p class="brand brand--footer">${mark(22)}<span class="wordmark">${esc(c.nav.brand)}</span><span class="mono footer-labs">${esc(footer.brand)}</span></p>
       <ul class="footer-links">
         ${links}
         <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
       </ul>
     </div>
   </div>
-  <p class="footer-giant" aria-hidden="true">${esc(c.nav.brand)}</p>
 </footer>`;
 }
 
@@ -506,15 +534,12 @@ export function renderPrivacyBody(c) {
   return `
 <a class="skip-link" href="#main">Skip to content</a>
 ${LIQUID_FILTER}
-<div class="legal-sky" aria-hidden="true">
-  ${STARS}
-  <div class="planet planet--legal"><div class="planet-body"></div></div>
-</div>
+${stage('stage-fixed')}
 ${siteNav(c, { home: false })}
 
 <main id="main" class="legal" tabindex="-1">
   <div class="wrap wrap--narrow">
-    <article class="legal-card glass glass--deep">
+    <article class="legal-card glass">
       <p class="mono legal-updated">Updated ${esc(p.updated)}</p>
       <h1 class="legal-title">${esc(p.title)}</h1>
       <p class="legal-intro">${esc(on && p.introWithAnalytics ? p.introWithAnalytics : p.intro)}</p>

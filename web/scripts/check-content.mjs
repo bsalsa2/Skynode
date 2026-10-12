@@ -201,6 +201,14 @@ for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label']) {
   if (typeof v === 'string' && !/\bSAMPLE\b/.test(v))
     err(`${path} shows simulated content, so it must contain the word SAMPLE.`, lineOf(v));
 }
+const CARD_STATUSES = ['aircraft', 'drone', 'no-adsb'];
+if (get('hero.card') && !CARD_STATUSES.includes(get('hero.card.status')))
+  err(`hero.card.status is "${get('hero.card.status')}". Use exactly 'aircraft', 'drone' or 'no-adsb'.`, lineAfter('card:', 'status:'));
+// Brand voice: Talo only watches. These words never appear on the page.
+for (const word of ['missile', 'kill', 'strike', 'defeat']) {
+  const i = lines.findIndex((l) => !/^\s*\/\//.test(l) && new RegExp(`\\b${word}`, 'i').test(l));
+  if (i >= 0) err(`"${word}" is off-brand: Talo is detection only. Reword this line.`, i + 1);
+}
 if (get('how.sensor')) {
   text('how.sensor.label');
   text('how.sensor.caption');

@@ -11,7 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#111213" />
     <meta name="referrer" content="no-referrer" />
     <title>Talo dashboard</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
@@ -30,11 +30,12 @@
       </filter>
     </svg>
 
-    <!-- The sky behind everything: the bright rim of the horizon and a soft
-         glow top-left. Glass needs light behind it to look like glass. -->
+    <!-- The stage behind everything: smoke and bronze light. Glass needs light
+         behind it to look like glass. -->
     <div class="sky" aria-hidden="true">
-      <div class="sky-horizon"></div>
-      <div class="sky-glow"></div>
+      <div class="sky-bronze"></div>
+      <div class="sky-smoke"></div>
+      <div class="sky-lines"></div>
     </div>
 
     <div class="page">
@@ -42,9 +43,9 @@
         <div class="topbar-left">
           <a class="brand" href="#overview" aria-label="Talo, go to overview">
             <svg class="mark" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M5 22A11 11 0 0 1 27 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <path d="M2.5 22H29.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <circle cx="23.07" cy="13.57" r="2.8" fill="#ffffff" />
+              <path d="M4.17 14A12 12 0 0 1 27.83 14Z" fill="#ECEBE8" transform="translate(0 -0.5)" />
+              <path d="M5.67 18H29.33A12 12 0 0 1 5.67 18Z" fill="#ECEBE8" transform="translate(-0.5 0.5)" />
+              <circle cx="21" cy="8.5" r="2.5" fill="#CF8A52" />
             </svg>
             <span class="wordmark">TALO</span>
           </a>
@@ -201,9 +202,9 @@
               <div class="node-id">
                 <span class="node-beacon" aria-hidden="true">
                   <svg viewBox="0 0 32 32">
-                    <path d="M5 22A11 11 0 0 1 27 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-                    <path d="M2.5 22H29.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-                    <circle class="node-beacon-dot" cx="23.07" cy="13.57" r="2.6" />
+                    <path class="node-beacon-ink" d="M4.17 14A12 12 0 0 1 27.83 14Z" />
+                    <path class="node-beacon-ink" d="M5.67 18H29.33A12 12 0 0 1 5.67 18Z" />
+                    <circle class="node-beacon-dot" cx="21" cy="8.5" r="2.3" />
                   </svg>
                 </span>
                 <div class="node-names">

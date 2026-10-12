@@ -42,14 +42,14 @@ const inlineCss = () => ({
   },
 });
 
-// Preloads the two fonts the first screen needs (headline + body text).
+// Preloads the two fonts the first screen needs (wordmark + body text).
 const preloadFonts = () => ({
   name: 'talo-preload-fonts',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const wanted = ['saira-latin-300-normal', 'ibm-plex-sans-latin-400-normal'];
+      const wanted = ['michroma-latin-400-normal', 'geist-latin-400-normal'];
       const files = Object.keys(ctx.bundle || {}).filter(
         (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
       );
