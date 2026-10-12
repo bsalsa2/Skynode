@@ -174,13 +174,16 @@ const mountBlock = (m) => `
       </figure>`;
 
 // Accuracy results: rendered only once there are measured numbers.
-const resultsSection = (r) => {
+const resultsSection = (r, next) => {
   if (!r || !Array.isArray(r.items) || r.items.length === 0) return '';
   return `
   <section class="results section" id="results" aria-labelledby="results-title">
     <div class="wrap">
-      <h2 class="h-section" id="results-title" data-reveal>${esc(r.heading)}</h2>
-      ${r.intro ? `<p class="lede" data-reveal>${esc(r.intro)}</p>` : ''}
+      <header class="section-head">
+        ${kicker(next(), r.kicker || 'Recorded video test')}
+        <h2 class="h-section" id="results-title">${esc(r.heading)}</h2>
+        ${r.intro ? `<p class="lede" data-reveal>${esc(r.intro)}</p>` : ''}
+      </header>
       <dl class="results-grid">
         ${r.items
           .map(
@@ -572,7 +575,7 @@ ${siteNav(c)}
       <ol class="status-list">${statusRows}</ol>
     </div>
   </section>
-  ${resultsSection(results)}
+  ${resultsSection(results, () => ++n)}
   ${limitsSection(limits, () => ++n)}
   <section class="build section" id="build" aria-labelledby="build-title">
     <div class="wrap build-inner">
