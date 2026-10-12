@@ -29,6 +29,25 @@ build`, publish `web/dist`), so nothing in the dashboard needs filling in.
 - **A deploy failed?** Open **Deploys**, click the red deploy, and read the
   log. A problem in `content.js` is explained there, with the line number.
 
+## GitHub Pages (second host, free)
+
+`.github/workflows/pages.yml` builds `web/` and publishes it to GitHub Pages
+on every push to `main`: **https://bsalsa2.github.io/talo/**. Netlify keeps
+working as before; nothing here changes its settings.
+
+One-time setup: in the repo, **Settings → Pages → Build and deployment →
+Source: GitHub Actions**. After that, the next push to `main` (or
+**Actions → Deploy to GitHub Pages → Run workflow**) deploys.
+
+How it works at a sub-path: `vite.config.js` uses a relative base (`./`), so
+CSS, fonts, images and the 3D model load from wherever the page lives, at the
+domain root on Netlify or under `/talo/` on Pages. Links inside the pages are
+relative too. The workflow sets `SITE_URL` so the canonical and share-image
+addresses point at the Pages URL; builds without it (Netlify) keep
+`meta.url` from `content.js`.
+
+---
+
 ## Vercel instead (optional)
 
 At **vercel.com/new**, import **bsalsa2/Skynode**, set **Root Directory** to
