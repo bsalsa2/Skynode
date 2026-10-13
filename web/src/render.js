@@ -155,6 +155,17 @@ const sensorBlock = (s) => `
         <figcaption class="sensor-caption">${esc(s.caption)}</figcaption>
       </figure>`;
 
+// Simulated radar-style plot (radar.js draws it; the canvas is blank without JS).
+const radarBlock = (r) => `
+      <figure class="radar glass" id="radar" data-reveal>
+        <div class="sensor-head">
+          <span class="mono sensor-label">${esc(r.label)}</span>
+          <span class="mono sensor-id">N ↑</span>
+        </div>
+        <canvas class="radar-canvas" role="img" aria-label="Simulated plot: a slow sweep over range rings, with a sample aircraft (circle) crossing and a sample possible drone (square) loitering."></canvas>
+        <figcaption class="sensor-caption">${esc(r.caption)}</figcaption>
+      </figure>`;
+
 // Pan-tilt mount: a still image first, replaced by a live 3D view (mount.js).
 const mountBlock = (m) => `
       <figure class="mount glass" id="mount" data-reveal>
@@ -524,6 +535,15 @@ ${siteNav(c)}
 <main id="main" tabindex="-1">
   <section class="hero" id="top" aria-labelledby="hero-title">
     ${stage('hero-stage')}
+    <div class="hero-photo" aria-hidden="true"></div>
+    <svg class="hero-track" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path class="hero-track-line" pathLength="1" d="M700 800 C 720 560, 800 250, 1120 118" />
+      <g class="hero-track-frame" transform="translate(1120 118)">
+        <path d="M-34 -22v-10h10M24 -32h10v10M34 22v10h-10M-24 32h-10v-10" />
+        <circle r="3" />
+        <text x="44" y="-20">SAMPLE TRACK</text>
+      </g>
+    </svg>
 
     <div class="hero-inner wrap">
       <div class="hero-copy">
@@ -587,7 +607,10 @@ ${siteNav(c)}
         ${kicker(++n, how.kicker || 'System')}
         <h2 class="h-section" id="how-title">${esc(how.heading)}</h2>
       </header>
-      ${how.sensor ? sensorBlock(how.sensor) : ''}
+      <div class="how-views">
+        ${how.sensor ? sensorBlock(how.sensor) : ''}
+        ${how.radar ? radarBlock(how.radar) : ''}
+      </div>
       ${how.mount ? mountBlock(how.mount) : ''}
       <div class="note" data-reveal>
         <span class="mono note-tag">TEST RANGE</span>

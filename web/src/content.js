@@ -234,6 +234,12 @@ export const content = {
       caption:
         'SAMPLE: a simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
     },
+    // Simulated radar sweep beside the sensor view (radar.js). Must say SAMPLE.
+    radar: {
+      label: 'SAMPLE · SKY PICTURE · SIMULATED',
+      caption:
+        'SAMPLE: made-up blips showing how sightings could be plotted around the node. Circle = aircraft, square = possible drone. Varn has no radar; this is a map of what the camera reports.',
+    },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
 

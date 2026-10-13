@@ -221,7 +221,7 @@ list('labels.items').forEach((it, i) => {
 });
 text('how.note');
 // Sample and preview content must say so.
-for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label']) {
+for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label', 'how.radar.label', 'how.radar.caption']) {
   const v = get(path);
   if (typeof v === 'string' && !/\bSAMPLE\b/.test(v))
     err(`${path} shows simulated content, so it must contain the word SAMPLE.`, lineOf(v));
