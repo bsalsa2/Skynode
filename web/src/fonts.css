@@ -1,6 +1,6 @@
 /* Self-hosted fonts (SIL Open Font License, via @fontsource).
    Latin subset only; no requests to third-party servers.
-   Space Grotesk: brand display. Inter: headings on the homepage (as designed), UI and body (300-600).
+   Space Grotesk: display (brand guide: 500/600). Inter: UI and body (400/500).
    Geist Mono: data, labels, timestamps, numbers (a utility face, not a brand face).
    The wordmark is outlined SVG and needs none of these. */
 @font-face {
@@ -23,13 +23,6 @@
   font-weight: 600;
   font-display: swap;
   src: url('../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('../node_modules/@fontsource/inter/files/inter-latin-300-normal.woff2') format('woff2');
 }
 @font-face {
   font-family: 'Inter';

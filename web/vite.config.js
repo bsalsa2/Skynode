@@ -5,18 +5,14 @@ import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody } from './
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
-// It runs before Vite's own HTML processing, so images the markup points at
-// (./src/assets/...) are fingerprinted and bundled like any other asset.
 const varnContent = () => ({
   name: 'varn-content',
-  transformIndexHtml: {
-    order: 'pre',
-    handler: (html) =>
-      html
-        .replace('<!--varn:head-->', renderHead(content))
-        .replace('<!--varn:body-->', renderBody(content))
-        .replace('<!--varn:privacy-head-->', renderPrivacyHead(content))
-        .replace('<!--varn:privacy-body-->', renderPrivacyBody(content)),
+  transformIndexHtml(html) {
+    return html
+      .replace('<!--varn:head-->', renderHead(content))
+      .replace('<!--varn:body-->', renderBody(content))
+      .replace('<!--varn:privacy-head-->', renderPrivacyHead(content))
+      .replace('<!--varn:privacy-body-->', renderPrivacyBody(content));
   },
 });
 
@@ -46,14 +42,14 @@ const inlineCss = () => ({
   },
 });
 
-// Preloads the font the first screen needs (Inter: headings and body text).
+// Preloads the two fonts the first screen needs (display + body text).
 const preloadFonts = () => ({
   name: 'varn-preload-fonts',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const wanted = ['inter-latin-400-normal'];
+      const wanted = ['space-grotesk-latin-500-normal', 'inter-latin-400-normal'];
       const files = Object.keys(ctx.bundle || {}).filter(
         (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
       );
@@ -83,5 +79,7 @@ export default defineConfig({
         field: fileURLToPath(new URL('./field.html', import.meta.url)),
       },
     },
+    // three.js lives in its own lazy-loaded chunk; it is big by nature.
+    chunkSizeWarningLimit: 700,
   },
 });

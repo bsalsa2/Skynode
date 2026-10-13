@@ -1,17 +1,11 @@
 // Turns src/content.js into static HTML at build time (see vite.config.js).
 // The page ships as plain HTML, so it is readable before any JavaScript runs.
 //
-// Layout: the approved homepage design (docs/design/home-mockup.webp), in the
-// Varn brand system (brand/). Hero, how it works, test results, the road
-// ahead, footer. Everything simulated is labelled SAMPLE.
-//
-// Image paths are written as plain URLs; Vite fingerprints and bundles them
-// because the content plugin runs before its HTML processing.
+// Design: Varn brand system v1.0 (brand/). Charcoal and bone, steel-blue
+// accents, angular geometry. Status colours appear only for what the sensor
+// sees; amber is the one alert colour.
 
 import { MARK_PATH, MARK_SMALL_PATH, MARK_VIEWBOX, WORDMARK_PATH, WORDMARK_VIEWBOX } from './logo.js';
-
-const HERO_SKY = './src/assets/hero-sky.webp';
-const FEED_SKY = './src/assets/feed-sky.webp';
 
 const esc = (s) =>
   String(s)
@@ -20,341 +14,409 @@ const esc = (s) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+const isExternal = (href) => /^https?:\/\//.test(href);
 const linkAttrs = (href) =>
-  /^https?:/.test(href) ? ` href="${esc(href)}" target="_blank" rel="noopener"` : ` href="${esc(href)}"`;
+  isExternal(href) ? ` href="${esc(href)}" target="_blank" rel="noopener"` : ` href="${esc(href)}"`;
 
-// ---- Brand ---------------------------------------------------------------------
+const pad2 = (n) => String(n).padStart(2, '0');
 
-// The Varn mark (brand/varn_mark.svg). Below 24 px wide it uses the small mark.
-const mark = (width, cls = 'mark') =>
-  `<svg class="${cls}" viewBox="${MARK_VIEWBOX}" aria-hidden="true"><path d="${width < 24 ? MARK_SMALL_PATH : MARK_PATH}"/></svg>`;
+// The Varn mark: two angled blades and a short inner blade (brand/varn_mark.svg).
+// `size` is its width; it is about half as tall. Below 24 px wide the inner
+// blade can't stay separate, so it uses the simplified small mark.
+const mark = (size, cls = 'mark') =>
+  `<svg class="${cls}" width="${size}" height="${Math.round((size * 194) / 391.5)}" viewBox="${MARK_VIEWBOX}" aria-hidden="true"><path class="mark-ink" d="${size < 24 ? MARK_SMALL_PATH : MARK_PATH}"/></svg>`;
 
 // VARN in Space Grotesk, as outlines, so it never depends on a loaded font.
-const wordmark = (cls = 'wordmark') =>
-  `<svg class="${cls}" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true"><path d="${WORDMARK_PATH}"/></svg>`;
+const wordmark = () =>
+  `<svg class="wordmark" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true"><path d="${WORDMARK_PATH}"/></svg>`;
 
-const lockup = (cls) => `<span class="lockup ${cls}">${mark(48)}${wordmark()}</span>`;
+const ARROW_UR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5" /></svg>';
+const ARROW_DN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" /></svg>';
 
-// ---- Icons (24 px line icons, drawn for this site) --------------------------------
+const STATUS_KINDS = { DONE: 'done', 'IN PROGRESS': 'progress', NEXT: 'next' };
 
-const ICONS = {
-  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
-  brain:
-    '<path d="M12 4.5A2.5 2.5 0 0 0 9.5 2 2.5 2.5 0 0 0 7 4.5v.3A3 3 0 0 0 4.5 8a3 3 0 0 0 .3 5.5A3 3 0 0 0 8 18.4 2.5 2.5 0 0 0 12 20zM12 4.5A2.5 2.5 0 0 1 14.5 2 2.5 2.5 0 0 1 17 4.5v.3A3 3 0 0 1 19.5 8a3 3 0 0 1-.3 5.5 3 3 0 0 1-3.2 4.9A2.5 2.5 0 0 1 12 20"/><path d="M8.5 9.5c1 0 1.8.6 2 1.5M15.5 9.5c-1 0-1.8.6-2 1.5M8.5 14.5c.8 0 1.6-.3 2-1M15.5 14.5c-.8 0-1.6-.3-2-1"/>',
-  shield: '<path d="M12 3l7 3v5.5c0 4.3-3 8-7 9.5-4-1.5-7-5.2-7-9.5V6z"/><path d="M9 12l2 2 4-4.5"/>',
-  crosshair: '<circle cx="12" cy="12" r="7.5"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>',
-  plane:
-    '<path d="M12 2.5c.8 0 1.4.7 1.4 1.5v5.3l7.1 4.1v1.9l-7.1-2.1v4.4l2 1.5v1.4L12 19.6l-3.4.9v-1.4l2-1.5v-4.4l-7.1 2.1v-1.9l7.1-4.1V4c0-.8.6-1.5 1.4-1.5z" transform="rotate(45 12 12)"/>',
-  database:
-    '<ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v13c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-13"/><path d="M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/>',
+// Section marker row, e.g. "02-00   [ SYSTEM ]   +", over a hairline.
+const kicker = (n, text, id = '', tag = 'p') =>
+  `<${tag} class="kicker mono"${id ? ` id="${id}"` : ''}><span class="kicker-n">${pad2(n)}-00</span><span class="kicker-label">[ ${esc(text)} ]</span><span class="kicker-plus" aria-hidden="true">+</span></${tag}>`;
+
+// Status: colour always travels with a shape and a word.
+// circle = confirmed aircraft, square = possible drone, ring = no ADS-B match.
+const STATUS = {
+  aircraft: 'Confirmed aircraft',
+  drone: 'Possible drone',
+  'no-adsb': 'No ADS-B match',
 };
-const icon = (name, cls = 'icon') =>
-  `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+const statusPill = (kind) =>
+  `<span class="status-pill status-pill--${kind} mono"><span class="shape shape--${kind}" aria-hidden="true"></span>${esc(STATUS[kind] || STATUS.aircraft)}</span>`;
 
-const GITHUB =
-  '<svg class="icon-gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
-
-const button = (b, cls) =>
-  `<a class="btn ${cls}"${linkAttrs(b.href)}><span>${esc(b.label)}</span>${icon('arrow', 'btn-arrow')}</a>`;
-
-// ---- Header --------------------------------------------------------------------
-
-function siteHeader(c, { home = true } = {}) {
-  const pre = home ? '' : './';
-  const links = c.nav.links
-    .map((l, i) => {
-      const href = l.href.startsWith('#') ? `${pre}${l.href}` : l.href;
-      const current = home && i === 0 ? ' aria-current="page"' : '';
-      return `<li><a class="nav-link"${linkAttrs(href)}${current}>${esc(l.label)}</a></li>`;
-    })
-    .join('');
-  return `
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(c.nav.brand)}, home">${lockup('lockup--header')}</a>
-    <nav class="nav" aria-label="Primary"><ul class="nav-links">${links}</ul></nav>
-    <a class="btn-github"${linkAttrs(c.nav.github.href)}>${GITHUB}<span>${esc(c.nav.github.label)}</span></a>
-  </div>
-</header>`;
+// "A [b c] d" -> words, with the bracketed ones marked bright.
+function litWords(statement) {
+  const out = [];
+  String(statement)
+    .split(/(\[[^\]]*\])/)
+    .forEach((chunk) => {
+      const bright = chunk.startsWith('[') && chunk.endsWith(']');
+      chunk
+        .replace(/^\[|\]$/g, '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((w) => out.push(`<span class="w${bright ? ' w--hi' : ''}">${esc(w)}</span>`));
+    });
+  return out.join(' ');
 }
 
-// ---- Hero ----------------------------------------------------------------------
+// The headline, broken after its first word ("Watch / the sky.") so it sits
+// on two lines like the brand board.
+const headline = (h) => {
+  const [first, ...rest] = String(h).trim().split(/\s+/);
+  return [first, rest.join(' ')]
+    .filter(Boolean)
+    .map((line) => `<span class="line"><span class="line-in">${esc(line)}</span></span>`)
+    .join(' ');
+};
 
-// The hero photo and its tracking overlay share the mockup's coordinates
-// (1024 x 462), so the frame always sits on the drone at any screen size.
-// The drone is part of the photo: an illustration, labelled SAMPLE.
-const TRACK =
-  'M65 287 C135.2 285 370.2 284.7 451 276 C531.8 267.3 525.5 246.7 550 235 C574.5 223.3 576.2 218.5 598 206 C619.8 193.5 652.7 170.8 681 160 C709.3 149.2 748.2 144.7 768 141';
-const TRACK_DOTS = [
-  [451, 276],
-  [550, 235],
-  [598, 206],
-  [681, 160],
-];
+// ---- Hero ---------------------------------------------------------------------
 
-function heroScene(h) {
-  const dots = TRACK_DOTS.map(([x, y], i) => `<circle class="track-dot" style="--i:${i}" cx="${x}" cy="${y}" r="1.7"/>`).join('');
+// Frosted sighting card. Placeholder values, so it always carries SAMPLE.
+// hero-lens.js cycles it through the three statuses along with the lens.
+const sightingCard = (hero) => {
+  const c = hero.card || {};
+  const kind = STATUS[c.status] ? c.status : 'aircraft';
   return `
-    <svg class="hero-scene" viewBox="0 0 1024 462" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
-      <image href="${HERO_SKY}" width="1024" height="462" preserveAspectRatio="none"/>
-      <g class="hero-hud">
-        <path class="hud-line hud-line--v" d="M780 0V462"/>
-        <path class="hud-line hud-line--h" d="M656 190H1004"/>
-        <path class="hud-grid" d="M656 136H960M656 244H960M656 136V244M960 136V244"/>
-        <defs>
-          <linearGradient id="track-fade" gradientUnits="userSpaceOnUse" x1="65" y1="0" x2="470" y2="0">
-            <stop offset="0" stop-color="#f4f3ef" stop-opacity="0"/>
-            <stop offset="1" stop-color="#f4f3ef" stop-opacity=".8"/>
-          </linearGradient>
-        </defs>
-        <path class="track" pathLength="1" stroke="url(#track-fade)" d="${TRACK}"/>
-        ${dots}
-        <circle class="track-end" cx="768" cy="141" r="2.6"/>
-        <g class="hud-frame">
-          <path d="M741 170v-10h10M815 160h10v10M825 210v10h-10M751 220h-10v-10"/>
-          <text x="741" y="231">${esc(h.trackLabel)}</text>
-        </g>
-      </g>
-    </svg>`;
-}
-
-// "Watch the sky." -> the last word in steel blue.
-function headline(text) {
-  const words = esc(text).split(' ');
-  const last = words.pop();
-  return `${words.join(' ')} <span class="accent">${last}</span>`;
-}
-
-function hero(c) {
-  const h = c.hero;
-  const facts = h.facts.map((f) => `<span>${esc(f)}</span>`).join('');
-  return `
-  <section class="hero" id="top" aria-labelledby="hero-title">
-    ${heroScene(h)}
-    <div class="hero-shade" aria-hidden="true"></div>
-    ${siteHeader(c)}
-    <div class="wrap hero-body">
-      <div class="hero-copy">
-        <p class="eyebrow eyebrow--hero" data-hero>${esc(h.eyebrow)}</p>
-        <h1 class="hero-title" id="hero-title" data-hero>${headline(h.headline)}</h1>
-        <p class="hero-sub" data-hero>${esc(h.sub)}</p>
-        <div class="hero-actions" data-hero>
-          ${button(h.primary, 'btn--solid')}
-          ${button(h.secondary, 'btn--ghost')}
+      <aside class="sighting glass" id="sighting" aria-label="Sample sighting card" data-hero>
+        <div class="sighting-top">
+          <span class="status-pill status-pill--${kind} mono" data-card="pill"><span class="shape shape--${kind}" aria-hidden="true"></span><span data-card="pill-text">${esc(STATUS[kind])}</span></span>
+          <span class="sample-tag mono">${esc(c.label || 'SAMPLE')}</span>
         </div>
-      </div>
-      <div class="hero-foot" data-hero>
-        <p class="hero-status"><span class="status-dot" aria-hidden="true"></span><span class="hero-stage">${esc(h.stage)}</span><span class="sep" aria-hidden="true">|</span><span class="hero-facts">${facts}</span></p>
-        <p class="hero-tagline">${h.tagline.map(esc).join('<br />')}</p>
-      </div>
-    </div>
-  </section>`;
-}
+        <div class="sighting-head">
+          <span class="sighting-title">Sighting</span>
+          <span class="mono sighting-time" data-card="time">${esc(c.time || '')}</span>
+        </div>
+        <dl class="sighting-grid mono">
+          <div><dt>CLASS</dt><dd data-card="class">${esc(c.class || '')}</dd></div>
+          <div><dt>CONF</dt><dd data-card="conf">${esc(c.conf || '')}</dd></div>
+          <div><dt>ADS-B</dt><dd class="sighting-adsb sighting-adsb--${kind}" data-card="adsb">${esc(c.adsb || '')}</dd></div>
+        </dl>
+        <p class="sighting-caption">${esc(hero.caption)}</p>
+      </aside>`;
+};
+
+// The glass lens: a simulated sky view (hero-lens.js draws into the canvas).
+// Without JavaScript it is simply the Split mark behind glass.
+const heroLens = () => `
+      <div class="lens" id="lens">
+        <span class="lens-sweep" aria-hidden="true"></span>
+        ${mark(250, 'mark lens-mark')}
+        <canvas class="lens-canvas" id="lens-canvas" aria-hidden="true"></canvas>
+        <span class="lens-tag mono">SAMPLE · SIMULATED SKY</span>
+      </div>`;
+
+// Real footage, once it exists (see hero.footage in content.js). main.js
+// starts playback only for visitors who haven't turned off motion.
+const heroFootage = (f) => `
+      <figure class="footage glass" data-hero>
+        <video class="hero-video" muted loop playsinline preload="metadata"${f.poster ? ` poster="${esc(f.poster)}"` : ''} aria-label="${esc(f.caption)}">
+          <source src="${esc(f.video)}" />
+        </video>
+        <figcaption class="hud-caption">${esc(f.caption)}</figcaption>
+      </figure>`;
 
 // ---- How it works ----------------------------------------------------------------
 
-// Feed coordinates follow the mockup's camera view (335 x 223).
-const FEED_TRACKS = [
-  'M35 193 C45 187.2 65 179.2 80 170 C95 160.8 108.7 148.3 125 138 C141.3 127.7 165.5 113.5 178 108',
-  'M170 175 C180.8 169.2 199.7 163.8 215 155 C230.3 146.2 247.8 133.7 262 122 C276.2 110.3 287.8 97.8 300 85 C312.2 72.2 326.7 54.2 335 45',
-];
-const FEED_DOTS = [
-  [80, 170],
-  [125, 138],
-  [215, 155],
-  [262, 122],
-  [300, 85],
-];
-const DRONE_SVG =
-  '<g class="obj-drone"><path d="M-7 -1.5h14M-4 -1.5v2.5h8v-2.5"/><path d="M-11 -3.5h7M4 -3.5h7"/><circle cx="-7" cy="1.6" r=".9" class="light"/><circle cx="7" cy="1.6" r=".9" class="light"/></g>';
-const PLANE_SVG =
-  '<g class="obj-plane"><path d="M-15 0c3-1.3 20-1.3 26-.6 2 .2 3.6.6 3.6.9s-1.6.7-3.6.9c-6 .7-23 .7-26-.6z"/><path d="M-2-.4 6-6h2.4L4-.4zM-2 .4 6 5.5h2.4L4 .4zM-13-.3-15.5-4h1.8l3.6 3.6z"/></g>';
-
-function feedPanel(p) {
-  const objects = p.objects
-    .map(
-      (o) => `
-              <li class="obj obj--${esc(o.kind)}"><span class="obj-dot" aria-hidden="true"></span><span class="obj-name">${esc(o.name)}</span><span class="obj-val" data-obj="${esc(o.kind)}">${esc(o.value)}</span></li>`
-    )
-    .join('');
-  const tracks = FEED_TRACKS.map((d, i) => `<path class="feed-track" pathLength="1" style="--i:${i}" d="${d}"/>`).join('');
-  const dots = FEED_DOTS.map(([x, y]) => `<circle class="feed-dot" cx="${x}" cy="${y}" r="1.4"/>`).join('');
-  return `
-      <figure class="panel" id="feed" data-reveal>
-        <figcaption class="sr-only">${esc(p.feedLabel)}: a simulated detection dashboard. Every value in it is made up.</figcaption>
-        <div class="panel-head">
-          ${lockup('lockup--panel')}
-          <span class="panel-live">${esc(p.feedLabel)}<span class="live-dot" aria-hidden="true"></span></span>
+// Simulated camera view. Boxes and readouts are animated by sensor.js; the
+// static markup is a complete, sensible still on its own.
+const sensorBlock = (s) => `
+      <figure class="sensor glass" id="sensor" data-reveal>
+        <span class="glass-sheen" aria-hidden="true"></span>
+        <div class="sensor-head">
+          <span class="mono sensor-label"><span class="live-dot" aria-hidden="true"></span>${esc(s.label)}</span>
+          <span class="mono sensor-id">NODE-01</span>
         </div>
-        <div class="panel-body">
-          <div class="feed">
-            <svg class="feed-view" viewBox="0 0 335 223" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-              <image href="${FEED_SKY}" width="335" height="223" preserveAspectRatio="none"/>
-              <path class="feed-grid" d="M0 75H335M0 150H335M84 0V223M168 0V223M252 0V223M0 68H335"/>
-              ${tracks}
-              ${dots}
-              <circle class="feed-node" cx="178" cy="108" r="2.6"/>
-              <g class="det det--drone" data-det="drone" transform="translate(106 64)">
-                <rect class="det-box" x="-17" y="-15" width="34" height="31"/>
-                <g class="det-tag"><rect x="-17" y="-34" width="34" height="15"/><text x="-12.5" y="-23">Drone</text></g>
-                <text class="det-conf" x="19" y="-23" data-conf="drone">0.87</text>
-                ${DRONE_SVG}
-              </g>
-              <g class="det det--plane" data-det="plane" transform="translate(229 79)">
-                <rect class="det-box" x="-24" y="-15" width="48" height="30"/>
-                <text class="det-name" x="-21" y="-20">Plane <tspan data-conf="plane">0.96</tspan></text>
-                ${PLANE_SVG}
-              </g>
-              <g class="obj-far" transform="translate(40 116)"><path d="M-4 0h8M-2-1.2h4"/></g>
-            </svg>
-            <p class="feed-bar">${p.readouts.map((r) => `<span>${esc(r)}</span>`).join('')}</p>
+        <div class="frame" id="sensor-frame" role="img" aria-label="Simulated camera view: a drone locked in a bold amber box near the centre, and an aircraft in a thin green box higher up.">
+          <div class="frame-sky" data-sensor="sky"></div>
+          <div class="frame-grid" data-sensor="grid"></div>
+          <div class="frame-ring" aria-hidden="true"></div>
+          <div class="det det--drone is-locked" data-sensor="drone" style="--x:58%;--y:30%">
+            <span class="det-label mono">DRONE <b data-sensor="drone-conf">0.91</b></span>
+            <svg class="det-obj" viewBox="0 0 40 24" aria-hidden="true"><path d="M8 12h24M14 9h12v6H14z" /><path d="M2 6h12M26 6h12" /><path d="M8 6v6M32 6v6" /></svg>
           </div>
-          <div class="panel-side">
-            <div class="side-card">
-              <p class="side-title">${esc(p.objectsLabel)}</p>
-              <ul class="objects">${objects}
-              </ul>
-            </div>
-            <div class="side-card radar-card">
-              <canvas class="radar" aria-hidden="true"></canvas>
-              <span class="compass compass--n">N</span><span class="compass compass--e">E</span><span class="compass compass--s">S</span><span class="compass compass--w">W</span>
-            </div>
+          <div class="det det--aircraft" data-sensor="aircraft" style="--x:22%;--y:24%">
+            <span class="det-label mono">AIRCRAFT <b data-sensor="air-conf">0.64</b></span>
+            <svg class="det-obj" viewBox="0 0 40 24" aria-hidden="true"><path d="M4 12h32M20 12l-8-9M20 12l-8 9M34 12l3-5M34 12l3 5" /></svg>
+          </div>
+          <div class="frame-bar mono">
+            <span data-sensor="fps">24.8 FPS</span>
+            <span data-sensor="pan">PAN 092.5°</span>
+            <span data-sensor="tilt">TILT 47.0°</span>
+            <span>LINK WI-FI</span>
+            <span class="frame-state"><span class="state-dot" aria-hidden="true"></span>TRACKING</span>
           </div>
         </div>
-        <p class="panel-note">${esc(p.feedNote)}</p>
+        <figcaption class="sensor-caption">${esc(s.caption)}</figcaption>
       </figure>`;
-}
 
-function project(c) {
-  const p = c.project;
-  const steps = p.steps
+// Simulated radar-style plot (radar.js draws it; the canvas is blank without JS).
+const radarBlock = (r) => `
+      <figure class="radar glass" id="radar" data-reveal>
+        <div class="sensor-head">
+          <span class="mono sensor-label">${esc(r.label)}</span>
+          <span class="mono sensor-id">N ↑</span>
+        </div>
+        <canvas class="radar-canvas" role="img" aria-label="Simulated plot: a slow sweep over range rings, with a sample aircraft (circle) crossing and a sample possible drone (square) loitering."></canvas>
+        <figcaption class="sensor-caption">${esc(r.caption)}</figcaption>
+      </figure>`;
+
+// Pan-tilt mount: a still image first, replaced by a live 3D view (mount.js).
+const mountBlock = (m) => `
+      <figure class="mount glass" id="mount" data-reveal>
+        <div class="mount-stage" id="mount-stage">
+          <img class="mount-still" src="./models/pantilt-still.webp" width="900" height="760" loading="lazy" decoding="async"
+            alt="3D render of the Varn pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
+          <span class="mono mount-hint" aria-hidden="true">DRAG TO TURN</span>
+        </div>
+        <figcaption class="mount-info">
+          <p class="mono mount-label"><span class="node-dot" aria-hidden="true"></span>${esc(m.label)}</p>
+          <ul class="mount-parts">
+            ${m.parts
+              .map(
+                (p, i) =>
+                  `<li data-part="${i}"><span class="mono mount-part-name">${esc(p.name)}</span><p>${esc(p.text)}</p></li>`
+              )
+              .join('')}
+          </ul>
+          <p class="mount-caption">${esc(m.caption)}</p>
+        </figcaption>
+      </figure>`;
+
+// Accuracy results: rendered only once there are measured numbers.
+const resultsSection = (r, next) => {
+  if (!r || !Array.isArray(r.items) || r.items.length === 0) return '';
+  return `
+  <section class="results section" id="results" aria-labelledby="results-title">
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(next(), r.kicker || 'Recorded video test')}
+        <h2 class="h-section" id="results-title">${esc(r.heading)}</h2>
+        ${r.intro ? `<p class="lede" data-reveal>${esc(r.intro)}</p>` : ''}
+      </header>
+      <dl class="results-grid">
+        ${r.items
+          .map(
+            (it) => `
+        <div class="result glass" data-reveal>
+          <dt class="mono">${esc(it.label)}</dt>
+          <dd class="result-value">${esc(it.value)}</dd>
+          ${it.note ? `<dd class="result-note">${esc(it.note)}</dd>` : ''}
+        </div>`
+          )
+          .join('')}
+      </dl>
+      <p class="results-source mono">${esc(r.source)}</p>
+    </div>
+  </section>`;
+};
+
+// Known limits: what Varn can't do, stated plainly. Hidden if empty.
+const limitsSection = (l, next) => {
+  if (!l || !Array.isArray(l.items) || l.items.length === 0) return '';
+  return `
+  <section class="limits section" id="limits" aria-labelledby="limits-title">
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(next(), l.kicker || 'Honest limits')}
+        <h2 class="h-section" id="limits-title">${esc(l.heading)}</h2>
+      </header>
+      <ul class="limits-list">
+        ${l.items
+          .map(
+            (it) => `
+        <li class="limit glass" data-reveal>
+          <span class="mono limit-tag">${esc(it.tag)}</span>
+          <p>${esc(it.text)}</p>
+        </li>`
+          )
+          .join('')}
+      </ul>
+    </div>
+  </section>`;
+};
+
+// ---- Story (pinned, scroll-driven) ----------------------------------------------
+
+// One animated scene per stage. They are pure markup + CSS animation: the
+// active scene is switched by main.js while you scroll. All values are SAMPLE.
+const SCENES = [
+  // 01 SEE: range rings, a slow sweep, light arriving. Nothing leaves.
+  () => `
+        <svg class="sc sc-see" viewBox="0 0 400 300" aria-hidden="true">
+          <g class="sc-rings"><circle cx="200" cy="170" r="40"/><circle cx="200" cy="170" r="80"/><circle cx="200" cy="170" r="120"/><circle cx="200" cy="170" r="160"/></g>
+          <path class="sc-horizon" d="M0 232H400"/>
+          <g class="sc-sweep"><path d="M200 170L200 10" /></g>
+          <g class="sc-rays"><path d="M60 24L170 150"/><path d="M200 8L200 138"/><path d="M340 24L230 150"/></g>
+          <circle class="sc-eye" cx="200" cy="170" r="9"/>
+          <circle class="sc-eye-dot" cx="204" cy="166" r="2.6"/>
+          <text class="sc-text" x="200" y="266" text-anchor="middle">RECEIVES LIGHT ONLY</text>
+        </svg>`,
+  // 02 DETECT: boxes snap onto things, each with class + confidence.
+  () => `
+        <div class="sc sc-detect" aria-hidden="true">
+          <div class="sc-sky"></div>
+          <div class="sc-box sc-box--aircraft" style="--x:24%;--y:30%;--d:0.2s"><span class="sc-chip mono"><i class="shape shape--aircraft"></i>AIRCRAFT 0.91</span></div>
+          <div class="sc-box sc-box--drone" style="--x:62%;--y:56%;--d:0.7s"><span class="sc-chip mono"><i class="shape shape--drone"></i>DRONE 0.64</span></div>
+          <div class="sc-box sc-box--noadsb" style="--x:76%;--y:22%;--d:1.2s"><span class="sc-chip mono"><i class="shape shape--no-adsb"></i>AIRCRAFT 0.78</span></div>
+          <div class="sc-scan"></div>
+        </div>`,
+  // 03 TRACK: the target drifts, the mount follows, the ring settles on it.
+  () => `
+        <div class="sc sc-track" aria-hidden="true">
+          <div class="sc-sky sc-sky--pan"></div>
+          <div class="sc-ring"></div>
+          <div class="sc-box sc-box--drone sc-box--follow"><span class="sc-chip mono"><i class="shape shape--drone"></i>LOCKED</span></div>
+          <div class="sc-readout mono"><span>PAN <b>092.5°</b></span><span>TILT <b>47.0°</b></span><span>CMD <b>P92.5 T47.0</b></span></div>
+        </div>`,
+  // 04 LOG: rows arrive one by one.
+  () => `
+        <div class="sc sc-log" aria-hidden="true">
+          <div class="sc-row sc-row--head mono"><span>TIME</span><span>CLASS</span><span>CONF</span><span>PAN/TILT</span></div>
+          <div class="sc-row mono" style="--d:0.1s"><span>14:32:07Z</span><span><i class="shape shape--aircraft"></i>aircraft</span><span>0.91</span><span>092/47</span></div>
+          <div class="sc-row mono" style="--d:0.5s"><span>13:58:41Z</span><span><i class="shape shape--drone"></i>drone</span><span>0.64</span><span>140/31</span></div>
+          <div class="sc-row mono" style="--d:0.9s"><span>13:12:19Z</span><span><i class="shape shape--no-adsb"></i>aircraft</span><span>0.78</span><span>061/52</span></div>
+          <div class="sc-row sc-row--clear mono" style="--d:1.3s"><span>13:00:00Z</span><span>sky clear</span><span>·</span><span>·</span></div>
+        </div>`,
+  // 05 CHECK: what the camera saw lines up against what ADS-B says.
+  () => `
+        <div class="sc sc-check" aria-hidden="true">
+          <div class="sc-col"><p class="sc-col-h mono">CAMERA SAW</p>
+            <span class="sc-pill status-pill status-pill--aircraft mono" style="--d:0.1s"><i class="shape shape--aircraft"></i>aircraft</span>
+            <span class="sc-pill status-pill status-pill--aircraft mono" style="--d:0.5s"><i class="shape shape--aircraft"></i>aircraft</span>
+            <span class="sc-pill status-pill status-pill--drone mono" style="--d:0.9s"><i class="shape shape--drone"></i>drone</span></div>
+          <svg class="sc-links" viewBox="0 0 80 200" preserveAspectRatio="none"><path d="M0 30C40 30 40 30 80 30" style="--d:0.5s"/><path d="M0 100C40 100 40 100 80 100" style="--d:0.9s;stroke-dasharray:3 5"/></svg>
+          <div class="sc-col"><p class="sc-col-h mono">ADS-B SAID</p>
+            <span class="sc-pill sc-pill--plain mono" style="--d:0.4s">flight overhead</span>
+            <span class="sc-pill sc-pill--plain sc-pill--none mono" style="--d:0.8s">no flight</span>
+            <span class="sc-pill sc-pill--plain sc-pill--none mono" style="--d:1.2s">n/a</span></div>
+          <div class="sc-result"><span class="status-pill status-pill--aircraft mono"><i class="shape shape--aircraft"></i>Confirmed aircraft</span><span class="status-pill status-pill--no-adsb mono"><i class="shape shape--no-adsb"></i>No ADS-B match</span></div>
+        </div>`,
+];
+
+const storySection = (st, n) => `
+  <section class="story" id="story" aria-labelledby="story-title">
+    <div class="story-pin">
+      <div class="wrap story-inner">
+        <header class="story-head">
+          ${kicker(n, st.kicker)}
+          <h2 class="h-section" id="story-title">${esc(st.heading)}</h2>
+          <p class="lede">${esc(st.intro)}</p>
+        </header>
+        <div class="story-body">
+          <ol class="story-steps">
+            ${st.stages
+              .map(
+                (s, i) => `
+            <li class="story-step${i === 0 ? ' is-active' : ''}" data-stage="${i}">
+              <div class="story-step-top"><span class="mono story-num">${esc(s.number)}</span><h3 class="story-title">${esc(s.title)}</h3></div>
+              <p class="story-text">${esc(s.body)}</p>
+              <span class="mono chip story-fact">${esc(s.fact)}</span>
+            </li>`
+              )
+              .join('')}
+          </ol>
+          <figure class="story-device glass" aria-label="Simulated detection pipeline">
+            <span class="glass-sheen" aria-hidden="true"></span>
+            <div class="device-head">
+              <span class="mono device-label"><span class="live-dot" aria-hidden="true"></span>${esc(st.device)}</span>
+              <span class="mono device-step" id="story-step">01 / 0${st.stages.length}</span>
+            </div>
+            <div class="device-screen">
+              ${SCENES.slice(0, st.stages.length)
+                .map((fn, i) => `<div class="scene${i === 0 ? ' is-active' : ''}" data-scene="${i}">${fn()}</div>`)
+                .join('')}
+            </div>
+            <div class="device-rail" aria-hidden="true">${st.stages
+              .map((s, i) => `<span class="rail-dot${i === 0 ? ' is-active' : ''}" data-rail="${i}"><b class="mono">${esc(s.title)}</b></span>`)
+              .join('<span class="rail-line"><span></span></span>')}</div>
+            <figcaption class="device-note">${esc(st.note)}</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
+const labelsSection = (l, n) => `
+  <section class="labels section" id="labels" aria-labelledby="labels-title">
+    ${stage('how-stage labels-stage')}
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(n, l.kicker)}
+        <h2 class="h-section" id="labels-title">${esc(l.heading)}</h2>
+        <p class="lede" data-reveal>${esc(l.intro)}</p>
+      </header>
+      <ul class="label-grid">
+        ${l.items
+          .map(
+            (it) => `
+        <li class="label-card glass tilt">
+          <span class="glass-sheen" aria-hidden="true"></span>
+          <span class="label-shape label-shape--${it.kind}" aria-hidden="true"><i class="shape shape--${it.kind}"></i></span>
+          ${statusPill(it.kind)}
+          <p class="mono label-shapename">${esc(it.shape)}</p>
+          <p class="label-rule">${esc(it.rule)}</p>
+        </li>`
+          )
+          .join('')}
+      </ul>
+      <p class="mono label-note" data-reveal>${esc(l.note)}</p>
+    </div>
+  </section>`;
+
+// What we've tested: three plain columns near the top. Hidden if empty.
+const testedSection = (t) => {
+  if (!t || !Array.isArray(t.columns) || !t.columns.length) return '';
+  const cols = t.columns
     .map(
-      (s, i) => `
-          <li class="step" style="--i:${i}" data-reveal>
-            ${icon(s.icon, 'icon step-icon')}
-            <h3 class="step-title">${esc(s.title)}</h3>
-            <p class="step-text">${esc(s.text)}</p>
-          </li>`
+      (col) => `
+        <div class="tested-col glass" data-reveal>
+          <p class="mono tested-tag">${esc(col.tag)}</p>
+          <h3 class="tested-title">${esc(col.title)}</h3>
+          <ul class="tested-list">${col.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
+        </div>`
     )
     .join('');
   return `
-  <section class="project" id="project" aria-labelledby="project-title">
-    <div class="wrap project-grid">
-      <div class="project-copy">
-        <p class="eyebrow" data-reveal>${esc(p.kicker)}</p>
-        <h2 class="h2" id="project-title" data-reveal>${p.heading.map(esc).join('<br />')}</h2>
-        <p class="body" data-reveal>${esc(p.body)}</p>
-        <ul class="steps">${steps}
-        </ul>
-      </div>
-      ${feedPanel(p)}
+  <section class="tested section" id="tested" aria-labelledby="tested-title">
+    <div class="wrap">
+      <h2 class="h-section tested-heading" id="tested-title">${esc(t.heading)}</h2>
+      <div class="tested-grid">${cols}</div>
+      ${t.link ? `<p class="tested-more"><a class="mono" href="${esc(t.link.href)}">${esc(t.link.label)} &darr;</a></p>` : ''}
     </div>
   </section>`;
-}
+};
 
-// ---- Test results ----------------------------------------------------------------
-
-function results(c) {
-  const r = c.results;
-  const cards = r.cards
-    .map(
-      (card, i) => `
-      <article class="card" style="--i:${i}" data-reveal>
-        ${icon(card.icon, 'icon card-icon')}
-        <h3 class="card-title">${esc(card.title)}</h3>
-        <p class="card-value">${esc(card.value)}</p>
-        <p class="card-caption">${card.caption.map(esc).join('<br />')}</p>
-      </article>`
-    )
-    .join('');
-  const k = r.conditions;
+const tickerStrip = (items) => {
+  if (!Array.isArray(items) || !items.length) return '';
+  const row = items.map((t) => `<li>${esc(t)}</li>`).join('');
   return `
-  <section class="results" id="results" aria-labelledby="results-title">
-    <div class="wrap results-grid">
-      <div class="results-copy">
-        <p class="eyebrow" data-reveal>${esc(r.kicker)}</p>
-        <h2 class="h2" id="results-title" data-reveal>${esc(r.heading)}</h2>
-        <p class="body" data-reveal>${esc(r.body)}</p>
-        <div data-reveal>${button(r.button, 'btn--ink')}</div>
-      </div>
-      ${cards}
-      <article class="card card--list" style="--i:${r.cards.length}" data-reveal>
-        ${icon(k.icon, 'icon card-icon')}
-        <h3 class="card-title">${esc(k.title)}</h3>
-        <ul class="card-list">${k.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
-        <a class="card-link"${linkAttrs(k.link.href)}><span>${esc(k.link.label)}</span>${icon('arrow', 'btn-arrow')}</a>
-      </article>
-    </div>
-    <p class="sr-only">Source: ${esc(r.source)}</p>
-  </section>`;
-}
+  <div class="ticker" aria-label="Key facts">
+    <ul class="ticker-track mono">${row}${row.replace(/<li>/g, '<li aria-hidden="true">')}</ul>
+  </div>`;
+};
 
-// ---- The road ahead --------------------------------------------------------------
+const SUN =
+  '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l2.8 2.8M21.7 21.7l2.8 2.8M7.5 24.5l2.8-2.8M21.7 10.3l2.8-2.8"/></svg>';
 
-function roadmap(c) {
-  const r = c.roadmap;
-  const steps = r.steps
-    .map(
-      (s, i) => `
-          <li class="milestone" style="--i:${i}" data-reveal>
-            <span class="milestone-when">${esc(s.when)}</span>
-            <span class="milestone-text">${esc(s.text)}</span>
-          </li>`
-    )
-    .join('');
-  return `
-  <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title">
-    <div class="roadmap-photo" aria-hidden="true"></div>
-    <div class="wrap roadmap-grid">
-      <div class="roadmap-copy">
-        <p class="eyebrow" data-reveal>${esc(r.kicker)}</p>
-        <h2 class="h2" id="roadmap-title" data-reveal>${esc(r.heading)}</h2>
-        <p class="body" data-reveal>${r.body.map(esc).join('<br class="lb" /> ')}</p>
-        <div data-reveal>${button(r.button, 'btn--ghost')}</div>
-      </div>
-      <ol class="timeline" data-reveal>${steps}
-      </ol>
-    </div>
-  </section>`;
-}
+const sisterCard = (s) => `
+    <a class="sister glass tilt"${linkAttrs(s.href)} data-reveal>
+      <span class="glass-sheen" aria-hidden="true"></span>
+      <span class="sister-mark">${SUN}</span>
+      <span class="sister-text">
+        <span class="mono sister-label">${esc(s.label)}</span>
+        <span class="sister-name">${esc(s.name)}</span>
+        ${s.description ? `<span class="sister-desc">${esc(s.description)}</span>` : ''}
+      </span>
+      <span class="sister-cta">${esc(s.linkLabel)} ${ARROW_UR}</span>
+    </a>`;
 
-// ---- Footer --------------------------------------------------------------------
-
-const FOOT_MARK =
-  '<svg class="foot-mark" viewBox="0 0 52 10" aria-hidden="true"><path d="M7 1h44l-6 8H1z"/><path d="M33 1l-6 8M41 1l-6 8"/></svg>';
-
-const CONTOURS =
-  '<svg class="foot-contours" viewBox="0 0 1024 150" preserveAspectRatio="none" aria-hidden="true">' +
-  [0, 1, 2, 3, 4, 5]
-    .map((i) => {
-      const y = 40 + i * 14;
-      return `<path d="M180 ${y} C260 ${y - 22 - i * 2} 330 ${y + 26} 420 ${y + 4} S560 ${y - 30} 640 ${y - 6}"/>`;
-    })
-    .join('') +
-  '</svg>';
-
-function siteFooter(c, { home = true } = {}) {
-  const f = c.footer;
-  const links = f.links
-    .map((l) => `<a${linkAttrs(l.href)}>${esc(l.label)}</a>`)
-    .join('<span class="sep" aria-hidden="true">|</span>');
-  const privacy = home ? ` · <a${linkAttrs(f.privacy.href)}>${esc(f.privacy.label)}</a>` : '';
-  return `
-<footer class="site-footer">
-  ${CONTOURS}
-  <div class="wrap footer-grid">
-    <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(f.brand)}, home">${lockup('lockup--footer')}</a>
-    <p class="footer-tagline">${esc(f.tagline)}</p>
-    <nav class="footer-links" aria-label="Footer">${links}</nav>
-    <p class="footer-copy">${esc(f.copyright)}${privacy}</p>
-    ${FOOT_MARK}
-  </div>
-</footer>`;
-}
-
-// ---- Page ----------------------------------------------------------------------
-
+// GoatCounter visit counter, only when content.js has a code.
 const counter = (c) => {
   const code = c.analytics && c.analytics.goatcounter;
   return code
@@ -362,6 +424,42 @@ const counter = (c) => {
     <script data-goatcounter="https://${esc(code)}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>`
     : '';
 };
+
+// SVG filter for liquid-glass refraction (Chromium only; see main.js).
+const LIQUID_FILTER = `
+<svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="sn-liquid" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="2" seed="7" result="n" />
+    <feGaussianBlur in="n" stdDeviation="3" result="b" />
+    <feDisplacementMap in="SourceGraphic" in2="b" scale="70" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>`;
+
+// The stage every glass surface sits on: fog and steel light behind fine
+// diagonal hairlines. Glass over flat colour shows nothing.
+const stage = (cls = '') =>
+  `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-steel"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
+
+function siteNav(c, { home = true } = {}) {
+  const pre = home ? '' : './';
+  const links = c.nav.links
+    .map(
+      (l, i) =>
+        `<li><a class="nav-link mono" href="${pre}${esc(l.href)}"><span class="nav-n">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`
+    )
+    .join('');
+  return `
+<header class="site-header" id="top-nav">
+  <nav class="nav glass" aria-label="Primary">
+    <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(c.nav.brand)}, home">
+      ${mark(36)}
+      ${wordmark()}
+    </a>
+    <ul class="nav-links">${links}</ul>
+    <a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
+  </nav>
+</header>`;
+}
 
 export function renderHead(c) {
   const { title, description, url } = c.meta;
@@ -388,19 +486,213 @@ export function renderHead(c) {
 }
 
 export function renderBody(c) {
+  const { hero, math, how, status, results, limits, build, roadmap, sister, footer } = c;
+  const footage = hero.footage && hero.footage.video ? hero.footage : null;
+
+  const facts = hero.facts.map((f) => `<li>${esc(f)}</li>`).join('');
+
+  const stats = (math.stats || [])
+    .map(
+      (s) => `
+        <div class="stat${s.highlight ? ' stat--hi' : ''}">
+          <dt class="mono">${esc(s.label)}</dt>
+          <dd class="stat-value" data-count="${esc(s.value)}">${esc(s.value)}</dd>
+        </div>`
+    )
+    .join('');
+
+  const statusRows = status.items
+    .map((it) => {
+      const kind = STATUS_KINDS[String(it.label).trim().toUpperCase()] || 'next';
+      return `
+        <li class="status-row status-row--${kind}">
+          <span class="status-dot" aria-hidden="true"></span>
+          <p>${esc(it.text)}</p>
+          <span class="pill pill--${kind} mono">${esc(it.label)}</span>
+        </li>`;
+    })
+    .join('');
+
+  const phases = roadmap.phases
+    .map(
+      (p, i) => `
+        <li class="phase${i === 0 ? ' phase--now' : ''}" data-phase="${i}">
+          <span class="phase-node" aria-hidden="true"></span>
+          <p class="mono phase-label">${esc(p.phase)}</p>
+          <h3 class="phase-title">${esc(p.title)}</h3>
+          <p>${esc(p.body)}</p>
+        </li>`
+    )
+    .join('');
+
+  let n = 0; // section numbers follow the order on the page
   return `
 <a class="skip-link" href="#main">Skip to content</a>
+${LIQUID_FILTER}
+<div class="progress" id="progress" aria-hidden="true"><span></span></div>
+${siteNav(c)}
+
 <main id="main" tabindex="-1">
-  ${hero(c)}
-  ${project(c)}
-  ${results(c)}
-  ${roadmap(c)}
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    ${stage('hero-stage')}
+    <div class="hero-photo" aria-hidden="true"></div>
+    <svg class="hero-track" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path class="hero-track-line" pathLength="1" d="M700 800 C 720 560, 800 250, 1120 118" />
+      <g class="hero-track-frame" transform="translate(1120 118)">
+        <path d="M-34 -22v-10h10M24 -32h10v10M34 22v10h-10M-24 32h-10v-10" />
+        <circle r="3" />
+        <text x="44" y="-20">SAMPLE TRACK</text>
+      </g>
+    </svg>
+
+    <div class="hero-inner wrap">
+      <div class="hero-copy">
+        <p class="eyebrow mono" data-hero>[ ${esc(hero.eyebrow)} ]</p>
+        <h1 class="hero-title" id="hero-title">${headline(hero.headline)}</h1>
+        ${hero.stage ? `<p class="hero-stage-line" data-hero><span class="mono hero-stage-label">${esc(hero.stage.label)}</span>${esc(hero.stage.text)}</p>` : ''}
+        <p class="hero-sub" data-hero>${esc(hero.sub)}</p>
+        <div class="hero-actions" data-hero>
+          <a class="btn btn--primary btn--lg magnetic"${linkAttrs(hero.primary.href)}>
+            <span>${esc(hero.primary.label)}</span>${ARROW_UR}
+          </a>
+          <a class="btn btn--glass btn--lg magnetic" href="${esc(hero.secondary.href)}">
+            <span>${esc(hero.secondary.label)}</span>${ARROW_DN}
+          </a>
+        </div>
+        ${hero.cost ? `<p class="hero-note" data-hero>${esc(hero.cost)}</p>` : ''}
+      </div>
+      <div class="hero-visual" id="hero-visual">
+        ${footage ? heroFootage(footage) : `${heroLens()}${sightingCard(hero)}`}
+      </div>
+    </div>
+
+    <div class="hero-foot wrap" data-hero>
+      <ul class="hero-facts mono">${facts}</ul>
+      <span class="mono hero-labs">${esc(footer.brand)}</span>
+    </div>
+  </section>
+
+  ${tickerStrip(c.ticker)}
+  ${testedSection(c.tested)}
+
+  <section class="math section" id="math" aria-labelledby="math-title">
+    <div class="wrap math-inner">
+      ${kicker(++n, math.heading, 'math-title')}
+      ${
+        math.statement
+          ? `<p class="math-statement">${litWords(math.statement)}</p>`
+          : `<p class="math-statement">${litWords(math.body)}</p>`
+      }
+      ${stats ? `<dl class="stats" data-reveal>${stats}</dl>` : ''}
+      ${math.statsNote ? `<p class="stats-note mono" data-reveal>${esc(math.statsNote)}</p>` : ''}
+      ${math.statement ? `<p class="lede" data-reveal>${esc(math.body)}</p>` : ''}
+      ${
+        math.useCases
+          ? `<div class="note" data-reveal>
+        <span class="mono note-tag">${esc(math.useCases.tag)}</span>
+        <p>${esc(math.useCases.text)}</p>
+      </div>`
+          : ''
+      }
+    </div>
+  </section>
+
+  ${storySection(c.story, ++n)}
+  ${labelsSection(c.labels, ++n)}
+
+  <section class="how section" id="how" aria-labelledby="how-title">
+    ${stage('how-stage')}
+    <div class="wrap how-inner">
+      <header class="section-head">
+        ${kicker(++n, how.kicker || 'System')}
+        <h2 class="h-section" id="how-title">${esc(how.heading)}</h2>
+      </header>
+      <div class="how-views">
+        ${how.sensor ? sensorBlock(how.sensor) : ''}
+        ${how.radar ? radarBlock(how.radar) : ''}
+      </div>
+      ${how.mount ? mountBlock(how.mount) : ''}
+      <div class="note" data-reveal>
+        <span class="mono note-tag">TEST RANGE</span>
+        <p>${esc(how.note)}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="status section" id="status" aria-labelledby="status-title">
+    <div class="wrap wrap--mid">
+      <header class="section-head">
+        ${kicker(++n, status.kicker || 'Where it stands')}
+        <h2 class="h-section" id="status-title">${esc(status.heading)}</h2>
+      </header>
+      <ol class="status-list">${statusRows}</ol>
+    </div>
+  </section>
+  ${resultsSection(results, () => ++n)}
+  ${limitsSection(limits, () => ++n)}
+  <section class="build section" id="build" aria-labelledby="build-title">
+    <div class="wrap build-inner">
+      <div class="build-orb" aria-hidden="true"></div>
+      <figure class="build-card glass glass--deep" data-reveal>
+        <span class="glass-sheen" aria-hidden="true"></span>
+        ${kicker(++n, build.heading, 'build-title', 'h2')}
+        <blockquote class="build-body"><p>${esc(build.body)}</p></blockquote>
+        ${
+          build.quote
+            ? `<figcaption class="build-motto"><p>&ldquo;${esc(build.quote)}&rdquo;</p>${
+                build.signature ? `<span class="mono">&mdash; ${esc(build.signature)}</span>` : ''
+              }</figcaption>`
+            : ''
+        }
+      </figure>
+    </div>
+  </section>
+
+  <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title">
+    <div class="wrap">
+      <header class="section-head">
+        ${kicker(++n, roadmap.kicker || 'Roadmap')}
+        <h2 class="h-section" id="roadmap-title">${esc(roadmap.heading)}</h2>
+        ${roadmap.intro ? `<p class="lede" data-reveal>${esc(roadmap.intro)}</p>` : ''}
+      </header>
+      <div class="roadmap-track">
+        <span class="roadmap-line" aria-hidden="true"><span class="roadmap-line-fill"></span></span>
+        <ol class="phases">${phases}</ol>
+      </div>
+    </div>
+    <div class="outro">
+      ${stage('outro-stage')}
+      <div class="outro-lens" id="outro-lens" aria-hidden="true">${mark(120, 'mark outro-mark')}</div>
+      <p class="closing">${esc(roadmap.closing)}</p>
+    </div>
+  </section>
 </main>
-${siteFooter(c)}`;
+
+${siteFooter(c, { sister })}`;
 }
 
-// ---- Privacy page ----------------------------------------------------------------
+function siteFooter(c, { from = 'home', sister = null } = {}) {
+  const footer = c.footer;
+  const links = footer.links
+    .filter((l) => !(from === 'privacy' && l.href.includes('privacy.html')))
+    .map((l) => `<li><a class="u-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`)
+    .join('');
+  return `
+<footer class="site-footer">
+  <div class="wrap footer-wrap">
+    ${sister ? sisterCard(sister) : ''}
+    <div class="footer-inner">
+      <p class="brand brand--footer">${mark(22)}${wordmark()}<span class="mono footer-labs">${esc(footer.brand)}</span></p>
+      <ul class="footer-links">
+        ${links}
+        <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>`;
+}
 
+// ---- Privacy page (privacy.html) -------------------------------------------
 export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;
   return `${counter(c)}
@@ -417,27 +709,33 @@ export function renderPrivacyBody(c) {
     .map((s) => (on && s.textWithAnalytics ? { ...s, text: s.textWithAnalytics } : s))
     .map(
       (s) => `
-    <section class="legal-section">
-      <h2>${esc(s.heading)}</h2>
-      <p>${esc(s.text)}${s.link ? ` <a class="u-link"${linkAttrs(s.link.href)}>${esc(s.link.label)}</a>.` : ''}</p>
-    </section>`
+        <section class="legal-section">
+          <h2 class="mono">${esc(s.heading)}</h2>
+          <p>${esc(s.text)}${
+            s.link ? ` <a class="u-link"${linkAttrs(s.link.href)}>${esc(s.link.label)}</a>.` : ''
+          }</p>
+        </section>`
     )
     .join('');
   return `
 <a class="skip-link" href="#main">Skip to content</a>
-<div class="legal-top">${siteHeader(c, { home: false })}</div>
+${LIQUID_FILTER}
+${stage('stage-fixed')}
+${siteNav(c, { home: false })}
+
 <main id="main" class="legal" tabindex="-1">
-  <div class="wrap legal-wrap">
-    <p class="eyebrow">Updated ${esc(p.updated)}</p>
-    <h1 class="h2 legal-title">${esc(p.title)}</h1>
-    <p class="body legal-intro">${esc(on && p.introWithAnalytics ? p.introWithAnalytics : p.intro)}</p>
-    ${sections}
-    <section class="legal-section">
-      <h2>${esc(c.footer.contactLabel)}</h2>
-      <p>${esc(p.contactText)} <a class="u-link" href="mailto:${esc(c.footer.email)}">${esc(c.footer.email)}</a>.</p>
-    </section>
+  <div class="wrap wrap--narrow">
+    <article class="legal-card glass">
+      <p class="mono legal-updated">Updated ${esc(p.updated)}</p>
+      <h1 class="legal-title">${esc(p.title)}</h1>
+      <p class="legal-intro">${esc(on && p.introWithAnalytics ? p.introWithAnalytics : p.intro)}</p>
+      ${sections}
+      <section class="legal-section">
+        <h2 class="mono">${esc(c.footer.contactLabel)}</h2>
+        <p>${esc(p.contactText)} <a class="u-link" href="mailto:${esc(c.footer.email)}">${esc(c.footer.email)}</a>.</p>
+      </section>
+    </article>
   </div>
 </main>
-${siteFooter(c, { home: false })}`;
+${siteFooter(c, { from: 'privacy' })}`;
 }
-
