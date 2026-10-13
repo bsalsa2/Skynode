@@ -3,23 +3,20 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Landing page for Varn, an AI camera that detects and tracks aircraft and drones.",
+  "description": "Landing page for Varn: passive airspace awareness, built one research prototype at a time.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
     "check": "node scripts/check-content.mjs",
     "test": "node --test test/*.test.mjs",
-    "models": "node scripts/build-models.mjs",
-    "prebuild": "npm run check && npm run models",
+    "prebuild": "npm run check",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
-    "@fontsource/space-grotesk": "^5.3.0",
-    "gsap": "^3.15.0",
-    "three": "^0.186.1"
+    "@fontsource/space-grotesk": "^5.3.0"
   },
   "devDependencies": {
     "vite": "^8.3.2"

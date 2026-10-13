@@ -1,8 +1,9 @@
 # Varn website
 
-The landing page for Varn: a single static page built with Vite, vanilla
-JavaScript, Three.js, and GSAP. Everything below can be done from a web
-browser.
+The landing page for Varn: a single static page built with Vite and a few
+kilobytes of vanilla JavaScript, to the approved design in
+[`docs/design/home-mockup.webp`](../docs/design/home-mockup.webp).
+Everything below can be done from a web browser.
 
 | Where | Address | How it updates |
 | --- | --- | --- |
@@ -56,18 +57,16 @@ push.
 
 ---
 
-## Update the text (including the Status list)
+## Update the text
 
 All the words on the page live in one file:
-**[`web/src/content.js`](src/content.js)**.
+**[`web/src/content.js`](src/content.js)**, in page order: `hero`,
+`project` (how it works and the sample dashboard), `results`, `roadmap`,
+`footer`.
 
 1. Open `web/src/content.js` on github.com and click the pencil icon.
-2. Change the text between the quotes. For a status item, set its label to
-   exactly `'DONE'`, `'IN PROGRESS'`, or `'NEXT'`. The colour and icon
-   follow automatically.
-3. To add a status item, copy a whole line like
-   `{ label: 'NEXT', text: '...' },` and edit it.
-4. Click **Commit changes**. The site rebuilds itself in about a minute.
+2. Change the text between the quotes.
+3. Click **Commit changes**. The site rebuilds itself in about a minute.
 
 **Every build checks this file first.** If something's off, nothing gets
 published, and the check says what to fix and on which line. For example:
@@ -83,52 +82,38 @@ You'll see it in Netlify under **Deploys**: click the failed deploy and
 read the log. On a pull request, the problems also show up as annotations
 in the **Check site** results.
 
-The check catches typos, empty fields, wrong status labels, links to
-sections that don't exist, video files that weren't uploaded, results with
-no source, and leftover placeholder text.
+The check catches typos, empty fields, links to sections that don't exist,
+leftover placeholder text, and the honesty rules: a result card whose number
+isn't in `results.source`, a simulated panel or drone without the word
+SAMPLE, a roadmap date that is already in the past, a status row that stops
+saying "prototype", and a copyright line that reads like a registered
+company.
 
 Tips:
 - Keep the commas at the end of each `{ ... },` line.
 - If your text has an apostrophe (like `I'm`), wrap it in backticks
   `` `like this` `` instead of single quotes.
 
-## When there's real footage
+## When there are new results
 
-1. Upload a short clip to `web/public/media/` (on github.com: open the
-   folder, then **Add file → Upload files**). MP4 works everywhere; keep it
-   under about 10 MB.
-2. In `content.js`, under `hero.footage`, set `video` to its path (for
-   example `'media/first-track.mp4'`) and write a `caption` that says what it
-   shows. A `poster` image is optional.
-3. Commit. The clip replaces the concept visualization at the top of the
-   page. It plays muted on a loop, and stays paused with controls for
-   visitors who have turned off motion.
+In `content.js`, edit `results.cards` (icon, title, value, two caption
+lines) and put how and when each number was measured in `results.source`.
+The build refuses a percentage that `results.source` doesn't mention.
 
-Before you publish a clip, check that it doesn't show your house, your
-street, or anything else that reveals where you live.
+## When the roadmap has dates
 
-## When there are accuracy numbers
+`roadmap.steps[].when` says `Next`, `Then`, ... Replace them with real
+quarters (for example `Q1 2027`) once you have them; the check flags any
+date that is already in the past.
 
-In `content.js`, add entries to `results.items`, for example
-`{ value: '91%', label: 'Aircraft detected', note: 'Daytime, clear sky' }`,
-and fill in `results.source` with how and when they were measured. A
-**Results** section appears after Status. It stays hidden while `items` is
-empty, and the build refuses numbers without a source.
+## Photos
 
-## The 3D pan-tilt mount
-
-The mount in "How it works" is your real CAD design. Before each build,
-`web/scripts/build-models.mjs` packs `hardware/pantilt_*.stl` into one small
-file (`web/public/models/pantilt.bin`, about 108 KB instead of 615 KB). The
-page places the parts exactly as `assembly()` in `hardware/pantilt.py` does.
-So when you change the CAD and re-export the STLs, the website updates on
-the next deploy.
-
-If you move the assembly offsets in `pantilt.py` (for example
-`horn_seat_z`), copy the same numbers to the top of `web/src/mount.js`.
-
-The still image shown before the 3D loads is
-`web/public/models/pantilt-still.webp`.
+The hero sky, the roadmap peak and the dashboard's camera view are cut from
+the design itself by `brand/src/extract_mockup.py` (it paints out the text
+and UI baked into the image). To use your own photos instead, replace
+`web/src/assets/hero-sky.webp` (keep the drone and the 1024 x 462 framing,
+or move the tracking overlay in `render.js`), `roadmap-peak.webp` and
+`feed-sky.webp`.
 
 ## Visit counter (GoatCounter)
 
@@ -175,65 +160,52 @@ description, fill in `sister.description` in `content.js`.
 ```
 web/
   index.html              page shell
-  vite.config.js          build: content.js -> static HTML, inline CSS, font preloads
+  vite.config.js          build: content.js -> static HTML, inline CSS, font preload
   netlify.toml            Netlify build settings and caching
-  public/                 favicon, share image, robots.txt, models/
+  public/                 favicon, share image, robots.txt
   scripts/check-content.mjs   validates content.js (runs before every build)
-  scripts/build-models.mjs    packs hardware/*.stl for the 3D mount viewer
-  src/content.js          ALL page copy and status items  <- edit this
-  src/render.js           HTML templates for each section
-  src/styles.css          liquid glass and layout (brand tokens come from graphite.css)
-  ../brain/dashboard/graphite.css   the shared brand tokens: colours, glass, type stacks.
+  src/content.js          ALL page copy  <- edit this
+  src/render.js           HTML for each section, icons, the hero tracking overlay
+  src/home.css            layout and type, in the design's own pixels (see the top of the file)
+  src/assets/             hero, roadmap and dashboard photos
+  ../brain/dashboard/graphite.css   the shared brand tokens: colours and type stacks.
                           The live dashboard loads the same file, so a colour changes in both
-  src/fonts.css           self-hosted Space Grotesk, Inter, Geist Mono
+  src/fonts.css           self-hosted Inter, Space Grotesk, Geist Mono
   src/logo.js             the mark and wordmark paths (generated by brand/src/build_brand.py)
-  src/main.js             scroll story, nav, buttons, glass tilt, lazy loading
-  src/hero-lens.js        the hero lens: a simulated sky (SAMPLE) that drives the sighting card
-  src/sensor.js           the simulated sensor view in "Under the hood"
-  src/mount.js            the Three.js pan-tilt mount viewer
-  src/three-env.js        studio lighting for the mount viewer
+  src/main.js             scroll reveals, hero pause, loads the dashboard simulation
+  src/feed.js             the SAMPLE dashboard: moving detection boxes and the radar sweep
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
 ```
 
-Design: **Varn brand system v1.0** (guide, tokens and logo files in
-[`brand/`](../brand/)). Charcoal and bone, steel-blue accents, frosted glass
-over a stage of fog and steel light. Status colours appear only for what the
-sensor sees, always with a shape: sage circle = confirmed aircraft, amber
-square = possible drone (amber is the one alert colour), fog ring = no ADS-B
-match. The mark and wordmark are outlined SVG. Space Grotesk for headings,
-Inter for text, Geist Mono for data, labels and timestamps. Every simulated visual
-carries a SAMPLE tag.
+Design: the approved homepage mockup, in the **Varn brand system**
+([`brand/`](../brand/)): charcoal and bone, a steel-blue accent on "sky.",
+the outlined mark and wordmark. Headings and text are set in Inter, as in the
+design. Sizes in `home.css` are written in mockup pixels
+(`calc(N * var(--u))`), so the page keeps the design's proportions at any
+width; phones get a stacked layout.
 
 How it behaves:
-- **Hero:** the headline types in letter by letter. The glass lens is a
-  simulated sky drawn on a canvas (an aircraft crosses, a drone hovers, an
-  aircraft with no broadcast passes), and the frosted sighting card changes
-  with it. All of it is tagged SAMPLE. It only runs while on screen, and is a
-  single still frame under reduced motion.
-- **Story:** "From sky to sighting" pins to the screen and steps through five
-  stages (see, detect, track, log, check) as you scroll. Edit the words in
-  `story` in `content.js`; the scenes live in `render.js`.
-- **Sensor view:** a simulation of the overlay from `brain/overlay.py`. The
-  camera pans to keep the locked drone in the centre ring. Labelled as
-  simulated on the page; it only runs while on screen.
-- **3D mount:** loads when it's about to scroll into view and pauses off
-  screen. Drag it to turn it. Hover a part name to highlight that part.
-- **No WebGL, software-only WebGL, or a slow device:** the mount shows a
-  still image instead. Add `?gl=any` to the URL to force 3D anyway.
-- **Reduced motion:** no scroll animation and no motion; the lens sweep and
-  the sensor view are drawn once as stills.
-- **Liquid glass:** frosted blur everywhere. Chrome and Edge also get a
-  refraction effect; Safari and Firefox keep the plain blur.
-- **Privacy:** fonts and scripts are served from the site itself. The only
-  third-party request is the optional GoatCounter visit counter.
+- **Hero:** the tracking line draws across the sky, its dots appear, and the
+  frame locks onto the drone, then pulses slowly. The drone is part of the
+  photo and the frame is labelled SAMPLE. Plain CSS; paused while the hero is
+  off screen.
+- **Dashboard:** labelled SAMPLE FEED. The drone box follows a wandering
+  drone, the plane drifts across, the confidences settle around their sample
+  values, the tracks draw in, and a sweep passes over the radar. Loads near
+  the panel and only runs while it is visible.
+- **Scroll reveals:** headings, cards and the timeline fade up once.
+- **Reduced motion:** everything is shown finished and still.
+- **Privacy:** fonts, scripts and images are served from the site itself.
+  The only third-party request is the optional GoatCounter visit counter.
 
 ---
 
 ## Performance
 
 Lighthouse, mobile preset (simulated slow 4G and a 4× slower CPU), measured
-against the production build before the v6 brand redesign (re-run it
-on the live URL to get current numbers):
+against the production build before the mockup redesign, which removed
+Three.js and GSAP (about 670 KB of script; the page now loads about 6 KB).
+Re-run it on the live URL to get current numbers:
 
 | Performance | Accessibility | Best practices | SEO |
 | :---------: | :-----------: | :------------: | :-: |
