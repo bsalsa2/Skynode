@@ -11,7 +11,7 @@ pipeline collects into /kaggle/working/out:
 
     report.json        what happened (also written, as an error, if training crashed)
     used_clips.json    updated list of used clips
-    talo-auto-*.onnx and current.pt   only if the new model was good enough to keep
+    varn-auto-*.onnx and current.pt   only if the new model was good enough to keep
 
 A crash re-raises, so Kaggle marks the run as failed and the pipeline says so.
 """
@@ -23,8 +23,9 @@ import sys
 import traceback
 from pathlib import Path
 
-REPO = os.environ.get("TALO_REPO", "https://github.com/bsalsa2/Skynode")
-EPOCHS = int(os.environ.get("TALO_EPOCHS", "25"))
+# VARN_* first; TALO_* (the project's old name) still works.
+REPO = os.environ.get("VARN_REPO") or os.environ.get("TALO_REPO") or "https://github.com/bsalsa2/Skynode"
+EPOCHS = int(os.environ.get("VARN_EPOCHS") or os.environ.get("TALO_EPOCHS") or "25")
 WORK = Path("/kaggle/working")
 OUT = WORK / "out"
 
@@ -57,8 +58,8 @@ def main():
             import ultralytics  # noqa: F401  Kaggle images usually include it
         except ImportError:
             subprocess.run([sys.executable, "-m", "pip", "install", "-q", "ultralytics"], check=True)
-        subprocess.run(["git", "clone", "-q", "--depth", "1", REPO, str(WORK / "Talo")], check=True)
-        sys.path.insert(0, str(WORK / "Talo" / "training"))
+        subprocess.run(["git", "clone", "-q", "--depth", "1", REPO, str(WORK / "Varn")], check=True)
+        sys.path.insert(0, str(WORK / "Varn" / "training"))
         import auto_train as at
 
         project = WORK / "project"

@@ -1,10 +1,10 @@
-# Contributing to Talo
+# Contributing to Varn
 
-Thanks for looking. Talo is one student's project, so reviews can take a few days, and small, focused pull requests get merged fastest.
+Thanks for looking. Varn is one student's project, so reviews can take a few days, and small, focused pull requests get merged fastest.
 
 ## Scope first
 
-Talo is a **passive** sensing and tracking platform. Pull requests that transmit on aviation or drone-control frequencies, jam, spoof, or act on aircraft won't be merged. The README's Scope section is the rule.
+Varn is a **passive** sensing and tracking platform. Pull requests that transmit on aviation or drone-control frequencies, jam, spoof, or act on aircraft won't be merged. The README's Scope section is the rule.
 
 ## Setup
 

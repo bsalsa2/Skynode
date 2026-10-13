@@ -1,4 +1,4 @@
-# Talo brain settings. Anything left out uses its default from brain/config.py.
+# Varn brain settings. Anything left out uses its default from brain/config.py.
 
 [camera]
 source = 0              # webcam number (0 = built-in), or a video file path
@@ -38,7 +38,7 @@ show = true             # preview window; set false on a Pi with no screen
 [logger]
 enabled = true
 folder = "../logs"      # relative to this file, so <repo>/logs (git ignores it).
-                        # Holds talo.db (SQLite) and snapshots/
+                        # Holds varn.db (SQLite) and snapshots/
 min_duration_s = 0.5    # locks shorter than this aren't logged (detector blinks)
 snapshots = true        # save a JPEG of the best moment of each sighting
 heartbeat_min = 60      # while nothing is tracked, log a "sky clear" check this often

@@ -1,41 +1,49 @@
 /* Self-hosted fonts (SIL Open Font License, via @fontsource).
    Latin subset only; no requests to third-party servers.
-   Michroma: display and wordmark (always uppercase). Geist: UI and body.
-   Geist Mono: data, labels, timestamps, numbers. */
+   Space Grotesk: display (brand guide: 500/600). Inter: UI and body (400/500).
+   Geist Mono: data, labels, timestamps, numbers (a utility face, not a brand face).
+   The wordmark is outlined SVG and needs none of these. */
 @font-face {
-  font-family: 'Michroma';
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('../node_modules/@fontsource/michroma/files/michroma-latin-400-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Geist';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('../node_modules/@fontsource/geist/files/geist-latin-300-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Geist';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../node_modules/@fontsource/geist/files/geist-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Geist';
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('../node_modules/@fontsource/geist/files/geist-latin-500-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Geist';
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url('../node_modules/@fontsource/geist/files/geist-latin-600-normal.woff2') format('woff2');
+  src: url('../node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2') format('woff2');
 }
 @font-face {
   font-family: 'Geist Mono';

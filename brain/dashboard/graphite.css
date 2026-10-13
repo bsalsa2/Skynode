@@ -1,18 +1,21 @@
 /* ==========================================================================
-   TALO · BRAND V6 · CHARCOAL + BRONZE · SHARED TOKENS
+   VARN · BRAND SYSTEM V1.0 · SHARED TOKENS
    The one place the brand's colours, glass and type stacks are defined.
    The website (web/src/styles.css) and the live dashboard
    (brain/dashboard/dashboard.css) both load this file, so changing a colour
    here changes it in both.
 
-   Charcoal and smoke keep it calm; bronze is the one point of light (the
-   dot in the Split mark, numerals, primary buttons). Status colours are for
-   data only and always travel with a shape, so colour is never the only
-   signal:
-     confirmed aircraft  green   filled circle
-     possible drone      amber   filled square
-     no ADS-B match      violet  hollow ring
-   The logo dot is always bronze, never a status colour.
+   Source of truth: brand/assets/varn_design_tokens.css (the --varn-* palette,
+   type stacks, spacing and radii below are copied from it unchanged). The
+   only addition is --varn-amber, the one alert colour.
+
+   Charcoal and bone carry the page; steel blue is the interaction accent
+   (buttons, active states) and fog its legible form on dark (labels, lines).
+   Status colours are for data only and always travel with a shape, so
+   colour is never the only signal:
+     confirmed aircraft  sage    filled circle
+     possible drone      amber   filled square   (the only alert colour)
+     no ADS-B match      fog     hollow ring
    Layout sizes (gutters, section spacing) are not brand tokens: each app
    keeps its own.
    ========================================================================== */
@@ -20,30 +23,61 @@
 :root {
   color-scheme: dark;
 
-  /* ---- Brand v6 (canonical names) -------------------------------------- */
-  --talo-base: #111213; /* Charcoal */
-  --talo-surface-1: #1a1c1d; /* Basalt */
-  --talo-surface-2: #2a2d2f; /* Graphite */
-  --talo-text: #ecebe8; /* Fog, 15.7:1 on base */
-  --talo-text-2: #9ea0a2; /* Smoke, 7.1:1 */
-  --talo-accent: #cf8a52; /* Bronze, 6.6:1 */
-  --talo-aircraft: #7cd99b; /* 10.9:1 */
-  --talo-drone: #ffc247; /* 11.7:1 */
-  --talo-no-adsb: #c9a0ff; /* 8.9:1 */
+  /* ---- Varn palette (brand/assets/varn_design_tokens.css) --------------- */
+  --varn-charcoal: #0b0f14;
+  --varn-night: #111820;
+  --varn-steel-blue: #4b5b6b;
+  --varn-fog: #a7b3bd;
+  --varn-bone: #f4f3ef;
+  --varn-sage: #7a8b7e;
+  --varn-white: #ffffff;
+  --varn-ink: #17212b;
+  --varn-muted: #66717c;
+  --varn-line: #d9ddd9;
+  /* Alert: possible drone. 9.0:1 on charcoal, 8.4:1 on night. Use it for
+     alerts only, always with a label or shape. */
+  --varn-amber: #e0a84a;
 
-  --talo-r-chip: 99px;
-  --talo-r-tag: 7px;
-  --talo-r-btn: 12px;
-  --talo-r-stat: 14px;
-  --talo-r-card: 22px;
-  --talo-r-panel: 28px;
+  --varn-font-display: 'Space Grotesk', 'Inter', 'Arial', sans-serif;
+  --varn-font-body: 'Inter', 'Arial', sans-serif;
+
+  --varn-space-1: 4px;
+  --varn-space-2: 8px;
+  --varn-space-3: 12px;
+  --varn-space-4: 16px;
+  --varn-space-6: 24px;
+  --varn-space-8: 32px;
+  --varn-space-12: 48px;
+  --varn-space-16: 64px;
+  --varn-radius-sm: 4px;
+  --varn-radius-md: 10px;
+
+  /* ---- Roles (dark surface) -------------------------------------------- */
+  --varn-base: var(--varn-charcoal);
+  --varn-surface-1: var(--varn-night);
+  --varn-surface-2: var(--varn-ink);
+  --varn-text: var(--varn-bone); /* 17.3:1 on charcoal */
+  --varn-text-2: var(--varn-fog); /* 9.0:1 */
+  --varn-accent: var(--varn-steel-blue); /* fills; bone on it is 6.3:1 */
+  --varn-accent-ink: var(--varn-fog); /* accent as text or a thin line, 9.0:1 */
+  --varn-aircraft: var(--varn-sage); /* 5.3:1 */
+  --varn-drone: var(--varn-amber); /* 9.0:1 */
+  --varn-no-adsb: var(--varn-fog); /* 9.0:1, and always a hollow ring */
+
+  /* Corners stay mostly crisp: small radii, UI containers only. */
+  --varn-r-chip: var(--varn-radius-sm);
+  --varn-r-tag: var(--varn-radius-sm);
+  --varn-r-btn: var(--varn-radius-sm);
+  --varn-r-stat: var(--varn-radius-md);
+  --varn-r-card: var(--varn-radius-md);
+  --varn-r-panel: var(--varn-radius-md);
 
   /* Chart marks: deeper steps of the status hues, checked with the dataviz
      palette validator against the dark card (lightness band, colour-blind
      separation). The bright status colours are too light to read as fills. */
-  --chart-aircraft: #38a062;
-  --chart-other: #5e6164;
-  --chart-drone: #c2851a;
+  --chart-aircraft: var(--varn-sage);
+  --chart-other: var(--varn-muted);
+  --chart-drone: color-mix(in srgb, var(--varn-amber) 82%, var(--varn-charcoal));
 
   --line: rgba(255, 255, 255, 0.1);
   --line-2: rgba(255, 255, 255, 0.18);
@@ -60,7 +94,7 @@
   --glass-blur: blur(36px) saturate(180%) brightness(1.08);
   --glass-border: rgba(255, 255, 255, 0.22);
   --glass-edge: inset 0 1.5px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    inset 18px 18px 40px -28px rgba(255, 255, 255, 0.35), inset -12px -16px 36px -28px rgba(207, 138, 82, 0.3);
+    inset 18px 18px 40px -28px rgba(255, 255, 255, 0.35), inset -12px -16px 36px -28px rgba(167, 179, 189, 0.25);
   --glass-drop: 0 36px 70px -30px rgba(0, 0, 0, 0.9);
   /* Clear: nav, chips, tags. Never behind body text. */
   --glass-clear-fill: linear-gradient(
@@ -71,89 +105,91 @@
   );
   --glass-clear-blur: blur(14px) saturate(180%);
   /* Deep: tables and dense data; the charcoal tint keeps text at 7:1+. */
-  --glass-deep-fill: linear-gradient(135deg, rgba(17, 18, 19, 0.62), rgba(17, 18, 19, 0.45));
+  --glass-deep-fill: linear-gradient(135deg, rgba(11, 15, 20, 0.62), rgba(11, 15, 20, 0.45));
   --glass-deep-blur: blur(44px) saturate(180%);
 
-  /* The stage glass sits on: smoke and bronze light, fine diagonal hairlines.
+  /* The stage glass sits on: fog and steel light, fine diagonal hairlines.
      Glass over flat colour shows nothing, so every glass surface needs it. */
-  --stage-bronze: radial-gradient(circle, rgba(207, 138, 82, 0.55), rgba(207, 138, 82, 0) 62%);
+  --stage-steel: radial-gradient(circle, rgba(75, 91, 107, 0.55), rgba(75, 91, 107, 0) 62%);
   --stage-smoke: radial-gradient(circle, rgba(200, 204, 208, 0.22), rgba(200, 204, 208, 0) 62%);
   --stage-hairlines: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 7px);
 
-  --f-display: 'Michroma', 'Segoe UI', system-ui, sans-serif;
-  --f-body: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-display: var(--varn-font-display);
+  --f-body: var(--varn-font-body);
   --f-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Light variant (Paper): frosted white glass, Ink text, deeper status
-   colours. Tokens only for now; neither app ships a theme switch yet. */
+/* Light variant (bone): ink text, steel accents, deeper status colours.
+   Tokens only for now; neither app ships a theme switch yet. */
 [data-theme='light'] {
   color-scheme: light;
-  --talo-base: #f1f1ef; /* Paper */
-  --talo-surface-1: #ffffff;
-  --talo-surface-2: #e6e6e3;
-  --talo-text: #121314; /* Ink, 16.4:1 */
-  --talo-text-2: #55585b; /* Slate, 6.3:1 */
-  --talo-accent: #94521f; /* 5.3:1 */
-  --talo-aircraft: #1f7a45; /* 4.7:1 */
-  --talo-drone: #8a5a00; /* 5.2:1 */
-  --talo-no-adsb: #6b3fb8; /* 6.1:1 */
+  --varn-base: var(--varn-bone);
+  --varn-surface-1: var(--varn-white);
+  --varn-surface-2: var(--varn-line);
+  --varn-text: var(--varn-ink); /* 14.7:1 on bone */
+  --varn-text-2: var(--varn-muted); /* 4.5:1 */
+  --varn-accent: var(--varn-steel-blue); /* 6.3:1 */
+  --varn-accent-ink: var(--varn-steel-blue);
+  --varn-aircraft: color-mix(in srgb, var(--varn-sage) 50%, var(--varn-ink)); /* 6.9:1 */
+  --varn-drone: color-mix(in srgb, var(--varn-amber) 50%, var(--varn-ink)); /* 5.1:1 */
+  --varn-no-adsb: var(--varn-steel-blue); /* 6.3:1 */
   --glass-fill: rgba(255, 255, 255, 0.62);
   --glass-blur: blur(20px);
-  --glass-border: rgba(20, 17, 13, 0.1);
+  --glass-border: rgba(23, 33, 43, 0.1);
   --glass-edge: inset 0 1px 0 #fff;
-  --glass-drop: 0 24px 48px -28px rgba(20, 17, 13, 0.4);
+  --glass-drop: 0 24px 48px -28px rgba(23, 33, 43, 0.4);
 }
 
 /* Working names used across both apps. Declared on every theme root so they
    follow a theme switch. */
 :root,
 [data-theme] {
-  --stage: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
+  --stage: radial-gradient(ellipse at 30% 20%, var(--varn-surface-2), var(--varn-base) 65%);
 
   /* Neutrals */
-  --void: var(--talo-base);
-  --carbon: var(--talo-surface-1);
-  --carbon-2: color-mix(in srgb, var(--talo-base) 60%, var(--talo-surface-1));
-  --carbon-3: color-mix(in srgb, var(--talo-surface-1) 70%, var(--talo-surface-2));
-  --smoke: var(--talo-surface-2);
+  --void: var(--varn-base);
+  --carbon: var(--varn-surface-1);
+  --carbon-2: color-mix(in srgb, var(--varn-base) 60%, var(--varn-surface-1));
+  --carbon-3: color-mix(in srgb, var(--varn-surface-1) 70%, var(--varn-surface-2));
+  --smoke: var(--varn-surface-2);
   --offline: #6e7173;
-  --halo: var(--talo-text); /* primary ink */
-  --white: var(--talo-text);
-  --ink-1: color-mix(in srgb, var(--talo-text) 85%, var(--talo-base));
-  --ink-2: color-mix(in srgb, var(--talo-text) 78%, var(--talo-base)); /* body text */
-  --ink-3: var(--talo-text-2); /* quiet notes */
-  --label: var(--talo-text-2);
-  --dim: color-mix(in srgb, var(--talo-text-2) 62%, var(--talo-base));
+  --halo: var(--varn-text); /* primary ink */
+  --white: var(--varn-text);
+  --ink-1: color-mix(in srgb, var(--varn-text) 85%, var(--varn-base));
+  --ink-2: color-mix(in srgb, var(--varn-text) 78%, var(--varn-base)); /* body text */
+  --ink-3: var(--varn-text-2); /* quiet notes */
+  --label: var(--varn-text-2);
+  --dim: color-mix(in srgb, var(--varn-text-2) 62%, var(--varn-base));
 
-  --accent: var(--talo-accent);
-  --accent-on: var(--talo-base);
+  --accent: var(--varn-accent);
+  --accent-on: var(--varn-bone);
+  --accent-ink: var(--varn-accent-ink);
 
   /* Signals: only ever used for what the sensor sees */
-  --drone: var(--talo-drone);
-  --drone-ink: var(--talo-drone);
-  --drone-on: var(--talo-base);
-  --aircraft: var(--talo-aircraft);
-  --aircraft-ink: var(--talo-aircraft);
-  --aircraft-on: var(--talo-base);
-  --no-adsb: var(--talo-no-adsb);
-  --no-adsb-on: var(--talo-base);
+  --drone: var(--varn-drone);
+  --drone-ink: var(--varn-drone);
+  --drone-on: var(--varn-base);
+  --aircraft: var(--varn-aircraft);
+  --aircraft-ink: var(--varn-aircraft);
+  --aircraft-on: var(--varn-base);
+  --no-adsb: var(--varn-no-adsb);
+  --no-adsb-on: var(--varn-base);
   /* Node health (online, sky clear) is not a detection, so it stays neutral. */
-  --clear: var(--talo-text);
-  --clear-ink: var(--talo-text);
+  --clear: var(--varn-text);
+  --clear-ink: var(--varn-text);
   /* A tracked class that is neither drone nor aircraft, e.g. a bird. */
-  --other: var(--talo-text-2);
+  --other: var(--varn-text-2);
   --other-ink: var(--ink-1);
 }
 
 @media (prefers-reduced-transparency: reduce) {
   :root {
-    --glass-fill: var(--talo-surface-2);
-    --glass-clear-fill: var(--talo-surface-2);
-    --glass-deep-fill: var(--talo-surface-1);
+    --glass-fill: var(--varn-surface-2);
+    --glass-clear-fill: var(--varn-surface-2);
+    --glass-deep-fill: var(--varn-surface-1);
     --glass-blur: none;
     --glass-clear-blur: none;
     --glass-deep-blur: none;

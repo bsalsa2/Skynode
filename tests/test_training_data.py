@@ -1,4 +1,4 @@
-"""Tests for training/talo_data.py (the Colab notebook's bookkeeping).
+"""Tests for training/varn_data.py (the Colab notebook's bookkeeping).
 
 Needs numpy and OpenCV (they make the tiny test videos and pictures).
 """
@@ -13,7 +13,7 @@ if not all(importlib.util.find_spec(name) for name in ("numpy", "cv2")):
 import cv2          # noqa: E402
 import numpy as np  # noqa: E402
 
-from training.talo_data import (DatasetBuilder, class_hint, dataset_warnings, draw_preview,  # noqa: E402
+from training.varn_data import (DatasetBuilder, class_hint, dataset_warnings, draw_preview,  # noqa: E402
                                    extract_frames, format_label, list_videos, make_contact_sheet,
                                    parse_label_lines, remap_labels, safe_name, split_frames, video_of)
 

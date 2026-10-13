@@ -1,47 +1,54 @@
 /* ==========================================================================
-   TALO · LIVE DASHBOARD · BRAND V6
+   VARN · LIVE DASHBOARD · BRAND SYSTEM V1.0
    Shares its tokens with the website through graphite.css, so the two
-   read as one brand. Charcoal, smoke and one bronze point of light; status
-   colours appear only for what the sensor sees, always with a shape.
+   read as one brand. Charcoal and bone with steel accents; status colours
+   appear only for what the sensor sees, always with a shape.
    ========================================================================== */
 
 /* ---- Fonts --------------------------------------------------------------- */
 /* Self-hosted (SIL Open Font License, licences in fonts/). Latin subset only,
    so the dashboard never asks another server for anything. */
 @font-face {
-  font-family: 'Michroma';
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('fonts/michroma-latin-400-normal.woff2') format('woff2');
+  src: url('fonts/space-grotesk-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Geist';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('fonts/geist-latin-300-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Geist';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/geist-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Geist';
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('fonts/geist-latin-500-normal.woff2') format('woff2');
+  src: url('fonts/space-grotesk-latin-500-normal.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Geist';
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url('fonts/geist-latin-600-normal.woff2') format('woff2');
+  src: url('fonts/space-grotesk-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/inter-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/inter-latin-600-normal.woff2') format('woff2');
 }
 @font-face {
   font-family: 'Geist Mono';
@@ -128,7 +135,7 @@ code {
   display: none !important;
 }
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-ink);
   outline-offset: 2px;
 }
 .sr-only {
@@ -183,7 +190,7 @@ code {
   --c: var(--other);
   --c-soft: color-mix(in srgb, var(--other) 85%, transparent);
   --c-ink: var(--other-ink);
-  --c-on: var(--talo-base);
+  --c-on: var(--varn-base);
   --c-glow: color-mix(in srgb, var(--other) 30%, transparent);
   --c-bg: rgba(255, 255, 255, 0.06);
   --c-ring: color-mix(in srgb, var(--other) 55%, transparent);
@@ -192,7 +199,7 @@ code {
   --c: var(--clear);
   --c-soft: color-mix(in srgb, var(--clear) 85%, transparent);
   --c-ink: var(--clear-ink);
-  --c-on: var(--talo-base);
+  --c-on: var(--varn-base);
   --c-glow: color-mix(in srgb, var(--clear) 30%, transparent);
   --c-bg: rgba(255, 255, 255, 0.06);
   --c-ring: color-mix(in srgb, var(--clear) 45%, transparent);
@@ -200,26 +207,26 @@ code {
 
 /* ---- The stage ------------------------------------------------------------ */
 /* Pinned to the window, so every tab (and every scroll position) has smoke
-   and bronze light behind its glass. Glass over flat colour shows nothing. */
+   and steel light behind its glass. Glass over flat colour shows nothing. */
 .sky {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
+  background: radial-gradient(ellipse at 30% 20%, var(--varn-surface-2), var(--varn-base) 65%);
 }
-.sky-bronze,
+.sky-steel,
 .sky-smoke {
   position: absolute;
   border-radius: 50%;
 }
-.sky-bronze {
+.sky-steel {
   right: -120px;
   top: -200px;
   width: 760px;
   height: 760px;
-  background: var(--stage-bronze);
+  background: var(--stage-steel);
 }
 .sky-smoke {
   left: -160px;
@@ -279,14 +286,14 @@ code {
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
-    background: var(--talo-surface-2);
+    background: var(--varn-surface-2);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
   .glass {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: var(--talo-surface-2);
+    background: var(--varn-surface-2);
   }
 }
 
@@ -342,13 +349,13 @@ code {
 .mark {
   flex: none;
 }
+/* Outlined SVG (brand/varn_wordmark.svg), so it never waits for a font. */
 .wordmark {
-  font-family: var(--f-display);
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 1;
-  letter-spacing: 0.22em;
-  margin-right: -0.22em;
+  flex: none;
+  display: block;
+  height: 11px;
+  width: auto;
+  aspect-ratio: 4316 / 700;
   color: var(--halo);
 }
 .tabs {
@@ -432,7 +439,7 @@ code {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-radius: var(--talo-r-panel);
+  border-radius: var(--varn-r-panel);
 }
 .card-head {
   display: flex;
@@ -475,7 +482,7 @@ code {
   gap: 12px;
   min-width: 0;
   padding: 12px 14px;
-  border-radius: var(--talo-r-stat);
+  border-radius: var(--varn-r-stat);
 }
 .tile-label {
   font-family: var(--f-mono);
@@ -1488,21 +1495,21 @@ code {
   height: 60px;
   border-radius: 50%;
   color: var(--halo);
-  background: radial-gradient(circle, rgba(207, 138, 82, 0.14), transparent 70%);
+  background: radial-gradient(circle, rgba(167, 179, 189, 0.14), transparent 70%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 .node-beacon svg {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 16px;
 }
 .node-beacon-ink {
-  fill: var(--talo-text);
+  fill: var(--varn-text);
 }
 .card--node[data-state='offline'] .node-beacon-ink {
   fill: var(--offline);
 }
 .node-beacon-dot {
-  fill: var(--accent);
+  fill: var(--accent-ink);
 }
 .card--node[data-state='online'] .node-beacon-dot {
   animation: sn-pulse 2.4s ease-in-out infinite;

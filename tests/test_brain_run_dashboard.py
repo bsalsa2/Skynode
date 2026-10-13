@@ -57,8 +57,8 @@ CAR_BOX = (10.0, 200.0, 60.0, 230.0)        # a class we don't track, in every f
 
 
 def read_log(folder):
-    """Every record in <folder>/talo.db as a dict, in the order it was written."""
-    with contextlib.closing(sqlite3.connect(Path(folder) / "talo.db")) as conn:
+    """Every record in <folder>/varn.db as a dict, in the order it was written."""
+    with contextlib.closing(sqlite3.connect(Path(folder) / "varn.db")) as conn:
         rows = conn.execute(f"SELECT {', '.join(COLUMNS)} FROM sightings ORDER BY rowid").fetchall()
     return [Sighting.from_dict(row_to_dict(row)).to_dict() for row in rows]
 
@@ -141,7 +141,7 @@ class RunLoopTestCase(unittest.TestCase):
         self.root = Path(tmp.name)
         self.static = self.root / "static"
         self.static.mkdir()
-        (self.static / "index.html").write_text("<!doctype html><title>Talo</title>")
+        (self.static / "index.html").write_text("<!doctype html><title>Varn</title>")
         self.cfg = make_config(self.root)
         self.clock = FakeClock()
 
@@ -269,7 +269,7 @@ class WithLoggerAndDashboardTest(RunLoopTestCase):
         self.assertTrue(csv_rows[1].startswith(f"{drone['id']},sighting,drone,drone,"))
 
         # And the same three records are on disk, in the database
-        self.assertTrue((self.root / "logs" / "talo.db").is_file())
+        self.assertTrue((self.root / "logs" / "varn.db").is_file())
         records = read_log(self.root / "logs")
         self.assertEqual([r["category"] for r in records], ["aircraft", "clear", "drone"])
 
@@ -356,7 +356,7 @@ class CodespacesTest(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         static = Path(tmp.name)
-        (static / "index.html").write_text("<title>Talo</title>")
+        (static / "index.html").write_text("<title>Varn</title>")
         cfg = Config()
         cfg.dashboard.port = 0
         cfg.dashboard.allowed_hosts = ["my.trusted.example"]
@@ -438,7 +438,7 @@ class CommandLineTest(unittest.TestCase):
     def test_dashboard_info_shows_short_paths_only(self):
         cfg = Config()
         cfg.model.path = str(Path(__file__).resolve().parent.parent / "brain" / "models" / "x.onnx")
-        cfg.logger.folder = str(Path(tempfile.gettempdir()) / "somewhere" / "talo-logs")
+        cfg.logger.folder = str(Path(tempfile.gettempdir()) / "somewhere" / "varn-logs")
         cfg.camera.source = str(Path(tempfile.gettempdir()) / "videos" / "planes.mp4")
         info = dashboard_info(cfg, NullLink())
         self.assertEqual(info["model"], "x.onnx")
@@ -447,7 +447,7 @@ class CommandLineTest(unittest.TestCase):
         self.assertEqual(info["target_classes"], ["airplane", "bird"])
         config = info["config"]
         self.assertEqual(config["model"]["path"], "brain/models/x.onnx")
-        self.assertEqual(config["logger"]["folder"], "talo-logs")
+        self.assertEqual(config["logger"]["folder"], "varn-logs")
         self.assertEqual(config["camera"]["source"], "planes.mp4")
         self.assertEqual(set(config), {"camera", "model", "tracker", "control", "link",
                                        "display", "logger", "dashboard"})

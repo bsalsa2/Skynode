@@ -3,7 +3,7 @@
     python -m brain.adsb_compare                   # summary of everything in logs/
     python -m brain.adsb_compare --csv result.csv  # plus one row per sighting
 
-Reads logs/talo.db (the camera) and logs/adsb_log.csv + adsb_polls.csv (written by
+Reads logs/varn.db (or an old logs/talo.db: the camera) and logs/adsb_log.csv + adsb_polls.csv (written by
 `python -m brain.adsb` while the brain was running). Nothing is changed or written
 except the optional --csv file.
 
@@ -33,6 +33,7 @@ from contextlib import closing
 from pathlib import Path
 
 from brain.adsb import DEFAULT_FOLDER, LOG_NAME, POLLS_NAME, iso_utc, number
+from brain.logger import database_path
 
 AIRCRAFT_OVERHEAD, NONE_OVERHEAD, NO_DATA = "aircraft_overhead", "none_overhead", "no_data"
 RESULT_COLUMNS = ("id", "category", "class_name", "start_utc", "duration_s", "confidence",
@@ -157,7 +158,7 @@ def main(argv=None):
     parser.add_argument("--min-elev", type=float, default=10.0, help="lowest angle above the horizon")
     args = parser.parse_args(argv)
 
-    database = args.folder / "talo.db"
+    database = database_path(args.folder)
     if not database.is_file():
         raise SystemExit(f"No sighting log at {database}. Run the brain first.")
     if not (args.folder / POLLS_NAME).is_file():

@@ -8,7 +8,7 @@ the camera was pointing) plus a small JPEG of that best moment.
 
 Where it all goes ([logger] folder in brain/config.toml, normally logs/):
 
-    logs/talo.db                          every sighting and sky check (SQLite)
+    logs/varn.db                          every sighting and sky check (SQLite)
     logs/snapshots/20261007-140217-001.jpg   the best frame of that sighting
 
 SQLite is one ordinary file that any tool can open (the `sqlite3` command, Python,
@@ -48,7 +48,9 @@ SNAPSHOT_WIDTH = 640                                 # snapshots are shrunk to a
 SAFE_ID = re.compile(r"[0-9A-Za-z_-]+")              # ids end up in file names and URLs
 SNAPSHOT_NAME = re.compile(r"[0-9A-Za-z_-]+\.jpg")   # the only names snapshot_path() accepts
 MAX_LINE_BYTES = 16 * 1024      # old .jsonl files only: a real record is a few hundred bytes
-DB_NAME = "talo.db"
+DB_NAME = "varn.db"
+OLD_DB_NAMES = ("talo.db",)     # the project's old name: renamed to varn.db the first time it opens
+DB_SUFFIXES = ("", "-journal", "-wal", "-shm")   # the database file and SQLite's side files
 
 
 @dataclass
@@ -139,8 +141,32 @@ def row_to_dict(row):
     return data
 
 
+def database_path(folder):
+    """<folder>/varn.db, or an old talo.db if that is the only log there. For read-only tools."""
+    folder = Path(folder)
+    for name in (DB_NAME, *OLD_DB_NAMES):
+        if (folder / name).is_file():
+            return folder / name
+    return folder / DB_NAME
+
+
+def adopt_old_database(folder):
+    """Rename an old talo.db (and its side files) to varn.db, unless varn.db already exists.
+    Returns the old path it renamed, or None. Raises OSError if the rename fails."""
+    folder = Path(folder)
+    if (folder / DB_NAME).exists():
+        return None
+    for old in OLD_DB_NAMES:
+        if (folder / old).is_file():
+            for suffix in DB_SUFFIXES:
+                if (folder / f"{old}{suffix}").exists():
+                    os.replace(folder / f"{old}{suffix}", folder / f"{DB_NAME}{suffix}")
+            return folder / old
+    return None
+
+
 class SightingDB:
-    """The sightings table in <folder>/talo.db.
+    """The sightings table in <folder>/varn.db (an old talo.db is renamed to it on first use).
 
     Only the main loop writes to it, and only the main loop reads it (once, at
     start-up): the dashboard's threads read the logger's in-memory copy, so the
@@ -156,6 +182,7 @@ class SightingDB:
         """The open connection, opening it first if needed. None if the file doesn't exist
         yet and create is False."""
         if self._conn is None:
+            self._adopt_old_database()
             if not self.path.is_file():
                 if not create:
                     return None
@@ -169,6 +196,19 @@ class SightingDB:
                 raise
             self._conn = conn
         return self._conn
+
+    def _adopt_old_database(self):
+        """Carry a log from before the rename (talo.db) over to varn.db."""
+        if self.path.name != DB_NAME:
+            return
+        try:
+            old = adopt_old_database(self.path.parent)
+            if old:
+                print(f"Renamed the sighting log {old.name} to {DB_NAME}.")
+        except OSError as error:        # can't rename it: keep using the old file where it is
+            self.path = database_path(self.path.parent)
+            print(f"WARN couldn't rename the old sighting log to {DB_NAME} ({error}). "
+                  f"Using {self.path.name}.")
 
     def move_damaged_aside(self):
         """Rename a file that isn't a usable database, so a fresh one can take its place."""
@@ -480,7 +520,7 @@ class SightingLogger:
             self.history_start = max(self.history_start, cutoff)
 
     def _open_database(self):
-        """Open talo.db (if there is one), bring in old .jsonl files, and note every id."""
+        """Open varn.db (or an old talo.db) if there is one, bring in old .jsonl files, and note every id."""
         try:
             self._ids = self._db.ids()
         except sqlite3.DatabaseError as error:

@@ -33,7 +33,7 @@ mpremote reset
 
 ## 3. Test it
 
-Wire the servos first (see the [top-level README](../README.md#wiring)). In Thonny, open `main.py` **from the Pico** and press Run (F5). The Shell prints `READY talo-pico`. Then type:
+Wire the servos first (see the [top-level README](../README.md#wiring)). In Thonny, open `main.py` **from the Pico** and press Run (F5). The Shell prints `READY varn-pico`. Then type:
 
 ```
 ?              → POS P90.0 T45.0
@@ -86,7 +86,7 @@ While Wi-Fi is down, the firmware retries every 15 seconds and prints `WIFI retr
 
 ## Command protocol
 
-The same commands work over USB and Wi-Fi. **Over USB**, send one command per line, ended by `\n` or `\r\n`. **Over Wi-Fi**, send UDP datagrams to port 5005, each holding one or more lines; replies go back to the sender's address and port. Either way, commands are case-insensitive, with at most 64 characters per line. Replies end with a newline (`\r\n` over USB, `\n` over Wi-Fi), so strip it. At boot the Pico prints `READY talo-pico`.
+The same commands work over USB and Wi-Fi. **Over USB**, send one command per line, ended by `\n` or `\r\n`. **Over Wi-Fi**, send UDP datagrams to port 5005, each holding one or more lines; replies go back to the sender's address and port. Either way, commands are case-insensitive, with at most 64 characters per line. Replies end with a newline (`\r\n` over USB, `\n` over Wi-Fi), so strip it. At boot the Pico prints `READY varn-pico`.
 
 | Command | Example | Reply | Notes |
 |---|---|---|---|

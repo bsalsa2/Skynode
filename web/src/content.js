@@ -1,7 +1,7 @@
 import { CONTACT_EMAIL } from './config.js';
 
 // ---------------------------------------------------------------------------
-//  TALO SITE CONTENT
+//  VARN SITE CONTENT
 //
 //  Every word on the page lives in this file. Edit the text between the
 //  quotes, commit, and the site rebuilds itself.
@@ -18,7 +18,7 @@ import { CONTACT_EMAIL } from './config.js';
 
 export const content = {
   meta: {
-    title: 'Talo | Watch the sky',
+    title: 'Varn | Watch the sky',
     description:
       'A low-cost visual sensing platform, starting with one passive sky-tracking node. About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     // Public URL of the live site (used for social share previews). The
@@ -29,13 +29,13 @@ export const content = {
 
   // VISIT COUNTER (GoatCounter: free, no cookies, nothing personal stored).
   // Off while empty. Sign up at goatcounter.com, pick a code (for example
-  // 'talo'), and put that code here. The privacy page updates itself.
+  // 'varn'), and put that code here. The privacy page updates itself.
   analytics: {
     goatcounter: 'bsalsa2',
   },
 
   nav: {
-    brand: 'TALO',
+    brand: 'VARN',
     links: [
       { label: 'How it works', href: '#story' },
       { label: 'Status', href: '#status' },
@@ -48,7 +48,7 @@ export const content = {
     eyebrow: 'A watcher, not a weapon',
     headline: 'Watch the sky.',
     sub: 'Passive visual sensing that tells drones from aircraft and logs every sighting.',
-    primary: { label: 'View the code', href: 'https://github.com/bsalsa2/talo' },
+    primary: { label: 'View the code', href: 'https://github.com/bsalsa2/varn' },
     secondary: { label: 'See where it stands', href: '#status' },
     // Cost note, shown under the buttons. Keep the exclusions in the sentence.
     cost: 'About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
@@ -107,7 +107,7 @@ export const content = {
         number: '01',
         title: 'SEE',
         fact: 'Passive · receives light only',
-        body: 'A webcam on a pan-tilt mount looks at the sky. Talo is passive: it only receives light. It never jams, never transmits on aircraft or drone frequencies, and carries no payload.',
+        body: 'A webcam on a pan-tilt mount looks at the sky. Varn is passive: it only receives light. It never jams, never transmits on aircraft or drone frequencies, and carries no payload.',
       },
       {
         number: '02',
@@ -131,7 +131,7 @@ export const content = {
         number: '05',
         title: 'CHECK',
         fact: 'ADS-B · built, not yet run on a real feed',
-        body: 'Planes publicly broadcast their positions (ADS-B). Talo can line its sightings up with a log of the real flights overhead, which is how real accuracy numbers will be measured. That comparison is written but has not run against a real feed yet.',
+        body: 'Planes publicly broadcast their positions (ADS-B). Varn can line its sightings up with a log of the real flights overhead, which is how real accuracy numbers will be measured. That comparison is written but has not run against a real feed yet.',
       },
     ],
   },
@@ -152,7 +152,7 @@ export const content = {
         kind: 'drone',
         title: 'Possible drone',
         shape: 'Filled square',
-        rule: 'The model says drone. It is always only possible: a model can be wrong, and Talo says so.',
+        rule: 'The model says drone. It is always only possible: a model can be wrong, and Varn says so.',
       },
       {
         kind: 'no-adsb',
@@ -171,11 +171,11 @@ export const content = {
     stats: [
       { label: 'A small drone', value: '$100s' },
       { label: 'Typical detection system', value: '$10,000s' },
-      { label: 'Talo sensing parts, before the computer', value: '~$113', highlight: true },
+      { label: 'Varn sensing parts, before the computer', value: '~$113', highlight: true },
     ],
     // Printed under the numbers so they can't be read as a capability claim.
-    statsNote: 'Price comparison only, not a capability comparison. Talo is one passive camera node and has not run on real hardware yet.',
-    body: 'Talo is a first step toward making that sensing layer cheap enough to put anywhere.',
+    statsNote: 'Price comparison only, not a capability comparison. Varn is one passive camera node and has not run on real hardware yet.',
+    body: 'Varn is a first step toward making that sensing layer cheap enough to put anywhere.',
     useCases: {
       tag: 'USE CASES',
       text: `Early use cases I'm exploring: farms, small airports, stadiums, and power substations. First hypothesis to test: small general-aviation airfields.`,
@@ -239,7 +239,7 @@ export const content = {
     source: 'Model v2, 43 real-world videos. v3 (drone and aircraft classes, 960 px input) is in training. There are no v3 results yet.',
   },
 
-  // KNOWN LIMITS: what Talo can't do, stated plainly.
+  // KNOWN LIMITS: what Varn can't do, stated plainly.
   limits: {
     kicker: 'Honest limits',
     heading: 'Known limits',
@@ -265,7 +265,7 @@ export const content = {
 
   build: {
     heading: 'About me',
-    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Talo was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Talo is where I'm starting.`,
+    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Varn was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Varn is where I'm starting.`,
   },
 
   roadmap: {
@@ -304,9 +304,9 @@ export const content = {
   },
 
   footer: {
-    brand: 'TALO LABS',
+    brand: 'VARN LABS',
     links: [
-      { label: 'Talo on GitHub', href: 'https://github.com/bsalsa2/talo' },
+      { label: 'Varn on GitHub', href: 'https://github.com/bsalsa2/varn' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
       { label: 'Privacy', href: './privacy.html' },
     ],

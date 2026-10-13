@@ -60,7 +60,7 @@ class SquareDetector:
 
 
 def read_log(folder):
-    with contextlib.closing(sqlite3.connect(Path(folder) / "talo.db")) as conn:
+    with contextlib.closing(sqlite3.connect(Path(folder) / "varn.db")) as conn:
         rows = conn.execute(f"SELECT {', '.join(COLUMNS)} FROM sightings ORDER BY rowid").fetchall()
     return [Sighting.from_dict(row_to_dict(row)).to_dict() for row in rows]
 
@@ -295,10 +295,10 @@ class DemoRunTest(unittest.TestCase):
     def test_real_logs_are_never_touched(self):
         real = self.root / "logs"
         (real / "snapshots").mkdir(parents=True, exist_ok=True)
-        (real / "talo.db").write_bytes(b"the user's real log")
+        (real / "varn.db").write_bytes(b"the user's real log")
         (real / "snapshots" / "real.jpg").write_bytes(b"x")
         self.demo()
-        self.assertEqual((real / "talo.db").read_bytes(), b"the user's real log")
+        self.assertEqual((real / "varn.db").read_bytes(), b"the user's real log")
         self.assertTrue((real / "snapshots" / "real.jpg").exists())
 
     def test_the_videos_are_left_alone(self):

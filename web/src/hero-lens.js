@@ -14,9 +14,9 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const ease = (t) => t * t * (3 - 2 * t);
 
 const COLORS = {
-  aircraft: '#7CD99B',
-  drone: '#FFC247',
-  'no-adsb': '#C9A0FF',
+  aircraft: '#7A8B7E',
+  drone: '#E0A84A',
+  'no-adsb': '#A7B3BD',
 };
 const LABELS = {
   aircraft: 'Confirmed aircraft',
@@ -189,7 +189,7 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
     // Range rings: faint, drifting a little with the pointer.
     ctx.save();
     ctx.translate(pointerEase.x * 8, pointerEase.y * 8);
-    ctx.strokeStyle = 'rgba(236,235,232,0.07)';
+    ctx.strokeStyle = 'rgba(244,243,239,0.07)';
     ctx.lineWidth = 1;
     for (let i = 1; i <= 4; i++) {
       ctx.beginPath();
@@ -198,7 +198,7 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
     }
     ctx.restore();
     // Horizon line.
-    ctx.strokeStyle = 'rgba(236,235,232,0.1)';
+    ctx.strokeStyle = 'rgba(244,243,239,0.1)';
     ctx.beginPath();
     ctx.moveTo(cx - R, cy + R * 0.62);
     ctx.lineTo(cx + R, cy + R * 0.62);
@@ -242,7 +242,7 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
     ctx.beginPath();
     ctx.arc(tx, ty, 26, 0, TAU);
     ctx.fill();
-    ctx.fillStyle = '#ECEBE8';
+    ctx.fillStyle = '#F4F3EF';
     ctx.beginPath();
     ctx.arc(tx, ty, scene.speck, 0, TAU);
     ctx.fill();
@@ -270,7 +270,7 @@ export function createLens({ lens, canvas, card, reduceMotion }) {
       const ly = clamp(box.y - bs - 12, 20, h - 20);
       ctx.save();
       ctx.globalAlpha = box.a * vis;
-      ctx.fillStyle = 'rgba(17,18,19,0.78)';
+      ctx.fillStyle = 'rgba(11,15,20,0.78)';
       ctx.strokeStyle = color + '66';
       ctx.beginPath();
       ctx.roundRect(lx, ly - 13, tw + 30, 22, 11);
