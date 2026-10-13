@@ -110,9 +110,7 @@ function list(path, { min = 1 } = {}) {
   return value;
 }
 
-const sectionIds = new Set(['top', 'tested', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
-if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
-if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
+const sectionIds = new Set(['top', 'project', 'results', 'roadmap']);
 
 function link(path, value = get(path)) {
   if (!text(path, value)) return;
@@ -129,12 +127,6 @@ function link(path, value = get(path)) {
   }
 }
 
-function publicFile(path, value = get(path)) {
-  if (!value || /^https:\/\//.test(value)) return;
-  if (!existsSync(join(webRoot, 'public', value)))
-    err(`${path} is "${value}", but there's no file at web/public/${value}. Upload it there first.`, lineOf(value));
-}
-
 const gc = get('analytics.goatcounter');
 if (gc && !/^[a-z0-9-]+$/.test(gc))
   err(`analytics.goatcounter should be just your GoatCounter code, like 'varn' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
@@ -148,141 +140,87 @@ list('nav.links').forEach((l, i) => {
   text(`nav.links.${i}.label`, l?.label);
   link(`nav.links.${i}.href`, l?.href);
 });
+text('nav.github.label');
+link('nav.github.href');
 
-['eyebrow', 'headline', 'sub', 'caption'].forEach((k) => text(`hero.${k}`));
-text('hero.primary.label');
-link('hero.primary.href');
-text('hero.secondary.label');
-link('hero.secondary.href');
+// ---- Hero
+['eyebrow', 'headline', 'sub', 'stage', 'trackLabel'].forEach((k) => text(`hero.${k}`));
+for (const b of ['primary', 'secondary']) {
+  text(`hero.${b}.label`);
+  link(`hero.${b}.href`);
+}
 list('hero.facts').forEach((f, i) => text(`hero.facts.${i}`, f));
-if (get('hero.cost') !== undefined) {
-  text('hero.cost');
-  // The cost claim must keep saying what it leaves out.
-  if (!/before the computer/i.test(get('hero.cost') || ''))
-    err('hero.cost must say the price is "before the computer that runs the model".', lineOf('cost:'));
-}
+list('hero.tagline').forEach((t, i) => text(`hero.tagline.${i}`, t));
+// The drone in the hero photo is an illustration, not a detection.
+if (!/\bSAMPLE\b/.test(get('hero.trackLabel') || ''))
+  err('hero.trackLabel must contain the word SAMPLE: the tracked drone in the hero is an illustration.', lineOf('trackLabel:'));
+// Until the hardware runs, the status row has to say so.
+if (!/prototype/i.test(get('hero.stage') || ''))
+  err('hero.stage must say this is a prototype (for example "Research prototype").', lineOf('stage:'));
 
-const footage = get('hero.footage');
-if (footage && footage.video) {
-  publicFile('hero.footage.video');
-  publicFile('hero.footage.poster');
-  if (!footage.caption || !footage.caption.trim())
-    err('hero.footage.caption is empty. Say what the clip shows before it goes on the page.', lineAfter('footage:', 'caption:'));
-}
-
-text('math.heading');
-text('math.body');
-if (get('math.stats') && !get('math.statsNote'))
-  err('math.stats compares prices, so math.statsNote must say it is a price comparison only, not a capability comparison.', lineOf('stats:'));
-if (get('math.statsNote') !== undefined) text('math.statsNote');
-if (get('math.useCases')) {
-  text('math.useCases.tag');
-  text('math.useCases.text');
-}
-if (get('math.statement') !== undefined) {
-  if (text('math.statement') && (get('math.statement').match(/\[/g) || []).length !== (get('math.statement').match(/\]/g) || []).length)
-    err('math.statement has an unmatched [ or ]. Put [square brackets] around the words to light up.', lineOf('statement:'));
-}
-if (get('math.stats') !== undefined) {
-  list('math.stats').forEach((s, i) => {
-    text(`math.stats.${i}.label`, s?.label);
-    text(`math.stats.${i}.value`, s?.value);
-  });
-}
-
-text('how.heading');
-text('story.heading');
-text('story.intro');
-list('story.stages').forEach((st, i) => {
-  ['number', 'title', 'fact', 'body'].forEach((k) => text(`story.stages.${i}.${k}`, st?.[k]));
+// ---- How it works
+text('project.kicker');
+list('project.heading').forEach((h, i) => text(`project.heading.${i}`, h));
+text('project.body');
+list('project.steps').forEach((st, i) => {
+  if (!['eye', 'brain', 'shield', 'crosshair', 'plane', 'database'].includes(st?.icon))
+    err(`project.steps.${i}.icon should be one of eye, brain, shield, crosshair, plane, database.`, lineOf('steps:'));
+  ['title', 'text'].forEach((k) => text(`project.steps.${i}.${k}`, st?.[k]));
 });
-for (const path of ['story.device', 'story.note']) {
-  const v = get(path);
-  if (typeof v !== 'string' || !/\bSAMPLE\b/.test(v)) err(`${path} must contain the word SAMPLE: the story panel is a simulation.`, lineOf('story:'));
-}
-if (get('ticker')) list('ticker').forEach((t, i) => text(`ticker.${i}`, t));
-if (get('hero.stage')) {
-  text('hero.stage.label');
-  text('hero.stage.text');
-}
-if (get('tested')) {
-  text('tested.heading');
-  list('tested.columns').forEach((col, i) => {
-    ['tag', 'title'].forEach((k) => text(`tested.columns.${i}.${k}`, col?.[k]));
-    list(`tested.columns.${i}.items`).forEach((it, j) => text(`tested.columns.${i}.items.${j}`, it));
-  });
-  if (get('tested.link')) link('tested.link.href');
-}
-text('labels.heading');
-text('labels.note');
-list('labels.items').forEach((it, i) => {
-  if (!['aircraft', 'drone', 'no-adsb'].includes(it?.kind)) err(`labels.items.${i}.kind must be 'aircraft', 'drone' or 'no-adsb'.`, lineOf('labels:'));
-  ['title', 'shape', 'rule'].forEach((k) => text(`labels.items.${i}.${k}`, it?.[k]));
+text('project.feedLabel');
+if (!/\bSAMPLE\b/.test(get('project.feedLabel') || ''))
+  err('project.feedLabel must contain the word SAMPLE: the dashboard panel is a simulation, not a live feed.', lineOf('feedLabel:'));
+text('project.objectsLabel');
+list('project.objects').forEach((o, i) => {
+  ['name', 'value', 'kind'].forEach((k) => text(`project.objects.${i}.${k}`, o?.[k]));
+  if (!['uav', 'plane', 'bird', 'heli'].includes(o?.kind))
+    err(`project.objects.${i}.kind should be 'uav', 'plane', 'bird' or 'heli'.`, lineOf('objects:'));
 });
-text('how.note');
-// Sample and preview content must say so.
-for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label', 'how.radar.label', 'how.radar.caption']) {
-  const v = get(path);
-  if (typeof v === 'string' && !/\bSAMPLE\b/.test(v))
-    err(`${path} shows simulated content, so it must contain the word SAMPLE.`, lineOf(v));
-}
-const CARD_STATUSES = ['aircraft', 'drone', 'no-adsb'];
-if (get('hero.card') && !CARD_STATUSES.includes(get('hero.card.status')))
-  err(`hero.card.status is "${get('hero.card.status')}". Use exactly 'aircraft', 'drone' or 'no-adsb'.`, lineAfter('card:', 'status:'));
-// Brand voice: Varn only watches. These words never appear on the page.
-for (const word of ['missile', 'kill', 'strike', 'defeat']) {
-  const i = lines.findIndex((l) => !/^\s*\/\//.test(l) && new RegExp(`\\b${word}`, 'i').test(l));
-  if (i >= 0) err(`"${word}" is off-brand: Varn is detection only. Reword this line.`, i + 1);
-}
-if (get('how.sensor')) {
-  text('how.sensor.label');
-  text('how.sensor.caption');
-}
-if (get('how.mount')) {
-  text('how.mount.label');
-  text('how.mount.caption');
-  list('how.mount.parts').forEach((p, i) => {
-    text(`how.mount.parts.${i}.name`, p?.name);
-    text(`how.mount.parts.${i}.text`, p?.text);
-  });
-}
+list('project.readouts').forEach((r, i) => text(`project.readouts.${i}`, r));
 
-if (get('limits')) {
-  text('limits.heading');
-  list('limits.items').forEach((it, i) => {
-    text(`limits.items.${i}.tag`, it?.tag);
-    text(`limits.items.${i}.text`, it?.text);
+// ---- Test results: only measured numbers, always with a source
+text('results.kicker');
+text('results.heading');
+text('results.body');
+text('results.button.label');
+link('results.button.href');
+const cards = list('results.cards');
+cards.forEach((card, i) => {
+  ['icon', 'title', 'value'].forEach((k) => text(`results.cards.${i}.${k}`, card?.[k]));
+  list(`results.cards.${i}.caption`).forEach((cap, j) => text(`results.cards.${i}.caption.${j}`, cap));
+});
+if (!get('results.source') || !String(get('results.source')).trim())
+  err('results has numbers but results.source is empty. Say how and when they were measured.', lineAfter('results:', 'source:'));
+else
+  cards.forEach((card, i) => {
+    // Every percentage on a card must appear in the source, so made-up numbers can't slip in.
+    const pct = String(card?.value || '').replace(/[~≈]/g, '');
+    if (/%$/.test(pct) && !String(get('results.source')).includes(pct))
+      err(`results.cards.${i}.value is ${card.value}, but results.source doesn't mention ${pct}. Add how it was measured.`, lineOf(card.value));
   });
-}
+['icon', 'title'].forEach((k) => text(`results.conditions.${k}`));
+list('results.conditions.items').forEach((it, i) => text(`results.conditions.items.${i}`, it));
+text('results.conditions.link.label');
+link('results.conditions.link.href');
 
-text('status.heading');
-const LABELS = ['DONE', 'IN PROGRESS', 'NEXT'];
-const counts = { DONE: 0, 'IN PROGRESS': 0, NEXT: 0 };
-list('status.items').forEach((it, i) => {
-  if (!text(`status.items.${i}.text`, it?.text)) return;
-  if (!LABELS.includes(it?.label)) {
-    err(
-      `Status item ${i + 1} has label "${it?.label}". Use exactly 'DONE', 'IN PROGRESS', or 'NEXT' (capital letters).`,
-      lineOf(it.text)
-    );
-  } else counts[it.label]++;
+// ---- The road ahead
+['kicker', 'heading'].forEach((k) => text(`roadmap.${k}`));
+list('roadmap.body').forEach((line, i) => text(`roadmap.body.${i}`, line));
+text('roadmap.button.label');
+link('roadmap.button.href');
+list('roadmap.steps').forEach((st, i) => {
+  text(`roadmap.steps.${i}.when`, st?.when);
+  text(`roadmap.steps.${i}.text`, st?.text);
+  // A date in the past would read as a missed deadline.
+  const m = /(?:Q([1-4])\s+)?(20\d\d)/.exec(st?.when || '');
+  if (m) {
+    const now = new Date();
+    const end = new Date(Number(m[2]), m[1] ? Number(m[1]) * 3 : 12, 0);
+    if (end < now) err(`roadmap.steps.${i}.when is "${st.when}", which is already in the past.`, lineOf(st.when));
+  }
 });
 
-const results = get('results');
-if (results && Array.isArray(results.items) && results.items.length) {
-  text('results.heading');
-  results.items.forEach((it, i) => {
-    text(`results.items.${i}.value`, it?.value);
-    text(`results.items.${i}.label`, it?.label);
-  });
-  if (!results.source || !results.source.trim())
-    err('results has numbers but results.source is empty. Say how and when they were measured.', lineAfter('results:', 'source:'));
-}
-
-text('build.heading');
-text('build.body');
-if (get('build.quote') !== undefined) text('build.quote');
-
+// ---- Privacy page
 if (get('privacy')) {
   ['title', 'updated', 'intro', 'contactText'].forEach((k) => text(`privacy.${k}`));
   list('privacy.sections').forEach((sec, i) => {
@@ -292,33 +230,35 @@ if (get('privacy')) {
   });
 }
 
-text('roadmap.heading');
-if (get('roadmap.intro') !== undefined) text('roadmap.intro');
-list('roadmap.phases').forEach((p, i) => {
-  ['phase', 'title', 'body'].forEach((k) => text(`roadmap.phases.${i}.${k}`, p?.[k]));
-});
-text('roadmap.closing');
-
-if (get('sister')) {
-  ['label', 'name', 'linkLabel'].forEach((k) => text(`sister.${k}`));
-  link('sister.href');
-}
-
+// ---- Footer
 text('footer.brand');
+text('footer.tagline');
 list('footer.links').forEach((l, i) => {
   text(`footer.links.${i}.label`, l?.label);
   link(`footer.links.${i}.href`, l?.href);
 });
+text('footer.copyright');
+// Varn Labs is a label, not a company, and the code is MIT licensed.
+if (/all rights reserved|\b(inc|llc|ltd|corp)\b\.?/i.test(get('footer.copyright') || ''))
+  err('footer.copyright must not read like a registered company or "All rights reserved": the project is MIT licensed.', lineOf('copyright:'));
+text('footer.privacy.label');
+link('footer.privacy.href');
 text('footer.contactLabel');
 if (text('footer.email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('footer.email')))
   err(`footer.email doesn't look like an email address.`, lineOf(get('footer.email')));
+
+// Brand voice: Varn only watches. These words never appear on the page.
+for (const word of ['missile', 'kill', 'strike', 'defeat', 'weapon']) {
+  const i = lines.findIndex((l) => !/^\s*\/\//.test(l) && new RegExp(`\\b${word}`, 'i').test(l));
+  if (i >= 0) err(`"${word}" is off-brand: Varn is detection only. Reword this line.`, i + 1);
+}
 
 // ---- 3. House rules: no placeholders, no emoji ----------------------------
 (function walk(value, path) {
   if (typeof value === 'string') {
     if (/lorem ipsum|\bTODO\b|\bTBD\b|\bxxx\b/i.test(value))
       err(`${path} still has placeholder text: "${value.slice(0, 60)}".`, lineOf(value));
-    if (/\p{Extended_Pictographic}/u.test(value))
+    if (/\p{Extended_Pictographic}/u.test(value.replace(/[©®™]/g, '')))
       warn(`${path} contains an emoji; the site style avoids them.`, lineOf(value));
   } else if (value && typeof value === 'object') {
     for (const [k, v] of Object.entries(value)) walk(v, path ? `${path}.${k}` : k);
@@ -333,8 +273,4 @@ if (existsSync(configFile) && /CONTACT_EMAIL\s*=\s*['"][^'"]*@example\.(com|org|
   warn('web/src/config.js still has the placeholder CONTACT_EMAIL; set your real contact address.');
 
 finish();
-console.log(
-  `content.js OK: ${counts.DONE} done, ${counts['IN PROGRESS']} in progress, ${counts.NEXT} next` +
-    (results?.items?.length ? `, ${results.items.length} result(s)` : '') +
-    (footage?.video ? ', real footage on' : '')
-);
+console.log(`content.js OK: ${cards.length} result card(s), ${get('roadmap.steps').length} roadmap step(s)`);

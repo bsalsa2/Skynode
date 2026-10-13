@@ -48,6 +48,7 @@ installed font.
 pip install fonttools brotli cairosvg pillow numpy
 python brand/src/build_brand.py            # logo files, mark-compare.png, web/src/logo.js
 python brand/src/build_brand.py --icons    # also favicons, app icons, og-image, README banner
+python brand/src/extract_mockup.py         # website photos, cut from docs/design/home-mockup.webp
 ```
 
 Fonts come from `brain/dashboard/fonts/` (Space Grotesk and Inter, SIL OFL).
