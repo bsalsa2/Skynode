@@ -48,15 +48,15 @@ export const content = {
   },
 
   hero: {
-    eyebrow: 'VARN',
+    eyebrow: 'Passive airspace awareness',
     // The last word is set in steel blue.
     headline: 'Watch the sky.',
-    sub: 'Passive airspace awareness, built one research prototype at a time.',
+    sub: 'Exploring how computer vision can help people understand the airspace around them.',
     primary: { label: 'Explore the project', href: '#project' },
     secondary: { label: 'View results', href: '#results' },
     // The row along the bottom: what exists today. Keep it accurate.
     stage: 'Research prototype',
-    facts: ['Software tested', 'Simulation results', 'Hardware build pending'],
+    facts: ['Software built', 'Simulation tested', 'Hardware pending'],
     tagline: ['Safer skies.', 'More awareness.'],
     // Shown beside the tracking frame: the drone photo is an illustration.
     trackLabel: 'SAMPLE',
@@ -64,8 +64,8 @@ export const content = {
 
   project: {
     kicker: 'How it works',
-    heading: ['AI-powered', 'airspace detection.'],
-    body: 'VARN uses computer vision and AI to detect, classify, and track airborne objects — from drones to aircraft — in real time. Our goal is simple: cleaner skies and safer airspace.',
+    heading: ['A research prototype for', 'visual airspace detection.'],
+    body: 'VARN is exploring whether computer vision can detect, classify, and track airborne objects — from drones to aircraft. The software runs in simulation and on recorded video; the physical hardware is still being built.',
     steps: [
       { icon: 'eye', title: 'Detect', text: 'Finds objects in the sky.' },
       { icon: 'brain', title: 'Classify', text: 'Uses AI to identify what it is.' },
@@ -74,6 +74,8 @@ export const content = {
     // The dashboard panel is a simulation: every value in it is made up.
     // feedLabel must contain the word SAMPLE.
     feedLabel: 'SAMPLE FEED',
+    // Shown under the panel.
+    feedNote: 'Illustrative interface · Simulation, not live hardware',
     objectsLabel: 'Detected objects',
     objects: [
       { name: 'UAV', value: '0.87', kind: 'uav' },

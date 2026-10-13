@@ -335,7 +335,7 @@ main:focus {
   color: var(--sky-accent);
 }
 .hero-sub {
-  max-width: calc(290 * var(--u));
+  max-width: calc(330 * var(--u));
   margin-top: calc(16 * var(--u));
   font-size: calc(15 * var(--u));
   line-height: 1.52;
@@ -724,6 +724,20 @@ main:focus {
   left: calc(8 * var(--u));
   top: 50%;
   transform: translateY(-50%);
+}
+
+/* Under the dashboard: it is a simulation */
+.panel-note {
+  margin-top: calc(10 * var(--u));
+  font-size: calc(7 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-70);
+}
+@media (max-width: 640px) {
+  .panel-note {
+    font-size: 11px;
+  }
 }
 
 /* ---- Test results -------------------------------------------------------- */
