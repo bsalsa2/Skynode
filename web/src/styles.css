@@ -2730,3 +2730,76 @@ svg {
   right: -10%;
   top: 20%;
 }
+
+/* ---- Research-prototype line under the headline --------------------------- */
+.hero-stage-line {
+  max-width: 34rem;
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.hero-stage-label {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--accent-ink);
+  border-radius: var(--varn-radius-sm);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+/* ---- What we've tested ------------------------------------------------------ */
+.tested-heading {
+  margin-bottom: var(--varn-space-8);
+}
+.tested-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--varn-space-4);
+}
+.tested-col {
+  padding: var(--varn-space-6);
+  border-radius: var(--varn-r-card);
+}
+.tested-tag {
+  margin: 0 0 var(--varn-space-2);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--accent-ink);
+}
+.tested-col:last-child .tested-tag {
+  color: var(--ink-3);
+}
+.tested-title {
+  margin: 0 0 var(--varn-space-3);
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--varn-text);
+}
+.tested-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.tested-list li + li {
+  margin-top: 6px;
+}
+.tested-more {
+  margin: var(--varn-space-6) 0 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.tested-more a {
+  color: var(--accent-ink);
+}
+@media (max-width: 860px) {
+  .tested-grid {
+    grid-template-columns: 1fr;
+  }
+}

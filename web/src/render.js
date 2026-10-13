@@ -358,7 +358,31 @@ const labelsSection = (l, n) => `
     </div>
   </section>`;
 
+// What we've tested: three plain columns near the top. Hidden if empty.
+const testedSection = (t) => {
+  if (!t || !Array.isArray(t.columns) || !t.columns.length) return '';
+  const cols = t.columns
+    .map(
+      (col) => `
+        <div class="tested-col glass" data-reveal>
+          <p class="mono tested-tag">${esc(col.tag)}</p>
+          <h3 class="tested-title">${esc(col.title)}</h3>
+          <ul class="tested-list">${col.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
+        </div>`
+    )
+    .join('');
+  return `
+  <section class="tested section" id="tested" aria-labelledby="tested-title">
+    <div class="wrap">
+      <h2 class="h-section tested-heading" id="tested-title">${esc(t.heading)}</h2>
+      <div class="tested-grid">${cols}</div>
+      ${t.link ? `<p class="tested-more"><a class="mono" href="${esc(t.link.href)}">${esc(t.link.label)} &darr;</a></p>` : ''}
+    </div>
+  </section>`;
+};
+
 const tickerStrip = (items) => {
+  if (!Array.isArray(items) || !items.length) return '';
   const row = items.map((t) => `<li>${esc(t)}</li>`).join('');
   return `
   <div class="ticker" aria-label="Key facts">
@@ -505,6 +529,7 @@ ${siteNav(c)}
       <div class="hero-copy">
         <p class="eyebrow mono" data-hero>[ ${esc(hero.eyebrow)} ]</p>
         <h1 class="hero-title" id="hero-title">${headline(hero.headline)}</h1>
+        ${hero.stage ? `<p class="hero-stage-line" data-hero><span class="mono hero-stage-label">${esc(hero.stage.label)}</span>${esc(hero.stage.text)}</p>` : ''}
         <p class="hero-sub" data-hero>${esc(hero.sub)}</p>
         <div class="hero-actions" data-hero>
           <a class="btn btn--primary btn--lg magnetic"${linkAttrs(hero.primary.href)}>
@@ -528,6 +553,7 @@ ${siteNav(c)}
   </section>
 
   ${tickerStrip(c.ticker)}
+  ${testedSection(c.tested)}
 
   <section class="math section" id="math" aria-labelledby="math-title">
     <div class="wrap math-inner">
