@@ -1,9 +1,9 @@
 {
-  "name": "talo-site",
+  "name": "varn-site",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Landing page for Talo, an AI camera that detects and tracks aircraft and drones.",
+  "description": "Landing page for Varn, an AI camera that detects and tracks aircraft and drones.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

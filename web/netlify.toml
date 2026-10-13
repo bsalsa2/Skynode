@@ -1,4 +1,4 @@
-# Netlify settings for the Talo site (this folder is the base directory).
+# Netlify settings for the Varn site (this folder is the base directory).
 [build]
   command = "npm run build"
   publish = "dist"

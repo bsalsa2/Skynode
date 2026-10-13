@@ -1,4 +1,4 @@
-# protocol.py — parse one line of the Talo serial protocol.
+# protocol.py — parse one line of the Varn serial protocol.
 #
 # The brain talks to the Pico with short plain-text lines, one command per line:
 #

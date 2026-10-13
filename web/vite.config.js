@@ -5,21 +5,21 @@ import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody } from './
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
-const taloContent = () => ({
-  name: 'talo-content',
+const varnContent = () => ({
+  name: 'varn-content',
   transformIndexHtml(html) {
     return html
-      .replace('<!--talo:head-->', renderHead(content))
-      .replace('<!--talo:body-->', renderBody(content))
-      .replace('<!--talo:privacy-head-->', renderPrivacyHead(content))
-      .replace('<!--talo:privacy-body-->', renderPrivacyBody(content));
+      .replace('<!--varn:head-->', renderHead(content))
+      .replace('<!--varn:body-->', renderBody(content))
+      .replace('<!--varn:privacy-head-->', renderPrivacyHead(content))
+      .replace('<!--varn:privacy-body-->', renderPrivacyBody(content));
   },
 });
 
 // Inlines the (small) stylesheet into index.html so the first paint doesn't
 // wait on a second request.
 const inlineCss = () => ({
-  name: 'talo-inline-css',
+  name: 'varn-inline-css',
   apply: 'build',
   enforce: 'post',
   generateBundle(_, bundle) {
@@ -44,7 +44,7 @@ const inlineCss = () => ({
 
 // Preloads the two fonts the first screen needs (wordmark + body text).
 const preloadFonts = () => ({
-  name: 'talo-preload-fonts',
+  name: 'varn-preload-fonts',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
@@ -68,7 +68,7 @@ export default defineConfig({
   base: './',
   // graphite.css (shared brand tokens) lives in ../brain/dashboard
   server: { fs: { allow: ['..'] } },
-  plugins: [taloContent(), preloadFonts(), inlineCss()],
+  plugins: [varnContent(), preloadFonts(), inlineCss()],
   build: {
     outDir: 'dist',
     target: 'es2020',

@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 
 SCOPE = "https://www.googleapis.com/auth/drive.readonly"
-VIDEO_EXTS = {".mp4", ".mov", ".m4v", ".avi", ".mkv", ".webm"}     # as training/talo_data.py
+VIDEO_EXTS = {".mp4", ".mov", ".m4v", ".avi", ".mkv", ".webm"}     # as training/varn_data.py
 SAFE_ID = re.compile(r"[A-Za-z0-9_-]+")                            # a Drive id: letters, digits, - and _
 FOLDER_TYPE = "application/vnd.google-apps.folder"
 

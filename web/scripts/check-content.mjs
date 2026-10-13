@@ -137,7 +137,7 @@ function publicFile(path, value = get(path)) {
 
 const gc = get('analytics.goatcounter');
 if (gc && !/^[a-z0-9-]+$/.test(gc))
-  err(`analytics.goatcounter should be just your GoatCounter code, like 'talo' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
+  err(`analytics.goatcounter should be just your GoatCounter code, like 'varn' (lowercase letters, numbers, dashes), not "${gc}".`, lineOf(gc));
 
 text('meta.title');
 text('meta.description');
@@ -217,10 +217,10 @@ for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label']) {
 const CARD_STATUSES = ['aircraft', 'drone', 'no-adsb'];
 if (get('hero.card') && !CARD_STATUSES.includes(get('hero.card.status')))
   err(`hero.card.status is "${get('hero.card.status')}". Use exactly 'aircraft', 'drone' or 'no-adsb'.`, lineAfter('card:', 'status:'));
-// Brand voice: Talo only watches. These words never appear on the page.
+// Brand voice: Varn only watches. These words never appear on the page.
 for (const word of ['missile', 'kill', 'strike', 'defeat']) {
   const i = lines.findIndex((l) => !/^\s*\/\//.test(l) && new RegExp(`\\b${word}`, 'i').test(l));
-  if (i >= 0) err(`"${word}" is off-brand: Talo is detection only. Reword this line.`, i + 1);
+  if (i >= 0) err(`"${word}" is off-brand: Varn is detection only. Reword this line.`, i + 1);
 }
 if (get('how.sensor')) {
   text('how.sensor.label');

@@ -495,7 +495,7 @@ class _Handler(BaseHTTPRequestHandler):
         self.answer_started = False     # True once a status line may have gone out
 
     def version_string(self):
-        return "Talo"
+        return "Varn"
 
     def log_message(self, format, *args):
         pass            # stay quiet: the terminal is for tracking messages
@@ -621,7 +621,7 @@ class _Handler(BaseHTTPRequestHandler):
         filters = read_filters(read_query(query), self.dashboard.clock())
         items, _ = self.dashboard.recent(CSV_LIMIT, **filters)
         self.send(200, sightings_csv(items), "text/csv; charset=utf-8", headers=[
-            ("Content-Disposition", 'attachment; filename="talo-sightings.csv"')])
+            ("Content-Disposition", 'attachment; filename="varn-sightings.csv"')])
 
     # ---- The live picture ----------------------------------------------------------
 

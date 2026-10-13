@@ -10,6 +10,6 @@ labels: enhancement
 
 **Scope check**
 
-Talo is passive sensing and tracking only. Ideas that transmit on aviation or drone-control frequencies, jam, spoof, or act on aircraft are out of scope and will be closed.
+Varn is passive sensing and tracking only. Ideas that transmit on aviation or drone-control frequencies, jam, spoof, or act on aircraft are out of scope and will be closed.
 
 **Anything already tried or considered**

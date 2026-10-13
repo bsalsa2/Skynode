@@ -1,7 +1,7 @@
 // Turns src/content.js into static HTML at build time (see vite.config.js).
 // The page ships as plain HTML, so it is readable before any JavaScript runs.
 //
-// Design: Talo brand v6, "Charcoal + Bronze + Split" (Claude Design handoff,
+// Design: Varn brand v6, "Charcoal + Bronze + Split" (Claude Design handoff,
 // October 2026). Charcoal and smoke, frosted glass, one bronze point of
 // light. Status colours appear only for what the sensor sees.
 
@@ -156,7 +156,7 @@ const mountBlock = (m) => `
       <figure class="mount glass" id="mount" data-reveal>
         <div class="mount-stage" id="mount-stage">
           <img class="mount-still" src="./models/pantilt-still.webp" width="900" height="760" loading="lazy" decoding="async"
-            alt="3D render of the Talo pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
+            alt="3D render of the Varn pan-tilt mount from its CAD files: a base holding the pan servo, a yoke on top, and a camera arm between the yoke's uprights." />
           <span class="mono mount-hint" aria-hidden="true">DRAG TO TURN</span>
         </div>
         <figcaption class="mount-info">
@@ -201,7 +201,7 @@ const resultsSection = (r, next) => {
   </section>`;
 };
 
-// Known limits: what Talo can't do, stated plainly. Hidden if empty.
+// Known limits: what Varn can't do, stated plainly. Hidden if empty.
 const limitsSection = (l, next) => {
   if (!l || !Array.isArray(l.items) || l.items.length === 0) return '';
   return `
@@ -432,14 +432,14 @@ export function renderHead(c) {
     <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Talo Labs" />
+    <meta property="og:site_name" content="Varn Labs" />
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(description)}" />
     <meta property="og:url" content="${esc(url)}" />
     <meta property="og:image" content="${esc(image)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Talo: A clear view of your airspace. Passive detection, drones and aircraft." />
+    <meta property="og:image:alt" content="Varn: A clear view of your airspace. Passive detection, drones and aircraft." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
@@ -643,7 +643,7 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
 export function renderPrivacyHead(c) {
   const url = new URL('privacy.html', c.meta.url).href;
   return `${counter(c)}
-    <title>${esc(c.privacy.title)} | Talo</title>
+    <title>${esc(c.privacy.title)} | Varn</title>
     <meta name="description" content="${esc(c.privacy.intro)}" />
     <link rel="canonical" href="${esc(url)}" />`;
 }

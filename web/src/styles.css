@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TALO · BRAND V6 · CHARCOAL + BRONZE
+   VARN · BRAND V6 · CHARCOAL + BRONZE
    Charcoal and smoke, frosted glass, one bronze point of light. Status
    colours appear only for what the sensor sees, always with a shape.
    ========================================================================== */
@@ -161,7 +161,7 @@ svg {
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
-    background: var(--talo-surface-2);
+    background: var(--varn-surface-2);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -171,7 +171,7 @@ svg {
   .btn--glass {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-    background: var(--talo-surface-2) !important;
+    background: var(--varn-surface-2) !important;
   }
 }
 /* Light that follows the cursor across a glass surface. */
@@ -208,7 +208,7 @@ svg {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  background: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
+  background: radial-gradient(ellipse at 30% 20%, var(--varn-surface-2), var(--varn-base) 65%);
 }
 .stage-bronze,
 .stage-smoke {
@@ -260,7 +260,7 @@ svg {
   right: 0;
   bottom: 0;
   height: 28%;
-  background: linear-gradient(180deg, transparent, var(--talo-base));
+  background: linear-gradient(180deg, transparent, var(--varn-base));
 }
 .how-stage {
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent);
@@ -272,11 +272,11 @@ svg {
   flex: none;
 }
 .mark-ink {
-  fill: var(--talo-text);
+  fill: var(--varn-text);
 }
 /* The point of light is always bronze, never a status colour. */
 .mark-dot {
-  fill: var(--talo-accent);
+  fill: var(--varn-accent);
 }
 .wordmark {
   font-family: var(--f-display);
@@ -285,7 +285,7 @@ svg {
   line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.22em;
-  color: var(--talo-text);
+  color: var(--varn-text);
   margin-right: -0.22em;
 }
 .brand {
@@ -304,7 +304,7 @@ svg {
   gap: 10px;
   height: 50px;
   padding: 0 22px;
-  border-radius: var(--talo-r-btn);
+  border-radius: var(--varn-r-btn);
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -395,7 +395,7 @@ svg {
   padding: 6px 2px;
   font-size: 12px;
   letter-spacing: 0.08em;
-  color: var(--talo-text);
+  color: var(--varn-text);
   transition: color 0.25s;
 }
 .nav-n {
@@ -465,7 +465,7 @@ svg {
   font-size: clamp(34px, 11cqi, 72px);
   line-height: 1.1;
   letter-spacing: 0.01em;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .hero-title .line {
   display: block;
@@ -603,7 +603,7 @@ svg {
 .sighting-title {
   font-size: 18px;
   font-weight: 500;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .sighting-time {
   font-size: 13px;
@@ -633,7 +633,7 @@ svg {
   font-size: 14px;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .sighting-adsb--aircraft {
   color: var(--aircraft);
@@ -651,9 +651,9 @@ svg {
 }
 .sample-tag {
   padding: 4px 8px;
-  border-radius: var(--talo-r-tag);
-  background: var(--talo-text);
-  color: var(--talo-base);
+  border-radius: var(--varn-r-tag);
+  background: var(--varn-text);
+  color: var(--varn-base);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -666,7 +666,7 @@ svg {
   align-items: center;
   gap: 8px;
   padding: 5px 10px;
-  border-radius: var(--talo-r-chip);
+  border-radius: var(--varn-r-chip);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid color-mix(in srgb, var(--c) 33%, transparent);
   color: var(--c);
@@ -729,7 +729,7 @@ svg {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--talo-text);
+  background: var(--varn-text);
 }
 .js-motion .state-dot {
   animation: pulse 2.4s ease-in-out infinite;
@@ -771,7 +771,7 @@ svg {
   font-size: clamp(26px, 3.6vw, 50px);
   line-height: 1.1;
   letter-spacing: 0;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .lede {
   max-width: 40rem;
@@ -797,16 +797,16 @@ svg {
   text-wrap: pretty;
 }
 .math-statement .w--hi {
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .js-motion .math-statement .w {
-  color: var(--talo-surface-2);
+  color: var(--varn-surface-2);
 }
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 1px;
-  border-radius: var(--talo-r-card);
+  border-radius: var(--varn-r-card);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.1);
 }
@@ -1367,7 +1367,7 @@ svg {
   line-height: 1.05;
   letter-spacing: -0.02em;
   white-space: nowrap;
-  color: var(--talo-text);
+  color: var(--varn-text);
   font-variant-numeric: tabular-nums;
 }
 .stats-note {
@@ -1632,14 +1632,14 @@ svg {
   font-size: clamp(24px, 3vw, 38px);
   line-height: 1.3;
   letter-spacing: 0;
-  color: var(--talo-text);
+  color: var(--varn-text);
   text-wrap: balance;
 }
 
 /* ---- Footer ------------------------------------------------------------ */
 .site-footer {
   position: relative;
-  background: var(--talo-base);
+  background: var(--varn-base);
   overflow: hidden;
 }
 .footer-wrap {
@@ -1935,7 +1935,7 @@ svg {
   top: 8%;
   transform: translateX(-50%);
   padding: 4px 10px;
-  border-radius: var(--talo-r-chip);
+  border-radius: var(--varn-r-chip);
   background: rgba(17, 18, 19, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.16);
   font-size: 10px;
@@ -1960,7 +1960,7 @@ svg {
   overflow: hidden;
   padding: 18px 0;
   border-block: 1px solid var(--line);
-  background: color-mix(in srgb, var(--talo-surface-1) 70%, var(--talo-base));
+  background: color-mix(in srgb, var(--varn-surface-1) 70%, var(--varn-base));
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
@@ -2070,7 +2070,7 @@ svg {
   font-size: clamp(32px, 4.4vw, 60px);
   line-height: 1.05;
   letter-spacing: 0.04em;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .story-text {
   max-width: 34rem;
@@ -2103,7 +2103,7 @@ svg {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .device-step {
   color: var(--accent);
@@ -2158,7 +2158,7 @@ svg {
   height: 10px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  background: var(--talo-base);
+  background: var(--varn-base);
   transition: background-color 0.4s, box-shadow 0.5s var(--ease-expo), border-color 0.4s;
 }
 .rail-dot b {
@@ -2174,7 +2174,7 @@ svg {
 }
 .rail-dot.is-done {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 50%, var(--talo-base));
+  background: color-mix(in srgb, var(--accent) 50%, var(--varn-base));
 }
 .rail-dot.is-active {
   border-color: var(--accent);
@@ -2182,7 +2182,7 @@ svg {
   box-shadow: 0 0 0 5px rgba(207, 138, 82, 0.18), 0 0 18px rgba(207, 138, 82, 0.6);
 }
 .rail-dot.is-active b {
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .rail-line {
   position: relative;
@@ -2208,8 +2208,8 @@ svg {
   stroke-width: 1;
 }
 .sc-eye {
-  fill: var(--talo-base);
-  stroke: var(--talo-text);
+  fill: var(--varn-base);
+  stroke: var(--varn-text);
   stroke-width: 1.5;
 }
 .sc-eye-dot {
@@ -2293,7 +2293,7 @@ svg {
   width: 14%;
   height: 14%;
   border-radius: 50%;
-  background: var(--talo-text);
+  background: var(--varn-text);
   transform: translate(-50%, -50%);
 }
 .sc-box--aircraft {
@@ -2313,7 +2313,7 @@ svg {
   align-items: center;
   gap: 7px;
   padding: 3px 8px;
-  border-radius: var(--talo-r-chip);
+  border-radius: var(--varn-r-chip);
   background: rgba(17, 18, 19, 0.82);
   border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
   font-size: 10px;
@@ -2435,7 +2435,7 @@ svg {
 .sc-readout b {
   margin-left: 4px;
   font-weight: 500;
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 
 /* Scene 4: LOG */
@@ -2458,7 +2458,7 @@ svg {
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: none;
-  color: var(--talo-text);
+  color: var(--varn-text);
   opacity: 0;
 }
 .sc-row span:nth-child(2) {
@@ -2530,10 +2530,10 @@ svg {
 }
 .sc-pill--plain {
   display: inline-flex;
-  border-radius: var(--talo-r-chip);
+  border-radius: var(--varn-r-chip);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--talo-text);
+  color: var(--varn-text);
 }
 .sc-pill--none {
   border-style: dashed;
@@ -2608,7 +2608,7 @@ svg {
   align-items: flex-start;
   gap: 18px;
   padding: 32px;
-  border-radius: var(--talo-r-panel);
+  border-radius: var(--varn-r-panel);
   overflow: hidden;
 }
 .label-shape {

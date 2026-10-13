@@ -1,6 +1,6 @@
-# Talo website
+# Varn website
 
-The landing page for Talo: a single static page built with Vite, vanilla
+The landing page for Varn: a single static page built with Vite, vanilla
 JavaScript, Three.js, and GSAP. Everything below can be done from a web
 browser.
 
@@ -32,7 +32,7 @@ build`, publish `web/dist`), so nothing in the dashboard needs filling in.
 ## GitHub Pages (second host, free)
 
 `.github/workflows/pages.yml` builds `web/` and publishes it to GitHub Pages
-on every push to `main`: **https://bsalsa2.github.io/talo/**. Netlify keeps
+on every push to `main`: **https://bsalsa2.github.io/varn/**. Netlify keeps
 working as before; nothing here changes its settings.
 
 One-time setup: in the repo, **Settings → Pages → Build and deployment →
@@ -41,7 +41,7 @@ Source: GitHub Actions**. After that, the next push to `main` (or
 
 How it works at a sub-path: `vite.config.js` uses a relative base (`./`), so
 CSS, fonts, images and the 3D model load from wherever the page lives, at the
-domain root on Netlify or under `/talo/` on Pages. Links inside the pages are
+domain root on Netlify or under `/varn/` on Pages. Links inside the pages are
 relative too. The workflow sets `SITE_URL` so the canonical and share-image
 addresses point at the Pages URL; builds without it (Netlify) keep
 `meta.url` from `content.js`.
@@ -135,8 +135,8 @@ The still image shown before the 3D loads is
 The site can count visits with GoatCounter: free for personal sites, no
 cookies, and nothing that identifies a visitor.
 
-1. Sign up at **goatcounter.com** and pick a code, for example `talo`.
-   Your dashboard will be at `https://talo.goatcounter.com`.
+1. Sign up at **goatcounter.com** and pick a code, for example `varn`.
+   Your dashboard will be at `https://varn.goatcounter.com`.
 2. In `web/src/content.js`, set `analytics.goatcounter` to that code and
    commit.
 
@@ -146,7 +146,7 @@ back to `''`.
 
 ## Phone upload page
 
-`field.html` lets you record or pick a video on your phone and send it to your own Google Drive, from any browser. Nothing is installed, and the clips never pass through Talo's servers. They land in **My Drive ▸ skynode_phone_uploads**, and `training/auto_train.py` reads that folder next time it runs. (The page is hidden from search engines, but it is not secret: anyone can open it. Only people you list as test users can sign in and use it, and they upload to their own Drive, not yours.)
+`field.html` lets you record or pick a video on your phone and send it to your own Google Drive, from any browser. Nothing is installed, and the clips never pass through Varn's servers. They land in **My Drive ▸ skynode_phone_uploads**, and `training/auto_train.py` reads that folder next time it runs. (The page is hidden from search engines, but it is not secret: anyone can open it. Only people you list as test users can sign in and use it, and they upload to their own Drive, not yours.)
 
 It asks Google for the narrow `drive.file` permission, which only covers files the page creates itself. That is why it has its own folder: it can't see or touch the rest of your Drive.
 
@@ -154,7 +154,7 @@ It asks Google for the narrow `drive.file` permission, which only covers files t
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project named `skynode` (top bar ▸ project picker ▸ New project).
 2. **APIs & Services ▸ Library**, search **Google Drive API**, click **Enable**.
-3. **APIs & Services ▸ OAuth consent screen** (called **Google Auth Platform** in newer consoles). Choose **External**. App name `Talo`, your email for support and developer contact. On the scopes step add `.../auth/drive.file` (the non-sensitive one). Leave publishing status on **Testing**. Under **Test users**, add your own Google address. Only addresses on that list can sign in.
+3. **APIs & Services ▸ OAuth consent screen** (called **Google Auth Platform** in newer consoles). Choose **External**. App name `Varn`, your email for support and developer contact. On the scopes step add `.../auth/drive.file` (the non-sensitive one). Leave publishing status on **Testing**. Under **Test users**, add your own Google address. Only addresses on that list can sign in.
 4. **APIs & Services ▸ Credentials ▸ Create credentials ▸ OAuth client ID**. Type **Web application**. Under **Authorised JavaScript origins** add your site address exactly (for example `https://skynode-si.netlify.app`) and, to try it before publishing, the Netlify preview address. Leave redirect URIs empty. Click Create.
 5. Copy the **Client ID** (it ends in `.apps.googleusercontent.com`) into `web/src/field-config.js`. **Do not copy the client secret anywhere.** The page doesn't use one.
 6. Commit that one-line change, let Netlify deploy, and open `/field.html` on your phone.
@@ -194,7 +194,7 @@ web/
 .github/workflows/check-site.yml    checks content.js and the build on pull requests
 ```
 
-Design: **Talo brand v6, Charcoal + Bronze + Split** (assets in `docs/brand/`).
+Design: **Varn brand v6, Charcoal + Bronze + Split** (assets in `docs/brand/`).
 Charcoal and smoke, frosted liquid glass over a stage of smoke and bronze
 light, and one bronze point of light (the dot in the mark). Status colours
 appear only for what the sensor sees, always with a shape: green circle =

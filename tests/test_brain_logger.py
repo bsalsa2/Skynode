@@ -23,8 +23,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
-from brain.logger import (COLUMNS, Sighting, SightingDB, SightingLogger, default_encode_jpeg,
-                          default_shrink, row_to_dict)
+from brain.logger import (COLUMNS, Sighting, SightingDB, SightingLogger, adopt_old_database,
+                          database_path, default_encode_jpeg, default_shrink, row_to_dict)
 
 REPO = Path(__file__).resolve().parent.parent
 HAS_TZSET = hasattr(time, "tzset")
@@ -134,7 +134,7 @@ class LoggerTestCase(unittest.TestCase):
 
     def db_dicts(self, folder=None):
         """Every record in the database as a dict, in the order it was written."""
-        path = (folder or self.folder) / "talo.db"
+        path = (folder or self.folder) / "varn.db"
         with contextlib.closing(sqlite3.connect(path)) as conn:
             rows = conn.execute(f"SELECT {', '.join(COLUMNS)} FROM sightings ORDER BY rowid")
             return [Sighting.from_dict(row_to_dict(row)).to_dict() for row in rows.fetchall()]
@@ -237,7 +237,7 @@ class LifecycleTest(LoggerTestCase):
         self.assertEqual((logged.duration_s, logged.end), (2.0, t + 2))
         self.assertIsNone(log.current())
         self.assertEqual(ids(log.recent()[0]), [logged.id])
-        self.assertTrue((self.folder / "talo.db").exists())
+        self.assertTrue((self.folder / "varn.db").exists())
         self.assertIsNone(log.close(now=t + 4))                 # already closed
 
         log.update(det(), True, FakeFrame(), 0, 0, now=t + 10)  # too short to keep
@@ -368,6 +368,39 @@ class FileTest(LoggerTestCase):
         self.assertEqual(ids(short.recent()[0]), [drone.id])
         self.assertEqual(short.history_start, drone.start)
 
+    def test_an_old_talo_db_is_renamed_to_varn_db_and_kept(self):
+        log = self.make(min_duration_s=0)
+        plane = log_sighting(log, local(2026, 10, 7, 14, 0, 0), name="airplane")
+        log.close()
+        os.replace(self.folder / "varn.db", self.folder / "talo.db")     # as the old name left it
+
+        self.clock.t = local(2026, 10, 7, 15, 0, 0)
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            again = self.make()
+        self.assertEqual(ids(again.recent()[0]), [plane.id])
+        self.assertTrue((self.folder / "varn.db").is_file())
+        self.assertFalse((self.folder / "talo.db").exists())
+        self.assertIn("talo.db to varn.db", out.getvalue())
+
+    def test_varn_db_wins_when_both_files_exist(self):
+        log = self.make(min_duration_s=0)
+        plane = log_sighting(log, local(2026, 10, 7, 14, 0, 0), name="airplane")
+        log.close()
+        (self.folder / "talo.db").write_bytes(b"left alone")
+
+        self.clock.t = local(2026, 10, 7, 15, 0, 0)
+        self.assertEqual(ids(self.make().recent()[0]), [plane.id])
+        self.assertIsNone(adopt_old_database(self.folder))
+        self.assertEqual((self.folder / "talo.db").read_bytes(), b"left alone")
+
+    def test_database_path_finds_the_old_file_for_read_only_tools(self):
+        self.folder.mkdir(parents=True)
+        self.assertEqual(database_path(self.folder), self.folder / "varn.db")
+        (self.folder / "talo.db").write_bytes(b"x")
+        self.assertEqual(database_path(self.folder), self.folder / "talo.db")
+        (self.folder / "varn.db").write_bytes(b"x")
+        self.assertEqual(database_path(self.folder), self.folder / "varn.db")
+
     def test_old_jsonl_logs_are_imported_once_and_damaged_lines_skipped(self):
         # Records an older version wrote as .jsonl files. They're made in another folder,
         # so this logger meets them for the first time in the files.
@@ -417,10 +450,10 @@ class FileTest(LoggerTestCase):
 
     def test_a_file_that_is_not_a_database_is_moved_aside(self):
         self.folder.mkdir(parents=True)
-        (self.folder / "talo.db").write_bytes(b"this is not an sqlite file" * 100)
+        (self.folder / "varn.db").write_bytes(b"this is not an sqlite file" * 100)
         log, printed = self.quietly(lambda: self.make(min_duration_s=0))
         self.assertIn("is damaged", printed)
-        self.assertEqual(len(list(self.folder.glob("talo.db.damaged-*"))), 1)    # kept, not deleted
+        self.assertEqual(len(list(self.folder.glob("varn.db.damaged-*"))), 1)    # kept, not deleted
         logged = log_sighting(log, local(2026, 10, 7, 14, 0, 0))
         self.assertEqual(ids(self.db_dicts()), [logged.id])     # and a fresh log works
 
@@ -433,7 +466,7 @@ class FileTest(LoggerTestCase):
                ("bad-2", "sighting", "drone", "drone", t, t, 0.0, 0.5, 0.0, 0.0, "[1, 2", 1, None),
                ("bad-3", "sighting", "drone", "drone", t, t, 0.0, 0.5, 0.0, 0.0, None, 1,
                 "../../etc/passwd")]
-        with contextlib.closing(sqlite3.connect(self.folder / "talo.db")) as conn, conn:
+        with contextlib.closing(sqlite3.connect(self.folder / "varn.db")) as conn, conn:
             conn.executemany("INSERT INTO sightings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", bad)
         self.clock.t = local(2026, 10, 7, 15, 0, 0)
         again, printed = self.quietly(lambda: self.make())

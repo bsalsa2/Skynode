@@ -61,10 +61,10 @@ class PhoneInboxTest(unittest.TestCase):
 
     def test_the_folder_beside_the_project_is_found_by_itself(self):
         self.inbox.mkdir()
-        (self.inbox / "talo-20261009-141500.mp4").write_bytes(b"x")
+        (self.inbox / "varn-20261009-141500.mp4").write_bytes(b"x")
         (self.project / "phone_videos" / "a.mp4").write_bytes(b"x")
         names = [c.name for c in at.new_clips(self.project)]
-        self.assertEqual(names, ["a.mp4", "talo-20261009-141500.mp4"])
+        self.assertEqual(names, ["a.mp4", "varn-20261009-141500.mp4"])
 
     def test_used_clips_are_skipped_in_the_inbox_too(self):
         self.inbox.mkdir()

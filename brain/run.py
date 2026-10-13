@@ -1,4 +1,4 @@
-"""Talo brain: webcam -> YOLO (ONNX) -> tracker -> controller -> Pico.
+"""Varn brain: webcam -> YOLO (ONNX) -> tracker -> controller -> Pico.
 
 Run from the repo root:
     python -m brain.run                        # settings from brain/config.toml
@@ -39,7 +39,7 @@ DEFAULT_FPS = 25.0                      # for videos that don't say how fast the
 
 
 def parse_args(argv=None):
-    parser = argparse.ArgumentParser(description="Talo brain: detect, track, point the camera.")
+    parser = argparse.ArgumentParser(description="Varn brain: detect, track, point the camera.")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG,
                         help="settings file (default: brain/config.toml)")
     parser.add_argument("--link", choices=["wifi", "usb", "none"], help="override [link] type")
@@ -284,7 +284,7 @@ def run_loop(camera, detector, tracker, controller, link, cfg, logger=None, dash
         if cfg.display.show:
             draw_overlay(frame, detections, target, tracker.target_classes,
                          controller, fps, link.description)
-            cv2.imshow("Talo", frame)
+            cv2.imshow("Varn", frame)
             key = cv2.waitKey(1) & 0xFF
             if key in (ord("q"), 27):   # 27 = Esc
                 return

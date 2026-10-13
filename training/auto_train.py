@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import talo_data as sd                                    # noqa: E402
+import varn_data as sd                                    # noqa: E402
 
 CLASSES = ["drone", "aircraft"]
 MANIFEST = "used_clips.json"
@@ -187,7 +187,7 @@ def train_once(project, clips, review=False, epochs=25, imgsz=960, val_fraction=
     if promote:
         from shutil import copyfile
         onnx = Path(YOLO(str(new_weights)).export(format="onnx", imgsz=imgsz, opset=12, simplify=True))
-        target = project / "models" / f"talo-auto-{stamp}.onnx"
+        target = project / "models" / f"varn-auto-{stamp}.onnx"
         target.parent.mkdir(parents=True, exist_ok=True)
         copyfile(onnx, target)
         report["onnx"] = str(target)
@@ -205,7 +205,7 @@ def score(weights, data_yaml):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Train Talo on new phone clips, automatically.")
+    parser = argparse.ArgumentParser(description="Train Varn on new phone clips, automatically.")
     parser.add_argument("--project", required=True, help="your skynode folder (in Drive)")
     parser.add_argument("--review", action="store_true", help="stop after labelling and wait for you")
     parser.add_argument("--epochs", type=int, default=25)

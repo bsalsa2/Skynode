@@ -230,7 +230,7 @@ if (!reduceMotion) {
   const words = gsap.utils.toArray('.math-statement .w');
   if (words.length) {
     const css = getComputedStyle(root);
-    const lit = css.getPropertyValue('--talo-text').trim();
+    const lit = css.getPropertyValue('--varn-text').trim();
     const dim = css.getPropertyValue('--dim').trim();
     gsap.to(words, {
       color: (_, el) => (el.classList.contains('w--hi') ? lit : dim),
@@ -451,14 +451,14 @@ afterLoad(() => {
   if (!lens || !canvas) return;
   import('./hero-lens.js')
     .then(({ createLens }) => createLens({ lens, canvas, card: document.getElementById('sighting'), reduceMotion }))
-    .catch((err) => console.warn('[talo] hero lens unavailable.', err));
+    .catch((err) => console.warn('[varn] hero lens unavailable.', err));
 });
 
 // Simulated sensor view.
 whenNear(document.getElementById('sensor'), () =>
   import('./sensor.js')
     .then(({ createSensor }) => createSensor({ root: document.getElementById('sensor'), reduceMotion }))
-    .catch((err) => console.warn('[talo] sensor view unavailable.', err))
+    .catch((err) => console.warn('[varn] sensor view unavailable.', err))
 );
 
 // Pan-tilt mount viewer (three.js). Only hardware-accelerated WebGL 2:
@@ -506,6 +506,6 @@ afterLoad(() => {
           });
         });
       })
-      .catch((err) => console.warn('[talo] mount viewer unavailable, keeping the still.', err))
+      .catch((err) => console.warn('[varn] mount viewer unavailable, keeping the still.', err))
   );
 });

@@ -1,9 +1,9 @@
-"""Talo demo: detection, the sighting logger and the dashboard, on a folder of test videos.
+"""Varn demo: detection, the sighting logger and the dashboard, on a folder of test videos.
 
 Run from the repo root:
-    python -m brain.demo ~/talo-videos --model models/talo-v2.onnx --classes drone,aircraft
-    python -m brain.demo ~/talo-videos --model m.onnx --fast          # don't wait for real time
-    python -m brain.demo ~/talo-videos --model m.onnx --loop          # play the folder forever
+    python -m brain.demo ~/varn-videos --model models/varn-v2.onnx --classes drone,aircraft
+    python -m brain.demo ~/varn-videos --model m.onnx --fast          # don't wait for real time
+    python -m brain.demo ~/varn-videos --model m.onnx --loop          # play the folder forever
 
 Then open the dashboard: http://localhost:8080/
 
@@ -38,6 +38,7 @@ from brain.config import load_config
 from brain.controller import PanTiltController
 from brain.detector import Detector
 from brain.link import NullLink
+from brain.logger import DB_NAME, DB_SUFFIXES, OLD_DB_NAMES
 from brain.run import (DEFAULT_CONFIG, REPO, VideoClock, check_target_classes,
                        frame_interval, make_dashboard, make_logger, port_number, report, run_loop)
 from brain.tracker import Tracker
@@ -102,7 +103,7 @@ def refuse_unignored_repo_folder(folder):
     if result.returncode == 1:          # 0 = ignored, 1 = NOT ignored, anything else = couldn't ask
         raise SystemExit(
             f"{folder} is inside the repo and git does NOT ignore it, so these videos could be\n"
-            "committed by accident. Move them outside the repo (for example ~/talo-videos),\n"
+            "committed by accident. Move them outside the repo (for example ~/varn-videos),\n"
             "or into demo_videos/ (which git ignores), and run the demo again.")
 
 
@@ -147,8 +148,9 @@ class VideoFile:
 def start_afresh(folder):
     """Remove the previous demo's database and snapshots (only those, and only in the demo folder)."""
     folder = Path(folder)
-    for name in ("talo.db", "talo.db-journal", "talo.db-wal", "talo.db-shm"):
-        (folder / name).unlink(missing_ok=True)
+    for name in (DB_NAME, *OLD_DB_NAMES):
+        for suffix in DB_SUFFIXES:
+            (folder / f"{name}{suffix}").unlink(missing_ok=True)
     shutil.rmtree(folder / "snapshots", ignore_errors=True)
 
 
@@ -187,7 +189,7 @@ def main(argv=None):
         cfg.model.target_classes = [name.strip() for name in args.classes.split(",") if name.strip()]
     if not Path(cfg.model.path).exists():
         raise SystemExit(f"Model not found: {cfg.model.path}\n"
-                         "Give one with --model, for example --model models/talo-v2.onnx")
+                         "Give one with --model, for example --model models/varn-v2.onnx")
     cfg.link.type = "none"                      # no Pico: the pan and tilt are simulated
     cfg.camera.source = str(videos[0])          # (the dashboard shows just the file name)
     cfg.display.show = args.show

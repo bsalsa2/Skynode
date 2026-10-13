@@ -19,12 +19,12 @@ const noWait = async () => {};
 
 test('clip names are timestamped, safe, and use a known extension', () => {
   const when = new Date(2026, 9, 9, 14, 5, 7);
-  assert.equal(clipName(video(1, 'video/mp4'), when), 'talo-20261009-140507.mp4');
-  assert.equal(clipName(video(1, 'video/quicktime'), when), 'talo-20261009-140507.mov');
-  assert.equal(clipName(video(1, 'video/webm;codecs=vp9'), when), 'talo-20261009-140507.webm');
-  assert.equal(clipName(video(1, '', 'clip.MKV'), when), 'talo-20261009-140507.mkv');
-  assert.equal(clipName(video(1, '', 'weird.exe'), when), 'talo-20261009-140507.mp4');
-  assert.equal(clipName(video(1, 'video/mp4'), when, 2), 'talo-20261009-140507-2.mp4');
+  assert.equal(clipName(video(1, 'video/mp4'), when), 'varn-20261009-140507.mp4');
+  assert.equal(clipName(video(1, 'video/quicktime'), when), 'varn-20261009-140507.mov');
+  assert.equal(clipName(video(1, 'video/webm;codecs=vp9'), when), 'varn-20261009-140507.webm');
+  assert.equal(clipName(video(1, '', 'clip.MKV'), when), 'varn-20261009-140507.mkv');
+  assert.equal(clipName(video(1, '', 'weird.exe'), when), 'varn-20261009-140507.mp4');
+  assert.equal(clipName(video(1, 'video/mp4'), when, 2), 'varn-20261009-140507-2.mp4');
 });
 
 test('files we will not send are refused with a reason', () => {

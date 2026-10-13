@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TALO · LIVE DASHBOARD · BRAND V6
+   VARN · LIVE DASHBOARD · BRAND V6
    Shares its tokens with the website through graphite.css, so the two
    read as one brand. Charcoal, smoke and one bronze point of light; status
    colours appear only for what the sensor sees, always with a shape.
@@ -183,7 +183,7 @@ code {
   --c: var(--other);
   --c-soft: color-mix(in srgb, var(--other) 85%, transparent);
   --c-ink: var(--other-ink);
-  --c-on: var(--talo-base);
+  --c-on: var(--varn-base);
   --c-glow: color-mix(in srgb, var(--other) 30%, transparent);
   --c-bg: rgba(255, 255, 255, 0.06);
   --c-ring: color-mix(in srgb, var(--other) 55%, transparent);
@@ -192,7 +192,7 @@ code {
   --c: var(--clear);
   --c-soft: color-mix(in srgb, var(--clear) 85%, transparent);
   --c-ink: var(--clear-ink);
-  --c-on: var(--talo-base);
+  --c-on: var(--varn-base);
   --c-glow: color-mix(in srgb, var(--clear) 30%, transparent);
   --c-bg: rgba(255, 255, 255, 0.06);
   --c-ring: color-mix(in srgb, var(--clear) 45%, transparent);
@@ -207,7 +207,7 @@ code {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: radial-gradient(ellipse at 30% 20%, var(--talo-surface-2), var(--talo-base) 65%);
+  background: radial-gradient(ellipse at 30% 20%, var(--varn-surface-2), var(--varn-base) 65%);
 }
 .sky-bronze,
 .sky-smoke {
@@ -279,14 +279,14 @@ code {
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
-    background: var(--talo-surface-2);
+    background: var(--varn-surface-2);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
   .glass {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: var(--talo-surface-2);
+    background: var(--varn-surface-2);
   }
 }
 
@@ -432,7 +432,7 @@ code {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-radius: var(--talo-r-panel);
+  border-radius: var(--varn-r-panel);
 }
 .card-head {
   display: flex;
@@ -475,7 +475,7 @@ code {
   gap: 12px;
   min-width: 0;
   padding: 12px 14px;
-  border-radius: var(--talo-r-stat);
+  border-radius: var(--varn-r-stat);
 }
 .tile-label {
   font-family: var(--f-mono);
@@ -1496,7 +1496,7 @@ code {
   height: 30px;
 }
 .node-beacon-ink {
-  fill: var(--talo-text);
+  fill: var(--varn-text);
 }
 .card--node[data-state='offline'] .node-beacon-ink {
   fill: var(--offline);

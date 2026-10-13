@@ -1,4 +1,4 @@
-"""Data helpers for the Colab training notebook (training/talo_train.ipynb).
+"""Data helpers for the Colab training notebook (training/varn_train.ipynb).
 
 The notebook does the GPU work (pre-labeling and training). This file does the
 careful bookkeeping around it, so it can be tested on any computer:

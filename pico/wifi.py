@@ -15,7 +15,7 @@ import socket
 import time
 
 PORT = 5005
-HOSTNAME = "talo"      # most networks also let you reach the Pico as talo.local
+HOSTNAME = "varn"      # most networks also let you reach the Pico as varn.local
 MAX_PACKET = 256          # bytes per datagram, plenty for a few command lines
 RETRY_MS = 15000          # while disconnected, try to rejoin this often
 
