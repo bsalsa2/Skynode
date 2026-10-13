@@ -37,9 +37,10 @@ export const content = {
   nav: {
     brand: 'VARN',
     links: [
+      { label: 'Overview', href: '#top' },
       { label: 'How it works', href: '#story' },
+      { label: 'Results', href: '#results' },
       { label: 'Status', href: '#status' },
-      { label: 'Roadmap', href: '#roadmap' },
     ],
   },
 
@@ -47,13 +48,18 @@ export const content = {
     // Shown in [ square brackets ] above the headline.
     eyebrow: 'A watcher, not a weapon',
     headline: 'Watch the sky.',
+    // What exists today, shown right under the headline. Keep it accurate.
+    stage: {
+      label: 'Research prototype',
+      text: 'Software tested on recorded video and in simulation. Physical hardware validation pending.',
+    },
     sub: 'Passive visual sensing that tells drones from aircraft and logs every sighting.',
     primary: { label: 'View the code', href: 'https://github.com/bsalsa2/varn' },
     secondary: { label: 'See where it stands', href: '#status' },
     // Cost note, shown under the buttons. Keep the exclusions in the sentence.
-    cost: 'About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
+    cost: 'Estimated sensing-hardware parts cost: about $113 (camera, servos, mount, power), before the computer that runs the model. Not a validated system.',
     // The line along the bottom of the hero. Plain facts only.
-    facts: ['Detection only', '~$113 in sensing parts', 'Tested in simulation and on recorded video', 'Not yet on real hardware'],
+    facts: ['Detection only', '~$113 est. sensing parts', 'Tested in simulation and on recorded video', 'Not yet on real hardware'],
     caption: 'SAMPLE: a placeholder sighting, not a real detection. Real sightings replace it once the hardware is built.',
 
     // The glass sighting card beside the lens. Placeholder values only.
@@ -82,16 +88,42 @@ export const content = {
     },
   },
 
-  // The scrolling facts strip under the hero. Plain facts only.
-  ticker: [
-    'Detection only',
-    'Passive sensing',
-    'No jamming, no payloads',
-    '~$113 in sensing parts',
-    'Tested in simulation and on recorded video',
-    'Not yet on real hardware',
-    'MIT licensed',
-  ],
+  // WHAT WE'VE TESTED: the short version, near the top. Three columns:
+  // software tests, recorded-video results (with their limits beside them),
+  // and hardware tests still pending. Keep it in step with status and results.
+  tested: {
+    heading: "What we've tested",
+    columns: [
+      {
+        tag: 'DONE · SOFTWARE',
+        title: 'Software tests',
+        items: [
+          'Detection, tracking and pan-tilt control loop, in simulation',
+          'Sighting logger and live dashboard, in simulation',
+          'Pico servo firmware, tested in software',
+        ],
+      },
+      {
+        tag: 'MEASURED · RECORDED VIDEO',
+        title: 'Recorded-video results',
+        items: [
+          'Model v2 on 43 real-world clips',
+          '14.9% of drone clips labeled correctly: v2 is weak at drones',
+          '7.5% of aircraft frames wrongly called a drone',
+        ],
+      },
+      {
+        tag: 'PENDING · HARDWARE',
+        title: 'Hardware tests',
+        items: [
+          'Physical node not built yet',
+          'No outdoor test yet',
+          'No comparison against real flight data (ADS-B) yet',
+        ],
+      },
+    ],
+    link: { label: 'Full results and limits', href: '#results' },
+  },
 
   // The pinned scroll story. Each stage has its own animated scene in the
   // panel (see storyScene in render.js). Everything in the panel is a
@@ -171,7 +203,7 @@ export const content = {
     stats: [
       { label: 'A small drone', value: '$100s' },
       { label: 'Typical detection system', value: '$10,000s' },
-      { label: 'Varn sensing parts, before the computer', value: '~$113', highlight: true },
+      { label: 'Estimated Varn sensing-hardware parts (excludes the computer)', value: '~$113', highlight: true },
     ],
     // Printed under the numbers so they can't be read as a capability claim.
     statsNote: 'Price comparison only, not a capability comparison. Varn is one passive camera node and has not run on real hardware yet.',
@@ -201,6 +233,12 @@ export const content = {
       label: 'SAMPLE · SENSOR VIEW · SIMULATED',
       caption:
         'SAMPLE: a simulation of the overlay the node draws on its camera feed (brain/overlay.py). The locked target gets the bold box and a solid label; anything else gets a thin box. The camera turns to keep the lock in the centre ring.',
+    },
+    // Simulated radar sweep beside the sensor view (radar.js). Must say SAMPLE.
+    radar: {
+      label: 'SAMPLE · SKY PICTURE · SIMULATED',
+      caption:
+        'SAMPLE: made-up blips showing how sightings could be plotted around the node. Circle = aircraft, square = possible drone. Varn has no radar; this is a map of what the camera reports.',
     },
     note: 'The test range is free: real air traffic passes overhead all day. Planes publicly broadcast their positions (ADS-B), so I can compare what the camera saw with what actually flew over and report real accuracy numbers.',
   },
@@ -265,14 +303,14 @@ export const content = {
 
   build: {
     heading: 'About me',
-    body: `I'm Braden, I'm 14, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Varn was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're 13. I'm fascinated by geopolitics and technology, and I want to build an aerospace and defense company someday. Varn is where I'm starting.`,
+    body: `I'm Braden, and I like building things that work in the real world. I started with Sunnode, a small server that runs entirely on solar power from a panel on my fence. Then I got curious about drones, trained my first detection model, and Varn was the next step. I've run a backyard gardening business, and I shelved a software startup after learning how hard it is to sell to companies when you're young. I'm interested in how technology can make shared airspace safer, and Varn is where I'm starting.`,
   },
 
   roadmap: {
     kicker: 'Roadmap',
-    heading: 'From one node to a company',
+    heading: 'From one node to a network',
     // The long-term vision lives here, not in the hero.
-    intro: 'This is Phase 1. The long-term goal is autonomy for drone detection and defense systems.',
+    intro: 'This is Phase 1. The long-term goal is affordable, passive airspace awareness: knowing what is flying overhead, openly measured and documented.',
     phases: [
       {
         phase: 'PHASE 1 · NOW',
@@ -286,8 +324,8 @@ export const content = {
       },
       {
         phase: 'PHASE 3',
-        title: 'A company',
-        body: `An aerospace and defense company building autonomy for drone detection and defense systems, once I'm old enough to start one.`,
+        title: 'Wider awareness',
+        body: 'Low-cost passive sensing for places that need to know what is in their airspace, like small airfields, with published accuracy at every step.',
       },
     ],
     closing:

@@ -110,7 +110,7 @@ function list(path, { min = 1 } = {}) {
   return value;
 }
 
-const sectionIds = new Set(['top', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
+const sectionIds = new Set(['top', 'tested', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
 if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
 if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
 
@@ -200,7 +200,19 @@ for (const path of ['story.device', 'story.note']) {
   const v = get(path);
   if (typeof v !== 'string' || !/\bSAMPLE\b/.test(v)) err(`${path} must contain the word SAMPLE: the story panel is a simulation.`, lineOf('story:'));
 }
-list('ticker').forEach((t, i) => text(`ticker.${i}`, t));
+if (get('ticker')) list('ticker').forEach((t, i) => text(`ticker.${i}`, t));
+if (get('hero.stage')) {
+  text('hero.stage.label');
+  text('hero.stage.text');
+}
+if (get('tested')) {
+  text('tested.heading');
+  list('tested.columns').forEach((col, i) => {
+    ['tag', 'title'].forEach((k) => text(`tested.columns.${i}.${k}`, col?.[k]));
+    list(`tested.columns.${i}.items`).forEach((it, j) => text(`tested.columns.${i}.items.${j}`, it));
+  });
+  if (get('tested.link')) link('tested.link.href');
+}
 text('labels.heading');
 text('labels.note');
 list('labels.items').forEach((it, i) => {
@@ -209,7 +221,7 @@ list('labels.items').forEach((it, i) => {
 });
 text('how.note');
 // Sample and preview content must say so.
-for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label']) {
+for (const path of ['hero.card.label', 'hero.caption', 'how.sensor.label', 'how.radar.label', 'how.radar.caption']) {
   const v = get(path);
   if (typeof v === 'string' && !/\bSAMPLE\b/.test(v))
     err(`${path} shows simulated content, so it must contain the word SAMPLE.`, lineOf(v));

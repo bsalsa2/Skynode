@@ -454,6 +454,13 @@ afterLoad(() => {
     .catch((err) => console.warn('[varn] hero lens unavailable.', err));
 });
 
+// Simulated radar-style plot.
+whenNear(document.getElementById('radar'), () =>
+  import('./radar.js')
+    .then(({ createRadar }) => createRadar({ root: document.getElementById('radar'), reduceMotion }))
+    .catch((err) => console.warn('[varn] radar view unavailable.', err))
+);
+
 // Simulated sensor view.
 whenNear(document.getElementById('sensor'), () =>
   import('./sensor.js')
