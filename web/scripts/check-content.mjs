@@ -171,6 +171,8 @@ text('project.feedLabel');
 if (!/\bSAMPLE\b/.test(get('project.feedLabel') || ''))
   err('project.feedLabel must contain the word SAMPLE: the dashboard panel is a simulation, not a live feed.', lineOf('feedLabel:'));
 text('project.objectsLabel');
+if (!/simulation/i.test(get('project.feedNote') || ''))
+  err('project.feedNote must say the dashboard is a simulation.', lineOf('feedNote:'));
 list('project.objects').forEach((o, i) => {
   ['name', 'value', 'kind'].forEach((k) => text(`project.objects.${i}.${k}`, o?.[k]));
   if (!['uav', 'plane', 'bird', 'heli'].includes(o?.kind))

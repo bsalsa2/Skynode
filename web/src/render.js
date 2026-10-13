@@ -222,6 +222,7 @@ function feedPanel(p) {
             </div>
           </div>
         </div>
+        <p class="panel-note">${esc(p.feedNote)}</p>
       </figure>`;
 }
 
