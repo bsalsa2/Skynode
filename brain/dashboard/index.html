@@ -11,7 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#111213" />
+    <meta name="theme-color" content="#0b0f14" />
     <meta name="referrer" content="no-referrer" />
     <title>Varn dashboard</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
@@ -30,10 +30,10 @@
       </filter>
     </svg>
 
-    <!-- The stage behind everything: smoke and bronze light. Glass needs light
+    <!-- The stage behind everything: fog and steel light. Glass needs light
          behind it to look like glass. -->
     <div class="sky" aria-hidden="true">
-      <div class="sky-bronze"></div>
+      <div class="sky-steel"></div>
       <div class="sky-smoke"></div>
       <div class="sky-lines"></div>
     </div>
@@ -42,12 +42,13 @@
       <header class="topbar glass glass--bar">
         <div class="topbar-left">
           <a class="brand" href="#overview" aria-label="Varn, go to overview">
-            <svg class="mark" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M4.17 14A12 12 0 0 1 27.83 14Z" fill="#ECEBE8" transform="translate(0 -0.5)" />
-              <path d="M5.67 18H29.33A12 12 0 0 1 5.67 18Z" fill="#ECEBE8" transform="translate(-0.5 0.5)" />
-              <circle cx="21" cy="8.5" r="2.5" fill="#CF8A52" />
+            <!-- brand/varn_mark.svg and brand/varn_wordmark.svg -->
+            <svg class="mark" width="36" height="18" viewBox="0 0 391.5 194" aria-hidden="true">
+              <path fill="currentColor" d="M0 0 58.5 0 177.5 142 177.5 194ZM391.5 0 332.5 0 214 159 214 194ZM285 32.5 223 55.5 171.5 106 202 143Z" />
             </svg>
-            <span class="wordmark">VARN</span>
+            <svg class="wordmark" viewBox="0 0 4316 700" aria-hidden="true">
+              <path fill="currentColor" d="M195 700 0 0H112L282 632H295L464 0H576L382 700ZM1239 700 1439 0H1629L1828 700H1717L1671 535H1397L1351 700ZM1424 435H1644L1542 67H1526ZM2543 700V0H2837Q2902 0 2951.5 22.5Q3001 45 3028.5 87Q3056 129 3056 187V198Q3056 264 3024.5 303.5Q2993 343 2948 359V375Q2986 377 3009 400.5Q3032 424 3032 468V700H2923V483Q2923 456 2909 440Q2895 424 2864 424H2651V700ZM2651 326H2825Q2883 326 2915 296.5Q2947 267 2947 216V208Q2947 157 2915.5 127.5Q2884 98 2825 98H2651ZM3795 700V0H4003L4193 628H4209V0H4316V700H4108L3918 71H3902V700Z" />
+            </svg>
           </a>
           <div class="tabs" role="tablist" aria-label="Dashboard sections">
             <button class="tab" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true">Overview</button>
@@ -201,10 +202,9 @@
             <div class="node-head">
               <div class="node-id">
                 <span class="node-beacon" aria-hidden="true">
-                  <svg viewBox="0 0 32 32">
-                    <path class="node-beacon-ink" d="M4.17 14A12 12 0 0 1 27.83 14Z" />
-                    <path class="node-beacon-ink" d="M5.67 18H29.33A12 12 0 0 1 5.67 18Z" />
-                    <circle class="node-beacon-dot" cx="21" cy="8.5" r="2.3" />
+                  <svg viewBox="0 0 391.5 194">
+                    <path class="node-beacon-ink" d="M0 0 58.5 0 177.5 142 177.5 194ZM391.5 0 332.5 0 214 159 214 194Z" />
+                    <path class="node-beacon-dot" d="M285 32.5 223 55.5 171.5 106 202 143Z" />
                   </svg>
                 </span>
                 <div class="node-names">

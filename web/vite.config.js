@@ -42,14 +42,14 @@ const inlineCss = () => ({
   },
 });
 
-// Preloads the two fonts the first screen needs (wordmark + body text).
+// Preloads the two fonts the first screen needs (display + body text).
 const preloadFonts = () => ({
   name: 'varn-preload-fonts',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const wanted = ['michroma-latin-400-normal', 'geist-latin-400-normal'];
+      const wanted = ['space-grotesk-latin-500-normal', 'inter-latin-400-normal'];
       const files = Object.keys(ctx.bundle || {}).filter(
         (f) => f.endsWith('.woff2') && wanted.some((w) => f.includes(w))
       );

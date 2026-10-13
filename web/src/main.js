@@ -270,7 +270,7 @@ if (!reduceMotion) {
     });
   });
 
-  gsap.to('.how-stage .stage-bronze', {
+  gsap.to('.how-stage .stage-steel', {
     yPercent: 30,
     ease: 'none',
     scrollTrigger: { trigger: '.how', start: 'top bottom', end: 'bottom top', scrub: true },

@@ -1,0 +1,33 @@
+/* VARN Brand Tokens - design system v1.0 */
+:root {
+  --varn-charcoal: #0B0F14;
+  --varn-night: #111820;
+  --varn-steel-blue: #4B5B6B;
+  --varn-fog: #A7B3BD;
+  --varn-bone: #F4F3EF;
+  --varn-sage: #7A8B7E;
+  --varn-white: #FFFFFF;
+  --varn-ink: #17212B;
+  --varn-muted: #66717C;
+  --varn-line: #D9DDD9;
+  /* Added after v1.0: the one alert colour (possible drone). 9.0:1 on charcoal.
+     Alerts only, always paired with a label or shape. */
+  --varn-amber: #E0A84A;
+  --varn-font-display: "Space Grotesk", "Inter", "Arial", sans-serif;
+  --varn-font-body: "Inter", "Arial", sans-serif;
+  --varn-space-1: 4px;
+  --varn-space-2: 8px;
+  --varn-space-3: 12px;
+  --varn-space-4: 16px;
+  --varn-space-6: 24px;
+  --varn-space-8: 32px;
+  --varn-space-12: 48px;
+  --varn-space-16: 64px;
+  --varn-radius-sm: 4px;
+  --varn-radius-md: 10px;
+}
+body { color: var(--varn-ink); background: var(--varn-bone); font-family: var(--varn-font-body); }
+.display, h1, h2, h3 { font-family: var(--varn-font-display); letter-spacing: -0.025em; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.72rem; }
+.dark-surface { color: var(--varn-bone); background: var(--varn-charcoal); }
+/* Prefer bone on charcoal or ink on bone for body text. */

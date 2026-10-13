@@ -1,9 +1,11 @@
 // Turns src/content.js into static HTML at build time (see vite.config.js).
 // The page ships as plain HTML, so it is readable before any JavaScript runs.
 //
-// Design: Varn brand v6, "Charcoal + Bronze + Split" (Claude Design handoff,
-// October 2026). Charcoal and smoke, frosted glass, one bronze point of
-// light. Status colours appear only for what the sensor sees.
+// Design: Varn brand system v1.0 (brand/). Charcoal and bone, steel-blue
+// accents, angular geometry. Status colours appear only for what the sensor
+// sees; amber is the one alert colour.
+
+import { MARK_PATH, MARK_SMALL_PATH, MARK_VIEWBOX, WORDMARK_PATH, WORDMARK_VIEWBOX } from './logo.js';
 
 const esc = (s) =>
   String(s)
@@ -18,13 +20,15 @@ const linkAttrs = (href) =>
 
 const pad2 = (n) => String(n).padStart(2, '0');
 
-// The Split mark: a disc cut by the horizon, the lower half shifted like
-// light through glass, one bronze point of light above. Below 24 px it uses
-// the favicon geometry (bigger dot, smaller shift) so it stays crisp.
-const mark = (size, cls = 'mark') => {
-  const small = size < 24;
-  return `<svg class="${cls}" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><path class="mark-ink" d="M4.17 14A12 12 0 0 1 27.83 14Z"${small ? ' transform="translate(0 -0.5)"' : ''}/><path class="mark-ink" d="M5.67 18H29.33A12 12 0 0 1 5.67 18Z"${small ? ' transform="translate(-0.5 0.5)"' : ''}/><circle class="mark-dot" cx="21" cy="8.5" r="${small ? 2.5 : 2.3}"/></svg>`;
-};
+// The Varn mark: two angled blades and a short inner blade (brand/varn_mark.svg).
+// `size` is its width; it is about half as tall. Below 24 px wide the inner
+// blade can't stay separate, so it uses the simplified small mark.
+const mark = (size, cls = 'mark') =>
+  `<svg class="${cls}" width="${size}" height="${Math.round((size * 194) / 391.5)}" viewBox="${MARK_VIEWBOX}" aria-hidden="true"><path class="mark-ink" d="${size < 24 ? MARK_SMALL_PATH : MARK_PATH}"/></svg>`;
+
+// VARN in Space Grotesk, as outlines, so it never depends on a loaded font.
+const wordmark = () =>
+  `<svg class="wordmark" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true"><path d="${WORDMARK_PATH}"/></svg>`;
 
 const ARROW_UR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11L11 5M6 5h5v5" /></svg>';
 const ARROW_DN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" /></svg>';
@@ -396,10 +400,10 @@ const LIQUID_FILTER = `
   </filter>
 </svg>`;
 
-// The stage every glass surface sits on: smoke and bronze light behind fine
+// The stage every glass surface sits on: fog and steel light behind fine
 // diagonal hairlines. Glass over flat colour shows nothing.
 const stage = (cls = '') =>
-  `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-bronze"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
+  `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-steel"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
 
 function siteNav(c, { home = true } = {}) {
   const pre = home ? '' : './';
@@ -413,8 +417,8 @@ function siteNav(c, { home = true } = {}) {
 <header class="site-header" id="top-nav">
   <nav class="nav glass" aria-label="Primary">
     <a class="brand" href="${home ? '#top' : './'}" aria-label="${esc(c.nav.brand)}, home">
-      ${mark(28)}
-      <span class="wordmark">${esc(c.nav.brand)}</span>
+      ${mark(36)}
+      ${wordmark()}
     </a>
     <ul class="nav-links">${links}</ul>
     <a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
@@ -629,7 +633,7 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
   <div class="wrap footer-wrap">
     ${sister ? sisterCard(sister) : ''}
     <div class="footer-inner">
-      <p class="brand brand--footer">${mark(22)}<span class="wordmark">${esc(c.nav.brand)}</span><span class="mono footer-labs">${esc(footer.brand)}</span></p>
+      <p class="brand brand--footer">${mark(22)}${wordmark()}<span class="mono footer-labs">${esc(footer.brand)}</span></p>
       <ul class="footer-links">
         ${links}
         <li><span class="mono footer-k">${esc(footer.contactLabel)}</span> <a class="u-link"${linkAttrs(`mailto:${footer.email}`)}>${esc(footer.email)}</a></li>
