@@ -6,28 +6,37 @@ browser.
 
 | Where | Address | How it updates |
 | --- | --- | --- |
-| Netlify | **https://tryvarn.com** (also https://skynode-si.netlify.app) | Every push to `main` (project `skynode-si`) |
+| GitHub Pages | **https://tryvarn.com** | Every push to `main` (free; `web/public/CNAME` holds the domain) |
 
 ---
 
-## Netlify
+## Hosting (GitHub Pages, free)
 
-The Netlify project **skynode-si** builds this repo on Netlify's servers.
-The `netlify.toml` at the repo root tells it to build `web/` (`npm run
-build`, publish `web/dist`), so nothing in the dashboard needs filling in.
+`.github/workflows/pages.yml` builds `web/` and deploys it on every push to
+`main`. The domain is set by `web/public/CNAME` (`tryvarn.com`).
 
-- **Production** (https://skynode-si.netlify.app) is built from `main` and is
-  public.
-- **Pull requests** get a preview deploy (link in the PR checks). Previews
-  need a Netlify login to view.
-- **Rename the address:** Project configuration → General → **Change
-  project name**. Then update `meta.url` in `web/src/content.js` so share
-  previews use the new address.
-- **Not linked to this repo yet?** Project configuration → Build & deploy
-  → Continuous deployment → **Link repository** → GitHub →
-  `bsalsa2/Skynode`, branch `main`. Leave the other fields empty.
-- **A deploy failed?** Open **Deploys**, click the red deploy, and read the
-  log. A problem in `content.js` is explained there, with the line number.
+**One-time setup**
+1. Repo **Settings → Pages → Source: GitHub Actions**, then under **Custom
+   domain** enter `tryvarn.com` and save. Tick **Enforce HTTPS** once it
+   becomes available (GitHub issues the certificate after DNS is right).
+2. At your domain registrar, add these DNS records and delete any others on
+   the same names (such as a parking page):
+
+   | Type | Name | Value |
+   | --- | --- | --- |
+   | A | `@` | `185.199.108.153` |
+   | A | `@` | `185.199.109.153` |
+   | A | `@` | `185.199.110.153` |
+   | A | `@` | `185.199.111.153` |
+   | CNAME | `www` | `bsalsa2.github.io` |
+
+3. Email records (MX, SPF, DKIM) go in the same DNS panel; they don't
+   interfere with these.
+
+**Netlify (optional, costs credits):** `netlify.toml` still lets Netlify
+build `web/`, but you don't need it. To stop it using credits, in Netlify go
+to the project's **Build & deploy → Continuous deployment → Stop builds**
+(or delete the project once tryvarn.com works from GitHub Pages).
 
 ## GitHub Pages (second host, free)
 
