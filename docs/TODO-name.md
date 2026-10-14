@@ -21,7 +21,7 @@ never acts.
 
 ## Domain
 
-`tryvarn.com` is planned. It is not live yet, so nothing in the repo links to it.
+`tryvarn.com` is registered and is the site's primary domain (canonical links and share images point at it).
 
 ## To do
 
@@ -29,7 +29,9 @@ never acts.
       hardware) and **Class 42** (SaaS, technology services). Not checked yet.
 - [ ] Search the web and other trademark databases for "Varn" in the countries
       this project could reach (aerospace, drones, software).
-- [ ] Register `tryvarn.com` and check the GitHub and social handles.
+- [x] Register `tryvarn.com`.
+- [ ] Point `tryvarn.com` at Netlify (DNS) and set up the `@tryvarn.com` email address.
+- [ ] Check the GitHub and social handles.
 - [ ] Rename the Netlify project (`skynode-si`) and the Drive and Kaggle folders,
       which still use the old name, then update the links that point at them.
 - [x] Decide on a name (Varn).

@@ -6,9 +6,9 @@ By Varn Labs. Formerly Skynode and Talo.
 
 The name is close to the Swedish word *värn* (protection, defense), and it sounds like "warn".
 
-[![Tests](https://github.com/bsalsa2/Skynode/actions/workflows/tests.yml/badge.svg)](https://github.com/bsalsa2/Skynode/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-76767A?style=flat)](LICENSE) [![Live site](https://img.shields.io/badge/live%20site-skynode--si.netlify.app-76767A?style=flat)](https://skynode-si.netlify.app)
+[![Tests](https://github.com/bsalsa2/Skynode/actions/workflows/tests.yml/badge.svg)](https://github.com/bsalsa2/Skynode/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-76767A?style=flat)](LICENSE) [![Live site](https://img.shields.io/badge/live%20site-tryvarn.com-76767A?style=flat)](https://tryvarn.com)
 
-**Website: [skynode-si.netlify.app](https://skynode-si.netlify.app)** (source in [`web/`](web/))
+**Website: [tryvarn.com](https://tryvarn.com)** (source in [`web/`](web/))
 
 **A low-cost visual sensing platform, starting with one passive sky-tracking node.**
 

@@ -6,7 +6,7 @@ browser.
 
 | Where | Address | How it updates |
 | --- | --- | --- |
-| Netlify | **https://skynode-si.netlify.app** | Every push to `main` (project `skynode-si`) |
+| Netlify | **https://tryvarn.com** (also https://skynode-si.netlify.app) | Every push to `main` (project `skynode-si`) |
 
 ---
 
@@ -42,9 +42,9 @@ Source: GitHub Actions**. After that, the next push to `main` (or
 How it works at a sub-path: `vite.config.js` uses a relative base (`./`), so
 CSS, fonts, images and the 3D model load from wherever the page lives, at the
 domain root on Netlify or under `/varn/` on Pages. Links inside the pages are
-relative too. The workflow sets `SITE_URL` so the canonical and share-image
-addresses point at the Pages URL; builds without it (Netlify) keep
-`meta.url` from `content.js`.
+relative too. Every build points its canonical and share-image addresses at
+`meta.url` in `content.js` (https://tryvarn.com/), so search engines treat
+the Pages copy as a mirror of the main site.
 
 ---
 

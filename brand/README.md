@@ -55,4 +55,4 @@ Fonts come from `brain/dashboard/fonts/` (Space Grotesk and Inter, SIL OFL).
 ## Still open
 
 - USPTO search for "Varn" (classes 9 and 42): see `docs/TODO-name.md`.
-- `tryvarn.com` isn't live yet, so nothing links to it.
+- The website is at `tryvarn.com`.

@@ -22,9 +22,9 @@ export const content = {
     description:
       'A low-cost visual sensing platform, starting with one passive sky-tracking node. About $113 in new parts for the sensing hardware (camera, servos, mount, power), before the computer that runs the model.',
     // Public URL of the live site (used for social share previews). The
-    // GitHub Pages workflow sets SITE_URL so its build points at the Pages
-    // address; every other build (Netlify) uses the address below.
-    url: process.env.SITE_URL || 'https://skynode-si.netlify.app/',
+    // The primary domain. Every build (Netlify and the GitHub Pages mirror)
+    // points canonical links and share images here; set SITE_URL to override.
+    url: process.env.SITE_URL || 'https://tryvarn.com/',
   },
 
   // VISIT COUNTER (GoatCounter: free, no cookies, nothing personal stored).

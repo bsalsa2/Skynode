@@ -5,9 +5,8 @@
 #
 # The site is built with a relative base path (see web/vite.config.js), so the
 # same build works at https://<user>.github.io/<repo>/ and on Netlify without
-# any per-host settings. SITE_URL only changes the canonical and share-image
-# addresses in the page <head> to the Pages URL; Netlify builds don't set it
-# and keep their own address.
+# any per-host settings. Canonical and share-image addresses always point at
+# the primary domain, https://tryvarn.com/ (meta.url in web/src/content.js).
 name: Deploy to GitHub Pages
 
 on:
@@ -50,8 +49,6 @@ jobs:
       # vite builds into web/dist.
       - name: Build
         run: npm run build
-        env:
-          SITE_URL: ${{ steps.pages.outputs.base_url }}/
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v5
