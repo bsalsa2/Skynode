@@ -1,7 +1,14 @@
 import { defineConfig } from 'vite';
 import { content } from './src/content.js';
 import { fileURLToPath } from 'node:url';
-import { renderHead, renderBody, renderPrivacyHead, renderPrivacyBody } from './src/render.js';
+import {
+  renderHead,
+  renderBody,
+  renderPrivacyHead,
+  renderPrivacyBody,
+  renderContactHead,
+  renderContactBody,
+} from './src/render.js';
 
 // Renders src/content.js into index.html at build time, so the page is
 // plain static HTML (fast, readable without JavaScript, good for search).
@@ -12,7 +19,9 @@ const taloContent = () => ({
       .replace('<!--talo:head-->', renderHead(content))
       .replace('<!--talo:body-->', renderBody(content))
       .replace('<!--talo:privacy-head-->', renderPrivacyHead(content))
-      .replace('<!--talo:privacy-body-->', renderPrivacyBody(content));
+      .replace('<!--talo:privacy-body-->', renderPrivacyBody(content))
+      .replace('<!--talo:contact-head-->', renderContactHead(content))
+      .replace('<!--talo:contact-body-->', renderContactBody(content));
   },
 });
 
@@ -76,6 +85,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         privacy: fileURLToPath(new URL('./privacy.html', import.meta.url)),
+        contact: fileURLToPath(new URL('./contact.html', import.meta.url)),
         field: fileURLToPath(new URL('./field.html', import.meta.url)),
       },
     },

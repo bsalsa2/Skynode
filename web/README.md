@@ -144,6 +144,25 @@ Good to know while the app is in Testing: Google may show an "unverified app" wa
 
 Check it with `npm test` (the upload logic, against a fake Drive).
 
+## Contact page
+
+`contact.html` is a form that sends each message to **hello@tryvarn.com**, and also shows that address as a plain email link. The address lives in one place, `CONTACT_EMAIL` in `src/config.js`; the footer, the privacy page and the form page all read it. The words on the page are in `content.js` under `contact`.
+
+The form is a **Netlify Form**, so there is no server to run. Netlify finds the form in the built page, keeps every submission, and can email it to you. Netlify does not email anything until you turn that on, once:
+
+1. Deploy this branch. In Netlify, open the site, then **Forms**. A form named **contact** should be listed. (If it isn't, redeploy once. Netlify only looks for forms when it builds.)
+2. **Project configuration ▸ Notifications ▸ Emails and webhooks ▸ Add notification ▸ Email notification.**
+3. Event: **New form submission**. Form: **contact**. Email to notify: `hello@tryvarn.com`. Save.
+4. Send yourself a test message on the live page, and check that it arrives (look in spam the first time). Replying to the email goes to the visitor, because the form field is named `email`.
+
+How it behaves:
+- A visitor who has JavaScript gets checks next to each field and a confirmation without leaving the page. If sending fails, they keep what they typed and get a link that opens their own email program with the message filled in.
+- Without JavaScript the browser posts the form itself and Netlify shows its own thank-you page.
+- A hidden `bot-field` catches most form-filling robots; Netlify also filters spam. Real messages that land in Netlify's spam list can be restored from the Forms tab.
+- Netlify limits how many submissions the plan includes each month; check its pricing page for the current number.
+- Local `npm run dev` and `npm run preview` have no Netlify behind them, so sending shows the "didn't go through" message there. That is expected. Test the real thing on the deployed site.
+- The checks and the request body are in `src/contact-form.js` and tested by `npm test`. The privacy page says the form exists and who receives the messages; keep it true if you change where they go.
+
 ## The Sunnode card
 
 The card above the footer links to Sunnode. To add a one-sentence
@@ -168,6 +187,9 @@ web/
                           The live dashboard loads the same file, so a colour changes in both
   src/fonts.css           self-hosted Saira, IBM Plex Sans, IBM Plex Mono
   src/main.js             scroll story, nav, buttons, glass tilt, lazy loading
+  contact.html            the contact form page (a Netlify Form)
+  src/contact.js          the form's checks, sending and messages in the browser
+  src/contact-form.js     the form's rules and request body (tested)
   src/hero.js             hero sky: stars, the aircraft pass, live readout card
   src/sensor.js           the simulated sensor view in "How it works"
   src/mount.js            the Three.js pan-tilt mount viewer
@@ -198,7 +220,8 @@ How it behaves:
 - **Liquid glass:** frosted blur everywhere. Chrome and Edge also get a
   refraction effect; Safari and Firefox keep the plain blur.
 - **Privacy:** fonts and scripts are served from the site itself. The only
-  third-party request is the optional GoatCounter visit counter.
+  third-party request is the optional GoatCounter visit counter. The contact
+  form posts to the site's own host, Netlify.
 
 ---
 

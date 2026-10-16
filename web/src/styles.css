@@ -1787,6 +1787,107 @@ svg {
   background-size: 100% 1px;
 }
 
+/* ---- Contact page ------------------------------------------------------ */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.field label {
+  font-size: 11px;
+  color: var(--halo);
+}
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--halo);
+  font: inherit;
+  font-size: 16px; /* 16px stops iPhones zooming in when a field is tapped */
+  line-height: 1.5;
+  transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease);
+}
+.field textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+.field input:hover,
+.field textarea:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.field input:focus,
+.field textarea:focus {
+  border-color: var(--white);
+  background: rgba(255, 255, 255, 0.07);
+}
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  border-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14);
+}
+/* No red: on this site a colour means the sensor saw something. A problem is
+   a white outline plus words. */
+.field-error {
+  font-size: 14px;
+  color: var(--white);
+}
+.field-error::before {
+  content: 'Fix this: ';
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 24px;
+}
+button.btn {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+button.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.form-alt {
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.form-status {
+  padding: 16px 18px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--halo);
+}
+.form-note {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+/* Bait for form-filling robots: out of sight, out of the tab order, ignored by readers. */
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* ---- Small screens ----------------------------------------------------- */
 @media (max-width: 1100px) {
   .hud,

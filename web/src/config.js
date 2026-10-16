@@ -5,4 +5,4 @@
 //  read it from this file, so you never have to edit them separately.
 // ---------------------------------------------------------------------------
 
-export const CONTACT_EMAIL = 'bradensalcetti@icloud.com';
+export const CONTACT_EMAIL = 'hello@tryvarn.com';

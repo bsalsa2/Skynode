@@ -280,6 +280,15 @@ text('footer.contactLabel');
 if (text('footer.email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('footer.email')))
   err(`footer.email doesn't look like an email address.`, lineOf(get('footer.email')));
 
+// The contact page (contact.html). It is built from content.contact, so a blank
+// label or message would ship as a blank label or message.
+['title', 'description', 'intro', 'submit', 'sending', 'success', 'failure', 'alternative', 'privacy', 'privacyLinkLabel'].forEach((k) =>
+  text(`contact.${k}`)
+);
+['name', 'email', 'message'].forEach((k) => text(`contact.fields.${k}`));
+if (get('footer.email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('footer.email') || ''))
+  err('The contact form shows footer.email, which needs to be a real address.');
+
 // ---- 3. House rules: no placeholders, no emoji ----------------------------
 (function walk(value, path) {
   if (typeof value === 'string') {

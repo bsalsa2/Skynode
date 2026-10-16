@@ -38,6 +38,7 @@ export const content = {
       { label: 'How it works', href: '#how' },
       { label: 'Status', href: '#status' },
       { label: 'Roadmap', href: '#roadmap' },
+      { label: 'Contact', href: './contact.html' },
     ],
   },
 
@@ -141,7 +142,7 @@ export const content = {
     heading: 'Status',
     items: [
       { label: 'DONE', text: 'Pico servo firmware: smooth motion, calibration, command protocol' },
-      { label: 'DONE', text: 'Detection and tracking loop, working in simulation, 324 Python tests + 11 website tests' },
+      { label: 'DONE', text: 'Detection and tracking loop, working in simulation, 324 Python tests + 22 website tests' },
       { label: 'DONE', text: 'Pan-tilt mount designed in CAD, with STEP and STL files' },
       { label: 'DONE', text: 'Wiring diagram and bill of materials' },
       { label: 'DONE', text: 'Sighting logger (built and tested in simulation)' },
@@ -239,20 +240,43 @@ export const content = {
     links: [
       { label: 'Talo on GitHub', href: 'https://github.com/bsalsa2/skynode' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
+      { label: 'Contact', href: './contact.html' },
       { label: 'Privacy', href: './privacy.html' },
     ],
     contactLabel: 'Contact',
     email: CONTACT_EMAIL,
   },
 
+  // ---- Contact page (contact.html) ----------------------------------------
+  // A Netlify Form: each message is stored by Netlify and emailed to the
+  // address set in Netlify under Site configuration > Forms > Form
+  // notifications. The address shown on the page is CONTACT_EMAIL (config.js).
+  contact: {
+    title: 'Contact',
+    description: 'Send a message about Talo: the project, a pilot, a grant, or anything else. It goes straight to my inbox.',
+    intro: 'Questions about the project, a pilot, a grant, or anything else? Send a message and I will reply by email.',
+    fields: {
+      name: 'Your name',
+      email: 'Your email',
+      message: 'Message',
+    },
+    submit: 'Send message',
+    sending: 'Sending…',
+    success: 'Thanks. Your message was sent. I will reply by email.',
+    failure: `That didn't go through. Please try again, or email it to me directly.`,
+    alternative: 'Or email',
+    privacy: 'Your name, email and message are used only to reply to you.',
+    privacyLinkLabel: 'Privacy policy',
+  },
+
   // ---- Privacy policy page (privacy.html) ---------------------------------
   // Update the date whenever you change this page.
   privacy: {
     title: 'Privacy policy',
-    updated: 'October 4, 2026',
-    intro: `This site doesn't collect personal information. There are no accounts, forms, cookies, analytics, ads, or trackers.`,
+    updated: 'October 16, 2026',
+    intro: `This site doesn't collect personal information, except what you choose to send through the contact form. There are no accounts, cookies, analytics, ads, or trackers.`,
     // Used instead of intro when the visit counter is on.
-    introWithAnalytics: `This site doesn't collect personal information. There are no accounts, forms, cookies, ads, or trackers. It counts visits anonymously, as explained below.`,
+    introWithAnalytics: `This site doesn't collect personal information, except what you choose to send through the contact form. There are no accounts, cookies, ads, or trackers. It counts visits anonymously, as explained below.`,
     sections: [
       {
         heading: 'What the site loads',
@@ -265,6 +289,10 @@ export const content = {
         heading: 'Visit counts',
         text: `To see how many people visit, this site uses GoatCounter, a privacy-friendly counter. It records which page was viewed, the site you came from, your browser, screen size, and country. It uses no cookies and doesn't store your IP address or anything that identifies you.`,
         link: { label: `GoatCounter's privacy policy`, href: 'https://www.goatcounter.com/help/privacy' },
+      },
+      {
+        heading: 'Contact form',
+        text: `If you use the contact form, the name, email address and message you type are sent through Netlify Forms and delivered by email to ${CONTACT_EMAIL}. They are used only to reply to you, and are not shared or sold. Netlify keeps submissions in the site's form inbox until they are deleted. Email me and I will delete yours.`,
       },
       {
         heading: 'Hosting',

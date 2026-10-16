@@ -174,7 +174,7 @@ Measure your servo and camera and adjust the parameters before printing. See [`h
 **Vision.** Phase 1 is one passive sky-tracking node. The long-term goal is autonomy for drone detection and defense systems. Open work is tracked as [GitHub issues](https://github.com/bsalsa2/Skynode/issues) under the *Phase 1: one working node* milestone.
 
 - [x] Pico servo firmware: smooth motion, calibration, command protocol (tested in software)
-- [x] Detection and tracking loop, working in simulation, covered by automated tests (324 Python tests + 11 website tests)
+- [x] Detection and tracking loop, working in simulation, covered by automated tests (324 Python tests + 22 website tests)
 - [x] Pan-tilt mount designed in CAD, with STEP and STL files
 - [x] Wiring diagram and bill of materials
 - [ ] Detection model training: v3 with drone and aircraft classes (in training, not yet scored)

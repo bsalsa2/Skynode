@@ -237,7 +237,7 @@ const STARS = '<div class="stars" aria-hidden="true"><div class="stars-a"></div>
 function siteNav(c, { home = true } = {}) {
   const pre = home ? '' : './';
   const links = c.nav.links
-    .map((l) => `<li><a class="nav-link" href="${pre}${esc(l.href)}">${esc(l.label)}</a></li>`)
+    .map((l) => `<li><a class="nav-link" href="${l.href.startsWith('#') ? pre : ''}${esc(l.href)}">${esc(l.label)}</a></li>`)
     .join('');
   return `
 <header class="site-header" id="top-nav">
@@ -459,7 +459,7 @@ ${siteFooter(c, { sister })}`;
 function siteFooter(c, { from = 'home', sister = null } = {}) {
   const footer = c.footer;
   const links = footer.links
-    .filter((l) => !(from === 'privacy' && l.href.includes('privacy.html')))
+    .filter((l) => !(from !== 'home' && l.href.endsWith(`${from}.html`)))
     .map((l) => `<li><a class="u-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`)
     .join('');
   return `
@@ -476,6 +476,73 @@ function siteFooter(c, { from = 'home', sister = null } = {}) {
   </div>
   <p class="footer-giant" aria-hidden="true">${esc(c.nav.brand)}</p>
 </footer>`;
+}
+
+// ---- Contact page (contact.html) -------------------------------------------
+// A Netlify Form (data-netlify): Netlify finds it in the built HTML, stores each
+// message and emails it to the address set in the Netlify dashboard. contact.js
+// adds checks and sends it without leaving the page; without JavaScript the
+// browser posts the form itself and Netlify shows its own thank-you page.
+export function renderContactHead(c) {
+  const k = c.contact;
+  const url = new URL('contact.html', c.meta.url).href;
+  const image = new URL('og-image.png', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(k.title)} | Talo</title>
+    <meta name="description" content="${esc(k.description)}" />
+    <link rel="canonical" href="${esc(url)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Talo Labs" />
+    <meta property="og:title" content="${esc(k.title)} | Talo" />
+    <meta property="og:description" content="${esc(k.description)}" />
+    <meta property="og:url" content="${esc(url)}" />
+    <meta property="og:image" content="${esc(image)}" />`;
+}
+
+const field = (id, name, label, control, hint = '') => `
+        <div class="field">
+          <label class="mono" for="${id}">${esc(label)}</label>
+          ${control}
+          <p class="field-error" id="${id}-error" role="alert" hidden></p>${hint}
+        </div>`;
+
+export function renderContactBody(c) {
+  const k = c.contact;
+  const f = k.fields;
+  const email = c.footer.email;
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${LIQUID_FILTER}
+<div class="legal-sky" aria-hidden="true">
+  ${STARS}
+  <div class="planet planet--legal"><div class="planet-body"></div></div>
+</div>
+${siteNav(c, { home: false })}
+
+<main id="main" class="legal" tabindex="-1">
+  <div class="wrap wrap--narrow">
+    <article class="legal-card glass glass--deep">
+      <p class="mono legal-updated">${esc(c.footer.contactLabel)}</p>
+      <h1 class="legal-title">${esc(k.title)}</h1>
+      <p class="legal-intro">${esc(k.intro)}</p>
+
+      <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field"
+        data-email="${esc(email)}" data-sending="${esc(k.sending)}" data-success="${esc(k.success)}" data-failure="${esc(k.failure)}">
+        <input type="hidden" name="form-name" value="contact" />
+        <p class="hp" aria-hidden="true">
+          <label>Leave this empty <input type="text" name="bot-field" tabindex="-1" autocomplete="off" /></label>
+        </p>${field('cf-name', 'name', f.name, '<input id="cf-name" name="name" type="text" autocomplete="name" required maxlength="100" aria-describedby="cf-name-error" />')}${field('cf-email', 'email', f.email, '<input id="cf-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" aria-describedby="cf-email-error" />')}${field('cf-message', 'message', f.message, '<textarea id="cf-message" name="message" rows="7" required minlength="10" maxlength="5000" aria-describedby="cf-message-error"></textarea>')}
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit">${esc(k.submit)} ${ARROW_UR}</button>
+          <p class="form-alt">${esc(k.alternative)} <a class="u-link" href="mailto:${esc(email)}">${esc(email)}</a></p>
+        </div>
+        <p class="form-status" role="status" aria-live="polite" hidden></p>
+        <p class="form-note">${esc(k.privacy)} <a class="u-link" href="./privacy.html">${esc(k.privacyLinkLabel)}</a>.</p>
+      </form>
+    </article>
+  </div>
+</main>
+${siteFooter(c, { from: 'contact' })}`;
 }
 
 // ---- Privacy page (privacy.html) -------------------------------------------
