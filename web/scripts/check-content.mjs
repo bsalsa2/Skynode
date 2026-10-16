@@ -110,7 +110,7 @@ function list(path, { min = 1 } = {}) {
   return value;
 }
 
-const sectionIds = new Set(['top', 'tested', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap']);
+const sectionIds = new Set(['top', 'tested', 'math', 'story', 'labels', 'how', 'mount', 'status', 'build', 'roadmap', 'contact']);
 if (Array.isArray(get('results.items')) && get('results.items').length) sectionIds.add('results');
 if (Array.isArray(get('limits.items')) && get('limits.items').length) sectionIds.add('limits');
 
@@ -302,6 +302,12 @@ text('roadmap.closing');
 if (get('sister')) {
   ['label', 'name', 'linkLabel'].forEach((k) => text(`sister.${k}`));
   link('sister.href');
+}
+
+if (get('contact')) {
+  ['kicker', 'heading', 'intro', 'nameLabel', 'emailLabel', 'messageLabel', 'submitLabel', 'sendingLabel', 'successText', 'mailtoText', 'errorText'].forEach((k) => text(`contact.${k}`));
+  const ep = get('contact.endpoint');
+  if (ep && !/^https:\/\//.test(ep)) err(`contact.endpoint must start with https:// (got "${ep}").`, lineOf(ep));
 }
 
 text('footer.brand');

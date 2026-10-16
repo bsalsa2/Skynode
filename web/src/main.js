@@ -1,5 +1,6 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { initContactForm } from './contact.js';
 
 const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -516,3 +517,5 @@ afterLoad(() => {
       .catch((err) => console.warn('[varn] mount viewer unavailable, keeping the still.', err))
   );
 });
+
+initContactForm();
