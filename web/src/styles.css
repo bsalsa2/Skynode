@@ -12,7 +12,7 @@
 :root {
   color-scheme: dark;
   --gutter: clamp(20px, 5vw, 80px);
-  --section-y: clamp(96px, 12vw, 160px);
+  --section-y: clamp(64px, 12vw, 160px);
   --nav-h: 60px;
 }
 
@@ -23,6 +23,7 @@
   box-sizing: border-box;
 }
 html {
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
@@ -410,13 +411,83 @@ svg {
   height: 1px;
   background: var(--accent-ink);
 }
-@media (max-width: 680px) {
-  .nav-links {
+.nav-toggle,
+.nav-cta-li {
+  display: none;
+}
+@media (max-width: 860px) {
+  .nav {
+    position: relative;
+    padding: 0 8px 0 18px;
+  }
+  .nav-cta {
     display: none;
   }
-  .nav {
-    padding-left: 18px;
+  .nav-toggle {
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
   }
+  .nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: var(--halo);
+    transition: transform 0.3s var(--ease-expo);
+  }
+  .nav.is-open .nav-toggle span:first-child {
+    transform: translateY(3.75px) rotate(45deg);
+  }
+  .nav.is-open .nav-toggle span:last-child {
+    transform: translateY(-3.75px) rotate(-45deg);
+  }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px;
+    border-radius: 20px;
+    background: rgba(11, 15, 20, 0.94);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-drop);
+  }
+  .nav.is-open .nav-links {
+    display: flex;
+  }
+  .nav-link {
+    display: block;
+    padding: 16px 14px;
+    font-size: 13px;
+  }
+  .nav-link[aria-current]::after {
+    display: none;
+  }
+  .nav-cta-li {
+    display: block;
+    padding: 8px 6px 6px;
+  }
+  .nav-cta-li .btn {
+    width: 100%;
+    justify-content: center;
+    height: 46px;
+  }
+}
+.nav-link[aria-current='page'] {
+  color: var(--accent-ink);
 }
 
 /* ---- Hero -------------------------------------------------------------- */
@@ -2970,4 +3041,21 @@ svg {
 }
 .contact-status.is-error {
   color: var(--amber, #f5a524);
+}
+
+.contact-page {
+  padding-top: calc(var(--nav-h) + 72px);
+}
+@media (max-width: 560px) {
+  .contact-page {
+    padding-top: calc(var(--nav-h) + 40px);
+  }
+  .contact-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .field input,
+  .field textarea {
+    font-size: 16px; /* stops iOS zooming into the field */
+  }
 }

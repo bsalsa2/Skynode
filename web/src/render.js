@@ -440,13 +440,14 @@ const LIQUID_FILTER = `
 const stage = (cls = '') =>
   `<div class="stage${cls ? ` ${cls}` : ''}" aria-hidden="true"><div class="stage-steel"></div><div class="stage-smoke"></div><div class="stage-lines"></div></div>`;
 
-function siteNav(c, { home = true } = {}) {
+function siteNav(c, { home = true, current = '' } = {}) {
   const pre = home ? '' : './';
+  const href = (h) => (h.startsWith('#') ? `${pre}${h}` : h);
   const links = c.nav.links
-    .map(
-      (l, i) =>
-        `<li><a class="nav-link mono" href="${pre}${esc(l.href)}"><span class="nav-n">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`
-    )
+    .map((l, i) => {
+      const cur = current && l.href === `./${current}` ? ' aria-current="page"' : '';
+      return `<li><a class="nav-link mono" href="${esc(href(l.href))}"${cur}><span class="nav-n">${pad2(i + 1)}</span>${esc(l.label)}</a></li>`;
+    })
     .join('');
   return `
 <header class="site-header" id="top-nav">
@@ -455,8 +456,12 @@ function siteNav(c, { home = true } = {}) {
       ${mark(36)}
       ${wordmark()}
     </a>
-    <ul class="nav-links">${links}</ul>
-    <a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
+    <ul class="nav-links" id="nav-menu">
+      ${links}
+      <li class="nav-cta-li"><a class="btn btn--primary btn--sm"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a></li>
+    </ul>
+    <a class="btn btn--primary btn--sm nav-cta"${linkAttrs(c.hero.primary.href)}>${esc(c.hero.primary.label)}</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu"><span></span><span></span></button>
   </nav>
 </header>`;
 }
@@ -668,49 +673,13 @@ ${siteNav(c)}
   </section>
 </main>
 
-${contactSection(c.contact, ++n)}
 ${siteFooter(c, { sister })}`;
-}
-
-// Contact form. Works without JavaScript (posts as an email via mailto:);
-// main.js upgrades it to send through c.endpoint when one is configured.
-function contactSection(ct, n) {
-  if (!ct) return '';
-  const field = (id, label, extra) =>
-    `<label class="field" for="c-${id}"><span class="mono field-k">${esc(label)}</span>${extra}</label>`;
-  return `
-  <section class="contact section" id="contact" aria-labelledby="contact-title">
-    <div class="wrap wrap--mid">
-      <header class="section-head">
-        ${kicker(n, ct.kicker, '', 'p')}
-        <h2 class="h-section" id="contact-title">${esc(ct.heading)}</h2>
-        <p class="lede" data-reveal>${esc(ct.intro)} <a class="u-link" href="mailto:${esc(ct.email)}">${esc(ct.email)}</a></p>
-      </header>
-      <form class="contact-form glass" id="contact-form" data-reveal method="post"
-        action="mailto:${esc(ct.email)}" enctype="text/plain"
-        data-email="${esc(ct.email)}" data-endpoint="${esc(ct.endpoint || '')}"
-        data-sending="${esc(ct.sendingLabel)}" data-success="${esc(ct.successText)}"
-        data-mailto="${esc(ct.mailtoText)}" data-error="${esc(ct.errorText)}">
-        <div class="field-row">
-          ${field('name', ct.nameLabel, '<input id="c-name" name="name" type="text" autocomplete="name" required maxlength="100" />')}
-          ${field('email', ct.emailLabel, '<input id="c-email" name="email" type="email" autocomplete="email" required maxlength="200" />')}
-        </div>
-        ${field('message', ct.messageLabel, '<textarea id="c-message" name="message" rows="6" required maxlength="4000"></textarea>')}
-        <input class="field-trap" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="contact-actions">
-          <button class="btn btn--primary" type="submit"><span class="btn-label">${esc(ct.submitLabel)}</span>${ARROW_UR}</button>
-          ${ct.endpoint ? '' : `<p class="mono contact-note">${esc(ct.mailtoNote)}</p>`}
-        </div>
-        <p class="contact-status" role="status" aria-live="polite" hidden></p>
-      </form>
-    </div>
-  </section>`;
 }
 
 function siteFooter(c, { from = 'home', sister = null } = {}) {
   const footer = c.footer;
   const links = footer.links
-    .filter((l) => !(from === 'privacy' && l.href.includes('privacy.html')))
+    .filter((l) => !(l.href.includes(`${from}.html`)))
     .map((l) => `<li><a class="u-link"${linkAttrs(l.href)}>${esc(l.label)}</a></li>`)
     .join('');
   return `
@@ -774,4 +743,56 @@ ${siteNav(c, { home: false })}
   </div>
 </main>
 ${siteFooter(c, { from: 'privacy' })}`;
+}
+
+// ---- Contact page (contact.html) -------------------------------------------
+// The form works without JavaScript (posts as an email via mailto:); contact.js
+// upgrades it to send through contact.endpoint when one is configured.
+export function renderContactHead(c) {
+  const url = new URL('contact.html', c.meta.url).href;
+  return `${counter(c)}
+    <title>${esc(c.contact.title)} | Varn</title>
+    <meta name="description" content="${esc(c.contact.description)}" />
+    <link rel="canonical" href="${esc(url)}" />`;
+}
+
+export function renderContactBody(c) {
+  const ct = c.contact;
+  const field = (id, label, input) =>
+    `<label class="field" for="c-${id}"><span class="mono field-k">${esc(label)}</span>${input}</label>`;
+  return `
+<a class="skip-link" href="#main">Skip to content</a>
+${LIQUID_FILTER}
+${stage('stage-fixed')}
+${siteNav(c, { home: false, current: 'contact.html' })}
+
+<main id="main" class="contact-page" tabindex="-1">
+  <section class="contact section" aria-labelledby="contact-title">
+    <div class="wrap wrap--mid">
+      <header class="section-head">
+        ${kicker(1, ct.kicker)}
+        <h1 class="h-section" id="contact-title">${esc(ct.heading)}</h1>
+        <p class="lede">${esc(ct.intro)} <a class="u-link" href="mailto:${esc(ct.email)}">${esc(ct.email)}</a></p>
+      </header>
+      <form class="contact-form glass" id="contact-form" method="post"
+        action="mailto:${esc(ct.email)}" enctype="text/plain"
+        data-email="${esc(ct.email)}" data-endpoint="${esc(ct.endpoint || '')}"
+        data-sending="${esc(ct.sendingLabel)}" data-success="${esc(ct.successText)}"
+        data-mailto="${esc(ct.mailtoText)}" data-error="${esc(ct.errorText)}">
+        <div class="field-row">
+          ${field('name', ct.nameLabel, '<input id="c-name" name="name" type="text" autocomplete="name" required maxlength="100" />')}
+          ${field('email', ct.emailLabel, '<input id="c-email" name="email" type="email" autocomplete="email" required maxlength="200" />')}
+        </div>
+        ${field('message', ct.messageLabel, '<textarea id="c-message" name="message" rows="6" required maxlength="4000"></textarea>')}
+        <input class="field-trap" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="contact-actions">
+          <button class="btn btn--primary" type="submit"><span class="btn-label">${esc(ct.submitLabel)}</span>${ARROW_UR}</button>
+          ${ct.endpoint ? '' : `<p class="mono contact-note">${esc(ct.mailtoNote)}</p>`}
+        </div>
+        <p class="contact-status" role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+  </section>
+</main>
+${siteFooter(c, { from: 'contact' })}`;
 }

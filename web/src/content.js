@@ -41,7 +41,7 @@ export const content = {
       { label: 'How it works', href: '#story' },
       { label: 'Results', href: '#results' },
       { label: 'Status', href: '#status' },
-      { label: 'Contact', href: '#contact' },
+      { label: 'Contact', href: './contact.html' },
     ],
   },
 
@@ -336,6 +336,8 @@ export const content = {
   // Contact form, shown above the sister-project card.
   contact: {
     kicker: 'Contact',
+    title: 'Contact',
+    description: 'Questions about Varn? Send a message to Varn Labs.',
     heading: 'Questions about Varn?',
     intro: 'Ask about the project, the hardware, or the code. I read every message.',
     email: CONTACT_EMAIL,
@@ -365,6 +367,7 @@ export const content = {
     links: [
       { label: 'Varn on GitHub', href: 'https://github.com/bsalsa2/varn' },
       { label: 'Sister project: Sunnode', href: 'https://github.com/bsalsa2/sunnode' },
+      { label: 'Contact', href: './contact.html' },
       { label: 'Privacy', href: './privacy.html' },
     ],
     contactLabel: 'Contact',

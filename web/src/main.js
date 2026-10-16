@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { initContactForm } from './contact.js';
+import { initNavMenu } from './nav-menu.js';
 
 const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -105,7 +105,7 @@ const header = document.getElementById('top-nav');
   header.addEventListener('focusin', () => header.classList.remove('is-hidden'));
 }
 
-const navLinks = [...document.querySelectorAll('.nav-link')];
+const navLinks = [...document.querySelectorAll('.nav-link')].filter((l) => l.getAttribute('href').startsWith('#'));
 const sectionFor = new Map(
   navLinks.map((link) => [document.querySelector(link.getAttribute('href')), link]).filter(([s]) => s)
 );
@@ -518,4 +518,4 @@ afterLoad(() => {
   );
 });
 
-initContactForm();
+initNavMenu();
