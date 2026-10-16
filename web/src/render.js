@@ -668,7 +668,43 @@ ${siteNav(c)}
   </section>
 </main>
 
+${contactSection(c.contact, ++n)}
 ${siteFooter(c, { sister })}`;
+}
+
+// Contact form. Works without JavaScript (posts as an email via mailto:);
+// main.js upgrades it to send through c.endpoint when one is configured.
+function contactSection(ct, n) {
+  if (!ct) return '';
+  const field = (id, label, extra) =>
+    `<label class="field" for="c-${id}"><span class="mono field-k">${esc(label)}</span>${extra}</label>`;
+  return `
+  <section class="contact section" id="contact" aria-labelledby="contact-title">
+    <div class="wrap wrap--mid">
+      <header class="section-head">
+        ${kicker(n, ct.kicker, '', 'p')}
+        <h2 class="h-section" id="contact-title">${esc(ct.heading)}</h2>
+        <p class="lede" data-reveal>${esc(ct.intro)} <a class="u-link" href="mailto:${esc(ct.email)}">${esc(ct.email)}</a></p>
+      </header>
+      <form class="contact-form glass" id="contact-form" data-reveal method="post"
+        action="mailto:${esc(ct.email)}" enctype="text/plain"
+        data-email="${esc(ct.email)}" data-endpoint="${esc(ct.endpoint || '')}"
+        data-sending="${esc(ct.sendingLabel)}" data-success="${esc(ct.successText)}"
+        data-mailto="${esc(ct.mailtoText)}" data-error="${esc(ct.errorText)}">
+        <div class="field-row">
+          ${field('name', ct.nameLabel, '<input id="c-name" name="name" type="text" autocomplete="name" required maxlength="100" />')}
+          ${field('email', ct.emailLabel, '<input id="c-email" name="email" type="email" autocomplete="email" required maxlength="200" />')}
+        </div>
+        ${field('message', ct.messageLabel, '<textarea id="c-message" name="message" rows="6" required maxlength="4000"></textarea>')}
+        <input class="field-trap" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="contact-actions">
+          <button class="btn btn--primary" type="submit"><span class="btn-label">${esc(ct.submitLabel)}</span>${ARROW_UR}</button>
+          ${ct.endpoint ? '' : `<p class="mono contact-note">${esc(ct.mailtoNote)}</p>`}
+        </div>
+        <p class="contact-status" role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+  </section>`;
 }
 
 function siteFooter(c, { from = 'home', sister = null } = {}) {

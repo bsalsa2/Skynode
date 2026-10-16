@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL } from './config.js';
+import { CONTACT_EMAIL, FORM_ENDPOINT } from './config.js';
 
 // ---------------------------------------------------------------------------
 //  VARN SITE CONTENT
@@ -41,6 +41,7 @@ export const content = {
       { label: 'How it works', href: '#story' },
       { label: 'Results', href: '#results' },
       { label: 'Status', href: '#status' },
+      { label: 'Contact', href: '#contact' },
     ],
   },
 
@@ -332,6 +333,24 @@ export const content = {
       'Phase 1 is passive by design. It carries no payloads, never jams, and never transmits on aircraft or drone frequencies. It only watches.',
   },
 
+  // Contact form, shown above the sister-project card.
+  contact: {
+    kicker: 'Contact',
+    heading: 'Questions about Varn?',
+    intro: 'Ask about the project, the hardware, or the code. I read every message.',
+    email: CONTACT_EMAIL,
+    endpoint: FORM_ENDPOINT,
+    nameLabel: 'Name',
+    emailLabel: 'Your email',
+    messageLabel: 'Message',
+    submitLabel: 'Send message',
+    sendingLabel: 'Sending',
+    mailtoNote: 'Sending opens your email app with this message ready to go.',
+    successText: 'Thanks, your message is on its way. I will reply by email.',
+    mailtoText: 'Your email app should now be open with your message. Press send there to finish.',
+    errorText: 'That did not send. Please email the address above directly.',
+  },
+
   // Card linking to the sister project, shown above the footer.
   sister: {
     label: 'Sister project',
@@ -357,9 +376,9 @@ export const content = {
   privacy: {
     title: 'Privacy policy',
     updated: 'October 4, 2026',
-    intro: `This site doesn't collect personal information. There are no accounts, forms, cookies, analytics, ads, or trackers.`,
+    intro: `This site doesn't collect personal information. There are no accounts, cookies, ads, or trackers. The contact form only sends what you type in it.`,
     // Used instead of intro when the visit counter is on.
-    introWithAnalytics: `This site doesn't collect personal information. There are no accounts, forms, cookies, ads, or trackers. It counts visits anonymously, as explained below.`,
+    introWithAnalytics: `This site doesn't collect personal information. There are no accounts, cookies, ads, or trackers. The contact form only sends what you type in it. It counts visits anonymously, as explained below.`,
     sections: [
       {
         heading: 'What the site loads',
@@ -377,6 +396,10 @@ export const content = {
         heading: 'Hosting',
         text: `The site is hosted by Netlify. Like any web host, Netlify's servers handle each visit and may keep standard technical logs, such as IP addresses and browser type, to run and protect the service. This site adds no tracking on top of that.`,
         link: { label: `Netlify's privacy policy`, href: 'https://www.netlify.com/privacy/' },
+      },
+      {
+        heading: 'Contact form',
+        text: `If you use the contact form, the name, email address, and message you type are sent to hello@tryvarn.com, or open in your own email app, and are used only to reply to you. Nothing is stored on this site.`,
       },
       {
         heading: 'Links to other sites',

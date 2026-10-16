@@ -2901,3 +2901,73 @@ svg {
     margin-inline: auto;
   }
 }
+
+/* ---- Contact form ------------------------------------------------------- */
+.contact-form {
+  display: grid;
+  gap: 20px;
+  margin-top: 40px;
+  padding: clamp(20px, 4vw, 36px);
+  border-radius: 28px;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+.field {
+  display: grid;
+  gap: 8px;
+}
+.field-k {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3, var(--ink-2));
+}
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--halo);
+  font: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+  border-color: var(--accent-ink);
+}
+.field-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.contact-actions .btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+.contact-note {
+  font-size: 12px;
+  color: var(--ink-3, var(--ink-2));
+}
+.contact-status {
+  color: var(--halo);
+}
+.contact-status.is-error {
+  color: var(--amber, #f5a524);
+}
