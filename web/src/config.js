@@ -12,4 +12,4 @@ export const CONTACT_EMAIL = 'hello@tryvarn.com';
 // CONTACT_EMAIL. To have messages delivered straight to your inbox instead,
 // create a free form at formspree.io (or similar) pointed at CONTACT_EMAIL
 // and paste its URL here, e.g. 'https://formspree.io/f/abcdwxyz'.
-export const FORM_ENDPOINT = '';
+export const FORM_ENDPOINT = 'https://formspree.io/f/mwlvajze';
